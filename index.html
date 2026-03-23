@@ -59,9 +59,33 @@
         <div id="search-result"></div>
     </div>
     <div id="catalog-panel" class="panel">
-        <h2>📦 Каталог дронов</h2>
-        <div id="catalog-content" class="loading">⏳ Загрузка...</div>
+    <h2>📦 Каталог дронов</h2>
+    <!-- Блок фильтрации -->
+    <div style="margin-bottom: 15px;">
+        <input type="text" id="search-name" placeholder="🔍 Поиск по названию..." 
+               style="width: 100%; padding: 12px; border-radius: 30px; border: 2px solid #e0e4e8; font-size: 14px; margin-bottom: 10px;">
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="filter-category" placeholder="📂 Категория" 
+                   style="flex: 1; padding: 10px; border-radius: 30px; border: 2px solid #e0e4e8; font-size: 14px;">
+            <input type="number" id="price-min" placeholder="Цена от" 
+                   style="flex: 1; padding: 10px; border-radius: 30px; border: 2px solid #e0e4e8; font-size: 14px;">
+            <input type="number" id="price-max" placeholder="Цена до" 
+                   style="flex: 1; padding: 10px; border-radius: 30px; border: 2px solid #e0e4e8; font-size: 14px;">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <select id="sort-by" style="flex: 1; padding: 10px; border-radius: 30px; border: 2px solid #e0e4e8; background: white;">
+                <option value="name_asc">По названию (А-Я)</option>
+                <option value="name_desc">По названию (Я-А)</option>
+                <option value="price_asc">По цене (сначала дешёвые)</option>
+                <option value="price_desc">По цене (сначала дорогие)</option>
+            </select>
+            <button id="reset-filters" style="width: auto; padding: 10px 20px; margin: 0; background: #64748b;">Сбросить</button>
+        </div>
     </div>
+    
+    <div id="catalog-content" class="loading">⏳ Загрузка каталога...</div>
 </div>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
