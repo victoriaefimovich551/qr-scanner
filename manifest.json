@@ -1,0 +1,21 @@
+{
+  "name": "QR Сканер Дроны",
+  "short_name": "Дроны QR",
+  "description": "Система учета дронов с QR-сканированием",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1e3c72",
+  "background_color": "#1e3c72",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/1e3c72/white?text=QR",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/1e3c72/white?text=QR",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
