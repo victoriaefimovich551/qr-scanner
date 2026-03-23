@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#1e3c72">
+    <link rel="manifest" href="manifest.json">
     <title>QR Сканер - Дроны</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,7 +23,7 @@
         .search-box { display: flex; gap: 10px; margin: 15px 0; }
         .search-box input { flex: 1; padding: 12px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 16px; }
         .search-box button { width: auto; padding: 12px 20px; margin: 0; }
-        .product-card { background: #f8fafc; border-radius: 16px; padding: 20px; margin-top: 20px; border-left: 4px solid #2a5298; }
+        .product-card { background: #f8fafc; border-radius: 16px; padding: 20px; margin-top: 20px; border-left: 4px solid #2a5298; position: relative; }
         .product-card h3 { color: #1e3c72; margin-bottom: 15px; }
         .product-detail { margin: 8px 0; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
         .product-detail strong { display: inline-block; min-width: 110px; color: #475569; }
@@ -39,11 +41,24 @@
         .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .filter-row input, .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
         .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
+        .share-btn { background: #64748b; width: auto; padding: 8px 16px; margin-top: 10px; font-size: 14px; display: inline-block; }
+        .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
+        .install-banner button { background: #1e3c72; width: auto; padding: 8px 20px; margin: 5px 0 0; font-size: 14px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header"><h1>📱 QR Сканер</h1><p>Система учета дронов</p></div>
+    <div class="header">
+        <h1>📱 QR Сканер</h1>
+        <p>Система учета дронов</p>
+    </div>
+    
+    <!-- Баннер для установки PWA -->
+    <div id="install-banner" class="install-banner">
+        📲 Установите приложение на телефон<br>
+        <button id="install-btn">Установить</button>
+    </div>
+    
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('scan')">📷 Сканер</button>
         <button class="tab-btn" onclick="switchTab('search')">🔍 Поиск</button>
@@ -72,9 +87,8 @@
     <div id="catalog-panel" class="panel">
         <h2>📦 Каталог дронов</h2>
         
-        <!-- Блок фильтрации -->
         <div class="filter-group">
-            <input type="text" id="search-name" class="filter-input" placeholder="🔍 Поиск по названию (русский/english)...">
+            <input type="text" id="search-name" class="filter-input" placeholder="🔍 Поиск по названию...">
             
             <div class="filter-row">
                 <input type="text" id="filter-category" placeholder="📂 Категория">
@@ -104,7 +118,25 @@
     
     let html5QrCode = null;
     let isScanning = false;
-    let allProducts = []; // Хранилище всех товаров для фильтрации
+    let allProducts = [];
+    let deferredPrompt = null; // для PWA
+    
+    // ========== PWA: установка на телефон ==========
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('install-banner').style.display = 'block';
+    });
+    
+    document.getElementById('install-btn')?.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            document.getElementById('install-banner').style.display = 'none';
+        }
+        deferredPrompt = null;
+    });
     
     // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
     function switchTab(tab) {
@@ -177,6 +209,38 @@
         return data;
     }
     
+    // ========== ФУНКЦИЯ "ПОДЕЛИТЬСЯ" ==========
+    async function shareProduct(product) {
+        const shareData = {
+            title: `Дрон: ${product['Название'] || 'Без названия'}`,
+            text: `Серийный номер: ${product['Серийный номер']}\nОписание: ${product['Описание'] || '—'}\nЗакупка: ${product['Закупка'] || '—'}\nАвито: ${product['Ссылка на объявление Авито'] || '—'}`,
+            url: window.location.href
+        };
+        
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('Поделиться не удалось', err);
+                // Если не удалось поделиться, копируем в буфер обмена
+                await copyToClipboard(shareData.text);
+                alert('Информация скопирована в буфер обмена');
+            }
+        } else {
+            // Если Web Share API не поддерживается, копируем в буфер
+            await copyToClipboard(shareData.text);
+            alert('Информация скопирована в буфер обмена');
+        }
+    }
+    
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (err) {
+            console.error('Ошибка копирования:', err);
+        }
+    }
+    
     // ========== ОТОБРАЖЕНИЕ ТОВАРА ==========
     function displayProduct(p, containerId) {
         const container = document.getElementById(containerId);
@@ -189,12 +253,13 @@
             price = `${parseFloat(price).toLocaleString('ru-RU')} ₽`;
         }
         
-        let html = `<div class="product-card"><h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
+        let html = `<div class="product-card">
+            <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
             <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
             <div class="product-detail"><strong>📝 Описание:</strong> ${escapeHtml(p['Описание'] || '—')}</div>`;
         
         if (p['Категория']) {
-            html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категория'])}</div>`;
+            html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категорија'])}</div>`;
         }
         if (price) {
             html += `<div class="product-detail"><strong>💰 Цена:</strong> ${price}</div>`;
@@ -212,6 +277,12 @@
         if (p['QR_Code']) {
             html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
         }
+        
+        // Кнопка "Поделиться"
+        html += `<div style="margin-top: 15px; text-align: center;">
+            <button onclick="shareProduct(${JSON.stringify(p).replace(/</g, '\\u003c')})" style="background: #64748b; width: auto; padding: 8px 20px; margin: 0;">📤 Поделиться</button>
+        </div>`;
+        
         html += `</div>`;
         container.innerHTML = html;
     }
@@ -232,39 +303,27 @@
         const sortBy = document.getElementById('sort-by').value;
         
         let filtered = allProducts.filter(product => {
-            // Поиск по названию (работает на русском и английском)
             if (searchTerm) {
                 const name = (product['Название'] || '').toLowerCase();
                 if (!name.includes(searchTerm)) return false;
             }
-            
-            // Фильтр по категории
             if (categoryFilter) {
                 const category = (product['Категория'] || '').toLowerCase();
                 if (!category.includes(categoryFilter)) return false;
             }
-            
-            // Фильтр по цене
             const price = parseFloat(product['Цена']) || 0;
             if (!isNaN(priceMin) && price < priceMin) return false;
             if (!isNaN(priceMax) && price > priceMax) return false;
-            
             return true;
         });
         
-        // Сортировка
         filtered.sort((a, b) => {
             switch(sortBy) {
-                case 'name_asc':
-                    return (a['Название'] || '').localeCompare(b['Название'] || '');
-                case 'name_desc':
-                    return (b['Название'] || '').localeCompare(a['Название'] || '');
-                case 'price_asc':
-                    return (parseFloat(a['Цена']) || 0) - (parseFloat(b['Цена']) || 0);
-                case 'price_desc':
-                    return (parseFloat(b['Цена']) || 0) - (parseFloat(a['Цена']) || 0);
-                default:
-                    return 0;
+                case 'name_asc': return (a['Название'] || '').localeCompare(b['Название'] || '');
+                case 'name_desc': return (b['Название'] || '').localeCompare(a['Название'] || '');
+                case 'price_asc': return (parseFloat(a['Цена']) || 0) - (parseFloat(b['Цена']) || 0);
+                case 'price_desc': return (parseFloat(b['Цена']) || 0) - (parseFloat(a['Цена']) || 0);
+                default: return 0;
             }
         });
         
@@ -273,12 +332,10 @@
     
     function renderCatalog(products) {
         const container = document.getElementById('catalog-content');
-        
         if (products.length === 0) {
-            container.innerHTML = '<div class="error">📭 Товары не найдены. Попробуйте изменить фильтры.</div>';
+            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
             return;
         }
-        
         let html = '<div class="products-grid">';
         products.forEach(product => {
             const price = product['Цена'] ? `${parseFloat(product['Цена']).toLocaleString('ru-RU')} ₽` : '—';
@@ -313,20 +370,16 @@
         await searchBySerial();
     }
     
-    // ========== ЗАГРУЗКА КАТАЛОГА ==========
     async function loadCatalog() {
         const container = document.getElementById('catalog-content');
         container.innerHTML = '<div class="loading">📦 Загрузка каталога...</div>';
-        
         try {
             const products = await getAllProducts();
             allProducts = products;
-            
             if (!products.length) {
                 container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
                 return;
             }
-            
             applyFilters();
         } catch (error) {
             container.innerHTML = `<div class="error">❌ ${error.message}</div>`;
