@@ -13,7 +13,7 @@
         .header { text-align: center; color: white; margin-bottom: 20px; }
         .header h1 { font-size: 24px; margin-bottom: 5px; }
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn { flex: 1; min-width: 100px; padding: 12px 8px; background: rgba(255,255,255,0.2); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .tab-btn { flex: 1; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.2); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
         .tab-btn.active { background: white; color: #1e3c72; }
         .panel { display: none; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .panel.active { display: block; }
@@ -48,9 +48,10 @@
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
         .install-banner button { background: #1e3c72; width: auto; padding: 8px 20px; margin: 5px 0 0; font-size: 14px; }
         .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .action-btn { flex: 1; background: #64748b; width: auto; padding: 10px; margin: 0; font-size: 14px; text-align: center; }
+        .action-btn { flex: 1; background: #64748b; width: auto; padding: 10px; margin: 0; font-size: 14px; text-align: center; cursor: pointer; border: none; border-radius: 30px; color: white; }
         .delivery-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .delivery-modal-content { background: white; border-radius: 20px; padding: 20px; max-width: 90%; max-height: 80%; overflow-y: auto; }
+        .menu-delivery-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 12px 8px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; flex: 1; min-width: 80px; }
     </style>
 </head>
 <body>
@@ -74,6 +75,7 @@
         <button class="tab-btn active" onclick="switchTab('scan')">📷 Сканер</button>
         <button class="tab-btn" onclick="switchTab('search')">🔍 Поиск</button>
         <button class="tab-btn" onclick="switchTab('catalog')">📦 Каталог</button>
+        <button class="tab-btn" onclick="showDeliveryMenu()">🚚 Доставка</button>
     </div>
     
     <div id="scan-panel" class="panel active">
@@ -118,7 +120,7 @@
 <!-- Модальное окно с доставкой -->
 <div id="delivery-modal" class="delivery-modal">
     <div class="delivery-modal-content">
-        <h3>📦 Информация о доставке</h3>
+        <h3>🚚 Информация о доставке</h3>
         <div id="delivery-info"></div>
         <button onclick="closeDeliveryModal()" style="margin-top: 15px;">Закрыть</button>
     </div>
@@ -126,7 +128,7 @@
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLWnnmmNwiHJJPbSSdbDJHFC_BDohltDeLzrkj-Pb-MU3Ad30AYimuNDZ-zU39taNWgA/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxspTE7cATKJomSitk6C-RDm617pBRmvbk1YaVpMZi2VNhF-1ogB2q6Bl-7yk_YsZFfqA/exec';
     
     let html5QrCode = null;
     let isScanning = false;
@@ -182,6 +184,15 @@
         if (tab === 'scan' && html5QrCode && isScanning) {
             html5QrCode.stop().then(() => isScanning = false);
         }
+    }
+    
+    // Кнопка доставки в основном меню
+    async function showDeliveryMenu() {
+        if (!currentProduct) {
+            alert('Сначала найдите товар через сканер или поиск');
+            return;
+        }
+        showDeliveryInfo();
     }
     
     async function startScanner() {
@@ -243,7 +254,6 @@
         return data;
     }
     
-    // ========== ОТДЕЛЬНАЯ КНОПКА ДОСТАВКИ ==========
     function showDeliveryInfo() {
         if (!currentProduct) {
             alert('Сначала найдите товар');
@@ -353,9 +363,8 @@
             html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
         }
         
-        // Кнопки действий
         html += `<div class="action-buttons">
-            <button class="action-btn" onclick="showDeliveryInfo()">📦 Доставка</button>
+            <button class="action-btn" onclick="showDeliveryInfo()">🚚 Доставка</button>
             <button class="action-btn" onclick="shareProductFromCard('${escapeHtml(p['Серийный номер'])}')">📤 Поделиться</button>
         </div>`;
         
