@@ -5,21 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Генератор QR-кодов для наклеек</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+        .container { max-width: 800px; margin: 0 auto; }
         .card {
             background: white;
             border-radius: 20px;
@@ -27,20 +20,9 @@
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
-        h1 {
-            color: #1e3c72;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #1e3c72;
-        }
+        h1 { color: #1e3c72; margin-bottom: 10px; font-size: 24px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #1e3c72; }
         select, input {
             width: 100%;
             padding: 12px;
@@ -48,13 +30,8 @@
             border-radius: 30px;
             font-size: 16px;
         }
-        .row {
-            display: flex;
-            gap: 10px;
-        }
-        .row .form-group {
-            flex: 1;
-        }
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
         button {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
@@ -66,9 +43,7 @@
             cursor: pointer;
             margin: 5px;
         }
-        button.thermal {
-            background: #16a34a;
-        }
+        button.thermal { background: #16a34a; }
         .info {
             background: #eef2ff;
             padding: 12px;
@@ -92,16 +67,9 @@
             text-align: center;
             border-radius: 30px;
         }
-        .tab-btn.active {
-            background: #1e3c72;
-            color: white;
-        }
-        .tab-pane {
-            display: none;
-        }
-        .tab-pane.active {
-            display: block;
-        }
+        .tab-btn.active { background: #1e3c72; color: white; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
         .print-mode-selector {
             display: flex;
             gap: 10px;
@@ -119,10 +87,7 @@
             border-radius: 30px;
             text-align: center;
         }
-        .mode-btn.active {
-            background: #1e3c72;
-            color: white;
-        }
+        .mode-btn.active { background: #1e3c72; color: white; }
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -309,9 +274,17 @@
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.M
                 });
+                // Даём время на отрисовку
                 setTimeout(() => resolve(canvas), 50);
             } catch(e) {
                 console.error('QR generation error:', e);
+                // Создаём canvas с текстом ошибки
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = '#000';
+                ctx.font = `${size/20}px monospace`;
+                ctx.fillText(text, 10, size/2);
                 resolve(canvas);
             }
         });
@@ -350,19 +323,23 @@
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
         
+        // Очищаем и показываем прогресс
         previewDiv.innerHTML = '';
         progressContainer.style.display = 'block';
         progressFill.style.width = '0%';
         progressText.textContent = `Генерация QR-кодов: 0 из ${quantity}`;
         
+        // Генерируем все QR-коды
         const previewCanvases = await generateAllQRCodes(codes, 100, (done, total) => {
             const percent = (done / total) * 100;
             progressFill.style.width = percent + '%';
             progressText.textContent = `Генерация QR-кодов: ${done} из ${total}`;
         });
         
+        // Скрываем прогресс
         progressContainer.style.display = 'none';
         
+        // Добавляем все элементы в DOM
         codes.forEach((code, idx) => {
             const div = document.createElement('div');
             div.className = 'preview-item';
@@ -379,6 +356,9 @@
             div.appendChild(codeSpan);
             previewDiv.appendChild(div);
         });
+        
+        // Принудительно обновляем DOM
+        previewDiv.style.display = 'grid';
         
         currentQRCodes = codes;
         
@@ -433,7 +413,7 @@
                         box-sizing: border-box;
                         padding: 2mm;
                     }
-                    .label canvas { width: 28mm; height: 28mm; margin-bottom: 2mm; }
+                    .label img { width: 28mm; height: 28mm; margin-bottom: 2mm; }
                     .code { font-family: monospace; font-size: 9pt; font-weight: bold; }
                 </style>
             </head>
@@ -444,7 +424,7 @@
                 const canvasData = canvas.toDataURL();
                 html += `
                     <div class="label">
-                        <img src="${canvasData}" alt="QR" style="width:28mm;height:28mm;">
+                        <img src="${canvasData}" alt="QR">
                         <div class="code">${code}</div>
                     </div>
                 `;
@@ -461,7 +441,7 @@
                     body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
                     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12mm; }
                     .label { text-align: center; border: 1px dashed #ccc; padding: 5mm; page-break-inside: avoid; }
-                    .label canvas { width: 55mm; height: 55mm; }
+                    .label img { width: 55mm; height: 55mm; }
                     .code { font-family: monospace; margin-top: 3mm; font-size: 10pt; }
                 </style>
             </head>
@@ -478,7 +458,7 @@
                     const canvasData = canvas.toDataURL();
                     html += `
                         <div class="label">
-                            <img src="${canvasData}" alt="QR" style="width:55mm;height:55mm;">
+                            <img src="${canvasData}" alt="QR">
                             <div class="code">${codes[i]}</div>
                         </div>
                     `;
@@ -503,7 +483,10 @@
     document.getElementById('generate-btn').onclick = displayPreview;
     document.getElementById('print-btn').onclick = printQRCodes;
     
-    window.onload = displayPreview;
+    // Автоматическая генерация при загрузке
+    window.onload = function() {
+        displayPreview();
+    };
 </script>
 </body>
 </html>
