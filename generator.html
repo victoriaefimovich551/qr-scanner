@@ -13,7 +13,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .card {
@@ -60,11 +60,19 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
+            margin: 5px;
         }
         button.secondary {
             background: #64748b;
+        }
+        button.thermal {
+            background: #16a34a;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
         }
         .qr-grid {
             display: grid;
@@ -91,10 +99,6 @@
             color: #475569;
             word-break: break-all;
         }
-        .print-btn {
-            margin-top: 20px;
-            background: #16a34a;
-        }
         .info {
             background: #eef2ff;
             padding: 12px;
@@ -107,12 +111,14 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             flex: 1;
             background: #eef2ff;
             color: #1e3c72;
             margin: 0;
+            padding: 12px;
         }
         .tab-btn.active {
             background: #1e3c72;
@@ -124,22 +130,46 @@
         .tab-pane.active {
             display: block;
         }
-        .preview-list {
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
+        .print-mode-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
             background: #f8fafc;
             padding: 12px;
-            border-radius: 12px;
+            border-radius: 40px;
+        }
+        .mode-btn {
+            flex: 1;
+            background: #eef2ff;
+            color: #1e3c72;
+            padding: 10px;
+            margin: 0;
+            font-size: 14px;
+        }
+        .mode-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                display: block !important;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container no-print">
     <div class="card">
         <h1>🖨️ Генератор QR-кодов для наклеек</h1>
-        <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших товаров. Каждый код будет содержать уникальный идентификатор модели.</p>
+        <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших товаров.</p>
         
         <div class="tab-buttons">
             <button class="tab-btn active" onclick="switchTab('generate')">📱 Генерация QR</button>
@@ -166,29 +196,35 @@
             </div>
             
             <div class="form-group">
-                <label>💰 Начальная цена (опционально, будет использоваться при приёмке)</label>
-                <input type="number" id="price" placeholder="Оставьте пустым для стандартной цены">
+                <label>💰 Цена (опционально)</label>
+                <input type="number" id="price" placeholder="Оставьте пустым">
+            </div>
+            
+            <div class="print-mode-selector">
+                <button class="mode-btn active" data-mode="a4" onclick="setPrintMode('a4')">📄 A4 (9 на лист)</button>
+                <button class="mode-btn" data-mode="thermal" onclick="setPrintMode('thermal')">🏷️ Термопринтер (58x40мм)</button>
+                <button class="mode-btn" data-mode="sticker" onclick="setPrintMode('sticker')">📋 Наклейки (6 на лист)</button>
             </div>
             
             <button id="generate-btn">🎲 Сгенерировать QR-коды</button>
-            <button id="print-btn" class="secondary print-btn" style="display: none;">🖨️ Распечатать</button>
             
-            <div id="qr-output" class="qr-grid"></div>
             <div id="info" class="info" style="display: none;"></div>
         </div>
         
         <!-- Вкладка пакетной печати -->
         <div id="batch-pane" class="tab-pane">
             <h2>📦 Пакетная печать</h2>
-            <p style="margin-bottom: 15px;">Создайте QR-коды для нескольких моделей сразу</p>
-            
-            <div class="form-group">
-                <label>📋 Список для генерации (каждая строка: модель,количество)</label>
-                <textarea id="batch-list" rows="5" style="border-radius: 16px; font-family: monospace;" placeholder="Mini 2,20
+            <p style="margin-bottom: 15px;">Каждая строка: модель,количество</p>
+            <textarea id="batch-list" rows="5" style="width: 100%; padding: 12px; border-radius: 16px; border: 2px solid #e0e4e8; font-family: monospace;" placeholder="Mini 2,20
 Mini 3,10
 Air 2s,15
 Mavic,5
 3T,8"></textarea>
+            
+            <div class="print-mode-selector">
+                <button class="mode-btn active" data-mode="a4" onclick="setPrintMode('a4')">📄 A4 (9 на лист)</button>
+                <button class="mode-btn" data-mode="thermal" onclick="setPrintMode('thermal')">🏷️ Термопринтер (58x40мм)</button>
+                <button class="mode-btn" data-mode="sticker" onclick="setPrintMode('sticker')">📋 Наклейки (6 на лист)</button>
             </div>
             
             <button id="batch-generate-btn">📦 Сгенерировать всё</button>
@@ -197,42 +233,39 @@ Mavic,5
         
         <!-- Вкладка инструкции -->
         <div id="help-pane" class="tab-pane">
-            <h2>📖 Инструкция по использованию</h2>
-            
-            <div class="info" style="margin-top: 0;">
+            <h2>📖 Инструкция</h2>
+            <div class="info">
                 <strong>1. Создание наклеек:</strong><br>
                 • Выберите модель и количество<br>
-                • Нажмите "Сгенерировать QR-коды"<br>
-                • Распечатайте на самоклеящейся бумаге<br>
-                • Вырежьте и наклейте на товар<br><br>
+                • Выберите формат печати<br>
+                • Нажмите "Сгенерировать"<br>
+                • Нажмите "Печать" → выберите нужный формат<br><br>
                 
-                <strong>2. Формат QR-кода:</strong><br>
-                Каждый QR-код содержит уникальный текст вида: <code>MINI2-001</code>, <code>MINI2-002</code> и т.д.<br>
-                При сканировании приложение автоматически:<br>
-                • Распознаёт модель (MINI2 → Mini 2)<br>
-                • Создаёт артикул (MN2-001)<br>
-                • Добавляет товар в таблицу<br><br>
+                <strong>2. Формат "Термопринтер (58x40мм):</strong><br>
+                • Идеально для печати на этикетках<br>
+                • Размер каждой наклейки 58x40 мм<br>
+                • Подходит для принтеров: Zebra, Argox, Godex, TSC<br><br>
                 
-                <strong>3. Приёмка товаров:</strong><br>
-                • Откройте основное приложение<br>
-                • Перейдите на вкладку "➕ Приёмка"<br>
-                • Сканируйте QR-код с наклейки<br>
-                • Укажите цену (если нужно)<br>
-                • Товар автоматически добавится в таблицу<br><br>
+                <strong>3. Формат "A4":</strong><br>
+                • 9 наклеек на листе (3x3)<br>
+                • Для обычного принтера<br>
+                • Используйте самоклеящуюся бумагу<br><br>
                 
-                <strong>4. Поиск товара:</strong><br>
-                • Сканируйте тот же QR-код<br>
-                • Приложение покажет всю информацию о товаре<br><br>
-                
-                <strong>💡 Совет:</strong> Используйте самоклеящуюся бумагу для наклеек или обычную бумагу + прозрачный скотч.
+                <strong>4. Формат "Наклейки (6 на лист):</strong><br>
+                • Для готовых листов наклеек A4 (6 шт)<br>
+                • Подходит для бумаги "Lomond", "Avery" и др.<br>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Контейнер для печати (скрыт, пока не нажмём печать) -->
+<div id="print-container" style="display: none;"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs2-fix/qrcode.min.js"></script>
 <script>
     let currentQRCodes = [];
+    let currentPrintMode = 'a4';
     
     function switchTab(tab) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -241,7 +274,12 @@ Mavic,5
         event.target.classList.add('active');
     }
     
-    // Получить префикс для модели
+    function setPrintMode(mode) {
+        currentPrintMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll(`.mode-btn[data-mode="${mode}"]`).forEach(btn => btn.classList.add('active'));
+    }
+    
     function getPrefix(model) {
         const prefixes = {
             'Mini 2': 'MINI2',
@@ -253,11 +291,20 @@ Mavic,5
         return prefixes[model] || model.toUpperCase().replace(/\s/g, '');
     }
     
-    // Сгенерировать QR-коды
+    function getArticlePrefix(model) {
+        const articles = {
+            'Mini 2': 'MN2',
+            'Mini 3': 'MN3',
+            'Air 2s': 'A2S',
+            'Mavic': 'MAV',
+            '3T': '3T'
+        };
+        return articles[model] || model.substring(0, 3).toUpperCase();
+    }
+    
     function generateQRCodes(model, quantity, price) {
         const prefix = getPrefix(model);
         const codes = [];
-        
         for (let i = 1; i <= quantity; i++) {
             const number = i.toString().padStart(3, '0');
             let qrText = `${prefix}-${number}`;
@@ -274,16 +321,263 @@ Mavic,5
         return codes;
     }
     
-    // Отобразить QR-коды
-    function displayQRCodes(codes) {
-        const output = document.getElementById('qr-output');
-        const printBtn = document.getElementById('print-btn');
-        output.innerHTML = '';
-        
-        if (codes.length === 0) {
-            printBtn.style.display = 'none';
+    async function generateQRImages(codes) {
+        const qrImages = [];
+        for (let i = 0; i < codes.length; i++) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const qr = new QRCode(canvas, {
+                text: codes[i].text,
+                width: 180,
+                height: 180,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            await new Promise(resolve => setTimeout(resolve, 10));
+            qrImages.push(canvas.toDataURL());
+        }
+        return qrImages;
+    }
+    
+    async function printQRCodes() {
+        if (currentQRCodes.length === 0) {
+            alert('Сначала сгенерируйте QR-коды');
             return;
         }
+        
+        const model = currentQRCodes[0].model;
+        const qrImages = await generateQRImages(currentQRCodes);
+        
+        let html = '';
+        
+        if (currentPrintMode === 'thermal') {
+            // Формат для термопринтера (58x40 мм)
+            html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>QR-коды для ${model} (термопринтер)</title>
+                    <style>
+                        @page {
+                            size: 58mm 40mm;
+                            margin: 0;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-family: Arial, sans-serif;
+                        }
+                        .label {
+                            width: 58mm;
+                            height: 40mm;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            page-break-after: always;
+                            box-sizing: border-box;
+                            padding: 2mm;
+                        }
+                        .label img {
+                            width: 28mm;
+                            height: 28mm;
+                            margin-bottom: 2mm;
+                        }
+                        .code {
+                            font-family: monospace;
+                            font-size: 10pt;
+                            font-weight: bold;
+                        }
+                        @media print {
+                            body {
+                                margin: 0;
+                                padding: 0;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+            `;
+            
+            currentQRCodes.forEach((code, idx) => {
+                html += `
+                    <div class="label">
+                        <img src="${qrImages[idx]}" alt="QR">
+                        <div class="code">${code.text}</div>
+                    </div>
+                `;
+            });
+            
+        } else if (currentPrintMode === 'sticker') {
+            // Формат для наклеек (6 на лист A4)
+            html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>QR-коды для ${model} (наклейки)</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 10mm;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-family: Arial, sans-serif;
+                        }
+                        .grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 15mm;
+                            page-break-after: avoid;
+                        }
+                        .label {
+                            text-align: center;
+                            border: 1px dashed #ccc;
+                            padding: 8mm;
+                            page-break-inside: avoid;
+                        }
+                        .label img {
+                            width: 60mm;
+                            height: 60mm;
+                        }
+                        .code {
+                            font-family: monospace;
+                            margin-top: 5mm;
+                            font-size: 12pt;
+                        }
+                        @media print {
+                            body {
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .grid {
+                                gap: 12mm;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+            `;
+            
+            // Разбиваем на страницы по 6 наклеек (3x2)
+            const perPage = 6;
+            for (let page = 0; page < Math.ceil(currentQRCodes.length / perPage); page++) {
+                const start = page * perPage;
+                const end = Math.min(start + perPage, currentQRCodes.length);
+                
+                html += `<div class="grid">`;
+                for (let i = start; i < end; i++) {
+                    html += `
+                        <div class="label">
+                            <img src="${qrImages[i]}" alt="QR">
+                            <div class="code">${currentQRCodes[i].text}</div>
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+                if (page < Math.ceil(currentQRCodes.length / perPage) - 1) {
+                    html += `<div style="page-break-after: always;"></div>`;
+                }
+            }
+            
+        } else {
+            // Формат A4 (9 на лист)
+            html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>QR-коды для ${model}</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 15mm;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-family: Arial, sans-serif;
+                        }
+                        .grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 12mm;
+                            page-break-after: avoid;
+                        }
+                        .label {
+                            text-align: center;
+                            border: 1px dashed #ccc;
+                            padding: 5mm;
+                            page-break-inside: avoid;
+                        }
+                        .label img {
+                            width: 50mm;
+                            height: 50mm;
+                        }
+                        .code {
+                            font-family: monospace;
+                            margin-top: 3mm;
+                            font-size: 10pt;
+                        }
+                        @media print {
+                            body {
+                                margin: 0;
+                                padding: 0;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+            `;
+            
+            const perPage = 9;
+            for (let page = 0; page < Math.ceil(currentQRCodes.length / perPage); page++) {
+                const start = page * perPage;
+                const end = Math.min(start + perPage, currentQRCodes.length);
+                
+                html += `<div class="grid">`;
+                for (let i = start; i < end; i++) {
+                    html += `
+                        <div class="label">
+                            <img src="${qrImages[i]}" alt="QR">
+                            <div class="code">${currentQRCodes[i].text}</div>
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+                if (page < Math.ceil(currentQRCodes.length / perPage) - 1) {
+                    html += `<div style="page-break-after: always;"></div>`;
+                }
+            }
+        }
+        
+        html += `
+                </body>
+                </html>
+            `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.print();
+    }
+    
+    function displayQRCodes(codes) {
+        const output = document.getElementById('qr-output');
+        const info = document.getElementById('info');
+        
+        if (!output) return;
+        
+        output.innerHTML = '';
+        currentQRCodes = codes;
+        
+        if (codes.length === 0) return;
         
         codes.forEach((code, index) => {
             const div = document.createElement('div');
@@ -301,7 +595,6 @@ Mavic,5
             div.appendChild(codeSpan);
             output.appendChild(div);
             
-            // Создаём QR-код
             new QRCode(document.getElementById(`qr-code-${index}`), {
                 text: code.text,
                 width: 120,
@@ -312,91 +605,27 @@ Mavic,5
             });
         });
         
-        printBtn.style.display = 'block';
-        
-        // Показываем информацию
-        const info = document.getElementById('info');
         info.style.display = 'block';
         info.innerHTML = `
             <strong>✅ Сгенерировано ${codes.length} QR-кодов для ${codes[0].model}</strong><br>
             📋 Формат: ${codes[0].prefix}-001, ${codes[0].prefix}-002 ...<br>
             💡 При сканировании будет создан артикул: ${getArticlePrefix(codes[0].model)}-001, ${getArticlePrefix(codes[0].model)}-002 ...<br>
-            🖨️ Нажмите "Распечатать" для печати наклеек
+            🖨️ Выберите формат печати и нажмите кнопку ниже
         `;
         
-        currentQRCodes = codes;
+        // Добавляем кнопку печати, если её нет
+        let printBtn = document.getElementById('print-action-btn');
+        if (!printBtn) {
+            printBtn = document.createElement('button');
+            printBtn.id = 'print-action-btn';
+            printBtn.className = 'thermal';
+            printBtn.style.marginTop = '15px';
+            printBtn.innerHTML = '🖨️ Печать наклеек';
+            printBtn.onclick = printQRCodes;
+            output.parentNode.appendChild(printBtn);
+        }
     }
     
-    function getArticlePrefix(model) {
-        const articles = {
-            'Mini 2': 'MN2',
-            'Mini 3': 'MN3',
-            'Air 2s': 'A2S',
-            'Mavic': 'MAV',
-            '3T': '3T'
-        };
-        return articles[model] || model.substring(0, 3).toUpperCase();
-    }
-    
-    // Печать
-    function printQRCodes() {
-        if (currentQRCodes.length === 0) return;
-        
-        const printWindow = window.open('', '_blank');
-        const model = currentQRCodes[0].model;
-        const prefix = currentQRCodes[0].prefix;
-        
-        let html = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>QR-коды для ${model}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    h1 { text-align: center; color: #1e3c72; }
-                    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px; }
-                    .item { text-align: center; border: 1px solid #ddd; padding: 10px; border-radius: 8px; page-break-inside: avoid; }
-                    .item img { width: 120px; height: 120px; }
-                    .code { font-family: monospace; margin-top: 8px; font-size: 12px; word-break: break-all; }
-                    @media print {
-                        .grid { grid-template-columns: repeat(4, 1fr); }
-                        .item { break-inside: avoid; }
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>QR-коды для ${model}</h1>
-                <p>Сгенерировано: ${currentQRCodes.length} наклеек | Дата: ${new Date().toLocaleDateString()}</p>
-                <div class="grid">
-        `;
-        
-        currentQRCodes.forEach((code, index) => {
-            // Используем тот же QR-код, что и на странице
-            const qrDataUrl = document.querySelector(`#qr-${index} img`)?.src;
-            html += `
-                <div class="item">
-                    ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR">` : `<div style="width:120px;height:120px;background:#f0f0f0;margin:0 auto;">QR</div>`}
-                    <div class="code">${code.text}</div>
-                </div>
-            `;
-        });
-        
-        html += `
-                </div>
-                <p style="margin-top: 30px; text-align: center; color: #666;">
-                    📱 При сканировании QR-кода приложение автоматически добавит товар в систему.
-                </p>
-            </body>
-            </html>
-        `;
-        
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.print();
-    }
-    
-    // Пакетная генерация
     function batchGenerate() {
         const text = document.getElementById('batch-list').value;
         const lines = text.split('\n');
@@ -429,31 +658,44 @@ Mavic,5
                 ✅ Всего сгенерировано: ${allCodes.length} наклеек
             </div>`;
         } else {
-            outputHtml = `<div class="error" style="background: #fee2e2; padding: 12px; border-radius: 12px; margin-top: 15px;">
+            outputHtml = `<div class="info" style="background: #fee2e2;">
                 ❌ Не удалось распознать список. Используйте формат: Модель,количество
             </div>`;
         }
         
-        document.getElementById('batch-output').innerHTML = outputHtml;
-        document.getElementById('print-btn').style.display = 'block';
+        const batchOutput = document.getElementById('batch-output');
+        if (batchOutput) batchOutput.innerHTML = outputHtml;
     }
     
     // Назначение обработчиков
-    document.getElementById('generate-btn').onclick = () => {
-        const model = document.getElementById('model').value;
-        const quantity = parseInt(document.getElementById('quantity').value);
-        const price = document.getElementById('price').value;
-        const codes = generateQRCodes(model, quantity, price);
-        displayQRCodes(codes);
-    };
+    const generateBtn = document.getElementById('generate-btn');
+    if (generateBtn) {
+        generateBtn.onclick = () => {
+            const model = document.getElementById('model').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const price = document.getElementById('price').value;
+            const codes = generateQRCodes(model, quantity, price);
+            displayQRCodes(codes);
+        };
+    }
     
-    document.getElementById('print-btn').onclick = printQRCodes;
-    document.getElementById('batch-generate-btn').onclick = batchGenerate;
+    const batchGenerateBtn = document.getElementById('batch-generate-btn');
+    if (batchGenerateBtn) {
+        batchGenerateBtn.onclick = batchGenerate;
+    }
     
     // Генерация примера при загрузке
     window.onload = () => {
         const codes = generateQRCodes('Mini 2', 10, null);
         displayQRCodes(codes);
+        
+        // Создаём контейнер для QR-кодов, если его нет
+        if (!document.getElementById('qr-output')) {
+            const outputDiv = document.createElement('div');
+            outputDiv.id = 'qr-output';
+            outputDiv.className = 'qr-grid';
+            document.querySelector('#generate-pane').appendChild(outputDiv);
+        }
     };
 </script>
 </body>
