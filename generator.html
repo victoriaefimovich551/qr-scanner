@@ -130,7 +130,9 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
         }
-        .preview-item canvas {
+        .preview-item img {
+            width: 80px;
+            height: 80px;
             display: block;
             margin: 0 auto;
         }
@@ -141,35 +143,13 @@
             margin-top: 5px;
             color: #475569;
         }
-        .print-container {
-            display: none;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #64748b;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .progress-fill {
-            width: 0%;
-            height: 100%;
-            background: #16a34a;
-            transition: width 0.3s;
-        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card">
         <h1>🖨️ Генератор QR-кодов для наклеек</h1>
-        <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших товаров.</p>
+        <p style="color: #64748b; margin-bottom: 20px;">Мгновенная генерация — QR-коды создаются на лету</p>
         
         <div class="tab-buttons">
             <div class="tab-btn active" onclick="switchTab('generate')">📱 Генерация QR</div>
@@ -201,11 +181,6 @@
             <button id="generate-btn">🎲 Сгенерировать QR-коды</button>
             <button id="print-btn" class="thermal" style="display: none;">🖨️ Печать наклеек</button>
             
-            <div id="progress" style="display: none;">
-                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
-                <div id="progress-text" style="font-size: 12px; text-align: center;">Генерация...</div>
-            </div>
-            
             <div id="preview" class="preview-grid"></div>
             <div id="info" class="info" style="display: none;"></div>
         </div>
@@ -213,33 +188,27 @@
         <div id="help-pane" class="tab-pane">
             <h2>📖 Инструкция</h2>
             <div class="info">
-                <strong>1. Создание наклеек:</strong><br>
-                • Выберите модель и количество<br>
-                • Нажмите "Сгенерировать QR-коды"<br>
-                • Нажмите "Печать наклеек"<br><br>
+                <strong>Мгновенная печать:</strong><br>
+                • QR-коды генерируются через API qrserver.com<br>
+                • При печати используется тот же API — без лишних преобразований<br>
+                • Страница печати открывается в новой вкладке (разрешите всплывающие окна)<br><br>
                 
-                <strong>2. Формат "Термопринтер (58x40мм):</strong><br>
+                <strong>Формат "Термопринтер (58x40мм):</strong><br>
                 • Размер каждой наклейки 58x40 мм<br>
                 • В диалоге печати выберите "Фактический размер"<br>
                 • Масштаб: 100%<br><br>
                 
-                <strong>3. Формат "A4":</strong><br>
+                <strong>Формат "A4":</strong><br>
                 • 9 наклеек на листе (3x3)<br>
-                • Для обычного принтера<br><br>
-                
-                <strong>4. Формат QR-кода:</strong><br>
-                • MINI2-001, MINI2-002 ... для Mini 2
+                • Для обычного принтера
             </div>
         </div>
     </div>
 </div>
 
-<div id="print-area" style="display: none;"></div>
-
 <script>
     let currentQRCodes = [];
     let currentPrintMode = 'a4';
-    let qrImages = [];
     
     function switchTab(tab) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -274,25 +243,11 @@
         return codes;
     }
     
-    async function generateQRImage(text, size) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
-        });
+    function getQRUrl(text, size) {
+        return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
     }
     
-    async function generateAllImages(codes, size, onProgress) {
-        const images = [];
-        for (let i = 0; i < codes.length; i++) {
-            const img = await generateQRImage(codes[i], size);
-            images.push(img);
-            if (onProgress) onProgress(i + 1, codes.length);
-        }
-        return images;
-    }
-    
-    async function generatePreview() {
+    function displayPreview() {
         const model = document.getElementById('model').value;
         const quantity = parseInt(document.getElementById('quantity').value);
         const codes = generateQRCodesList(model, quantity);
@@ -300,43 +255,28 @@
         const previewDiv = document.getElementById('preview');
         const infoDiv = document.getElementById('info');
         const printBtn = document.getElementById('print-btn');
-        const progressDiv = document.getElementById('progress');
-        const progressFill = document.getElementById('progress-fill');
-        const progressText = document.getElementById('progress-text');
         
         previewDiv.innerHTML = '';
-        progressDiv.style.display = 'block';
-        progressFill.style.width = '0%';
-        progressText.textContent = 'Генерация QR-кодов...';
         
-        const images = await generateAllImages(codes, 100, (done, total) => {
-            const percent = (done / total) * 100;
-            progressFill.style.width = percent + '%';
-            progressText.textContent = `Генерация: ${done} из ${total}`;
-        });
-        
-        progressDiv.style.display = 'none';
-        qrImages = images;
-        currentQRCodes = codes;
-        
-        codes.forEach((code, idx) => {
+        codes.forEach((code) => {
             const div = document.createElement('div');
             div.className = 'preview-item';
             
-            const canvas = document.createElement('canvas');
-            canvas.width = 100;
-            canvas.height = 100;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(images[idx], 0, 0, 100, 100);
+            const img = document.createElement('img');
+            img.src = getQRUrl(code, 100);
+            img.style.width = '80px';
+            img.style.height = '80px';
             
             const codeSpan = document.createElement('div');
             codeSpan.className = 'preview-code';
             codeSpan.textContent = code;
             
-            div.appendChild(canvas);
+            div.appendChild(img);
             div.appendChild(codeSpan);
             previewDiv.appendChild(div);
         });
+        
+        currentQRCodes = codes;
         
         infoDiv.style.display = 'block';
         infoDiv.innerHTML = `
@@ -348,7 +288,7 @@
         printBtn.style.display = 'block';
     }
     
-    async function printQRCodes() {
+    function printQRCodes() {
         if (currentQRCodes.length === 0) {
             alert('Сначала сгенерируйте QR-коды');
             return;
@@ -357,15 +297,6 @@
         const model = document.getElementById('model').value;
         const codes = currentQRCodes;
         const size = currentPrintMode === 'thermal' ? 280 : 500;
-        
-        // Показываем индикатор загрузки
-        const printBtn = document.getElementById('print-btn');
-        const originalText = printBtn.textContent;
-        printBtn.textContent = '⏳ Подготовка к печати...';
-        printBtn.disabled = true;
-        
-        // Генерируем большие изображения для печати
-        const printImages = await generateAllImages(codes, size, null);
         
         let html = '';
         
@@ -411,17 +342,10 @@
             </head>
             <body>`;
             
-            codes.forEach((code, idx) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(printImages[idx], 0, 0, size, size);
-                const imgData = canvas.toDataURL();
-                
+            codes.forEach(code => {
                 html += `
                     <div class="label">
-                        <img src="${imgData}" alt="QR">
+                        <img src="${getQRUrl(code, size)}" alt="QR">
                         <div class="code">${code}</div>
                     </div>
                 `;
@@ -474,16 +398,9 @@
                 
                 html += `<div class="grid">`;
                 for (let i = start; i < end; i++) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(printImages[i], 0, 0, size, size);
-                    const imgData = canvas.toDataURL();
-                    
                     html += `
                         <div class="label">
-                            <img src="${imgData}" alt="QR">
+                            <img src="${getQRUrl(codes[i], size)}" alt="QR">
                             <div class="code">${codes[i]}</div>
                         </div>
                     `;
@@ -497,35 +414,15 @@
         
         html += `</body></html>`;
         
-        // Создаём iframe для печати (не блокируется как всплывающее окно)
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-        
-        iframe.contentWindow.document.open();
-        iframe.contentWindow.document.write(html);
-        iframe.contentWindow.document.close();
-        
-        iframe.contentWindow.print();
-        
-        // Удаляем iframe после печати
-        setTimeout(() => {
-            document.body.removeChild(iframe);
-        }, 1000);
-        
-        printBtn.textContent = originalText;
-        printBtn.disabled = false;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(html);
+        printWindow.document.close();
     }
     
-    document.getElementById('generate-btn').onclick = generatePreview;
+    document.getElementById('generate-btn').onclick = displayPreview;
     document.getElementById('print-btn').onclick = printQRCodes;
     
-    window.onload = () => {
-        generatePreview();
-    };
+    window.onload = displayPreview;
 </script>
 </body>
 </html>
