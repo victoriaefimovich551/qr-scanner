@@ -47,7 +47,10 @@
         .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
         .install-banner button { background: #1e3c72; width: auto; padding: 8px 20px; margin: 5px 0 0; font-size: 14px; }
-        .share-btn { background: #64748b; width: auto; padding: 8px 20px; margin-top: 10px; font-size: 14px; border: none; border-radius: 30px; color: white; cursor: pointer; }
+        .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .action-btn { flex: 1; background: #64748b; width: auto; padding: 10px; margin: 0; font-size: 14px; text-align: center; }
+        .delivery-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .delivery-modal-content { background: white; border-radius: 20px; padding: 20px; max-width: 90%; max-height: 80%; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -63,11 +66,7 @@
         </div>
         <div id="ios-install" style="display: none;">
             📱 Чтобы установить приложение на iPhone:<br>
-            <span style="font-size: 13px; display: inline-block; margin: 5px 0;">
-                1️⃣ Нажмите кнопку «Поделиться» 📤<br>
-                2️⃣ Выберите «На экран «Домой»» ➕<br>
-                3️⃣ Нажмите «Добавить» ✅
-            </span>
+            <span style="font-size: 13px;">1️⃣ Поделиться → 2️⃣ На экран «Домой» → 3️⃣ Добавить ✅</span>
         </div>
     </div>
     
@@ -95,16 +94,13 @@
     
     <div id="catalog-panel" class="panel">
         <h2>📦 Каталог</h2>
-        
         <div class="filter-group">
             <input type="text" id="search-name" class="filter-input" placeholder="🔍 Поиск по названию...">
-            
             <div class="filter-row">
                 <input type="text" id="filter-category" placeholder="📂 Категория">
                 <input type="number" id="price-min" placeholder="💰 Цена от">
                 <input type="number" id="price-max" placeholder="💰 Цена до">
             </div>
-            
             <div class="filter-row">
                 <select id="sort-by">
                     <option value="name_asc">📋 По названию (А-Я)</option>
@@ -115,23 +111,31 @@
                 <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
             </div>
         </div>
-        
         <div id="catalog-content" class="loading">⏳ Загрузка каталога...</div>
+    </div>
+</div>
+
+<!-- Модальное окно с доставкой -->
+<div id="delivery-modal" class="delivery-modal">
+    <div class="delivery-modal-content">
+        <h3>📦 Информация о доставке</h3>
+        <div id="delivery-info"></div>
+        <button onclick="closeDeliveryModal()" style="margin-top: 15px;">Закрыть</button>
     </div>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7KuXQxAtTJhKDS_gr8f6gxAwgIjUAtoeAuUJ9o7hXh8oArbQKLHONAP2gQzCNaaah';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLWnnmmNwiHJJPbSSdbDJHFC_BDohltDeLzrkj-Pb-MU3Ad30AYimuNDZ-zU39taNWgA/exec';
     
     let html5QrCode = null;
     let isScanning = false;
     let allProducts = [];
+    let currentProduct = null;
     
-    // ========== PWA ==========
+    // PWA
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isAndroid = /Android/.test(navigator.userAgent);
-    
     const androidBanner = document.getElementById('android-install');
     const iosBanner = document.getElementById('ios-install');
     const installBanner = document.getElementById('install-banner');
@@ -139,34 +143,23 @@
     if (isAndroid) {
         androidBanner.style.display = 'block';
         installBanner.style.display = 'block';
-        
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
         });
-        
-        const installBtn = document.getElementById('install-btn');
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) {
-                    alert('Установка доступна через браузер Chrome');
-                    return;
-                }
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installBanner.style.display = 'none';
-                }
-                deferredPrompt = null;
-            });
-        }
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (!deferredPrompt) { alert('Установка через Chrome'); return; }
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') installBanner.style.display = 'none';
+            deferredPrompt = null;
+        });
     } else if (isIOS) {
         iosBanner.style.display = 'block';
         installBanner.style.display = 'block';
     }
     
-    // ========== ОБРАБОТКА ССЫЛКИ ==========
     async function handleUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const serial = urlParams.get('serial');
@@ -180,7 +173,6 @@
         }
     }
     
-    // ========== ВКЛАДКИ ==========
     function switchTab(tab) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -192,7 +184,6 @@
         }
     }
     
-    // ========== СКАНЕР ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
@@ -221,13 +212,13 @@
         resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
         try {
             const product = await findProductBySerial(qrData);
+            currentProduct = product;
             displayProduct(product, 'scan-result');
         } catch(e) {
             resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
         }
     }
     
-    // ========== ПОИСК ==========
     async function searchBySerial() {
         const serial = document.getElementById('serial-input').value.trim();
         const resultDiv = document.getElementById('search-result');
@@ -238,6 +229,7 @@
         resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
         try {
             const product = await findProductBySerial(serial);
+            currentProduct = product;
             displayProduct(product, 'search-result');
         } catch(e) {
             resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
@@ -251,7 +243,56 @@
         return data;
     }
     
-    // ========== ПОДЕЛИТЬСЯ ==========
+    // ========== ОТДЕЛЬНАЯ КНОПКА ДОСТАВКИ ==========
+    function showDeliveryInfo() {
+        if (!currentProduct) {
+            alert('Сначала найдите товар');
+            return;
+        }
+        
+        const modal = document.getElementById('delivery-modal');
+        const deliveryInfo = document.getElementById('delivery-info');
+        
+        let statusClass = '';
+        let statusText = currentProduct['Статус доставки'] || '—';
+        switch(currentProduct['Статус доставки']) {
+            case 'Доставлен': statusClass = 'status-delivered'; break;
+            case 'В пути': statusClass = 'status-transit'; break;
+            case 'Возврат': statusClass = 'status-return'; break;
+        }
+        
+        let html = `<div class="product-card" style="margin-top: 0;">
+            <h3>🚁 ${escapeHtml(currentProduct['Название'] || 'Без названия')}</h3>
+            <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(currentProduct['Серийный номер'] || '—')}</div>`;
+        
+        if (currentProduct['Трек номер']) {
+            html += `<div class="delivery-block">
+                <strong>🚚 ТК:</strong> ${escapeHtml(currentProduct['Транспортная компания'] || '—')}<br>
+                <strong>📬 Трек:</strong> ${currentProduct['Ссылка отслеживания'] 
+                    ? `<a href="${escapeHtml(currentProduct['Ссылка отслеживания'])}" target="_blank">${escapeHtml(currentProduct['Трек номер'])}</a>` 
+                    : escapeHtml(currentProduct['Трек номер'])}<br>
+                <strong>📅 Отправлено:</strong> ${escapeHtml(currentProduct['Дата отправки'] || '—')}<br>
+                <strong>📍 Статус:</strong> <span class="${statusClass}">${statusText}</span>
+            </div>`;
+        } else if (currentProduct['Транспортная компания']) {
+            html += `<div class="delivery-block">
+                <strong>🚚 ТК:</strong> ${escapeHtml(currentProduct['Транспортная компания'] || '—')}<br>
+                <strong>📅 Отправлено:</strong> ${escapeHtml(currentProduct['Дата отправки'] || '—')}<br>
+                <strong>📍 Статус:</strong> ${escapeHtml(currentProduct['Статус доставки'] || 'Ожидает отправки')}
+            </div>`;
+        } else {
+            html += `<div class="delivery-block">📭 Информация о доставке отсутствует</div>`;
+        }
+        
+        html += `</div>`;
+        deliveryInfo.innerHTML = html;
+        modal.style.display = 'flex';
+    }
+    
+    function closeDeliveryModal() {
+        document.getElementById('delivery-modal').style.display = 'none';
+    }
+    
     async function shareProductFromCard(serialNumber) {
         try {
             const product = await findProductBySerial(serialNumber);
@@ -260,63 +301,44 @@
 📝 Описание: ${product['Описание'] || '—'}
 💰 Затраты: ${product['Затраты'] || '—'} ₽
 🛒 Закупка: ${product['Закупка'] || '—'}`;
-            
             const productUrl = `${window.location.origin}${window.location.pathname}?serial=${encodeURIComponent(serialNumber)}`;
             
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: `Товар: ${product['Название'] || 'Без названия'}`,
-                        text: shareText,
-                        url: productUrl
-                    });
+                    await navigator.share({ title: `Товар: ${product['Название']}`, text: shareText, url: productUrl });
                 } catch (err) {
                     if (err.name !== 'AbortError') {
                         await copyToClipboard(shareText + '\n\n🔗 ' + productUrl);
-                        alert('📋 Информация и ссылка скопированы в буфер обмена');
+                        alert('📋 Информация скопирована');
                     }
                 }
             } else {
                 await copyToClipboard(shareText + '\n\n🔗 ' + productUrl);
-                alert('📋 Информация и ссылка скопированы в буфер обмена');
+                alert('📋 Информация скопирована');
             }
         } catch (error) {
-            console.error('Ошибка:', error);
             alert('❌ Не удалось поделиться');
         }
     }
     
     async function copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-        } catch (err) {
-            console.error('Ошибка копирования:', err);
-        }
+        try { await navigator.clipboard.writeText(text); } catch (err) { console.error(err); }
     }
     
-    // ========== ОТОБРАЖЕНИЕ ТОВАРА ==========
     function displayProduct(p, containerId) {
         const container = document.getElementById(containerId);
         let затраты = p['Затраты'];
-        if (затраты && !isNaN(parseFloat(затраты))) {
-            затраты = `${parseFloat(затраты).toLocaleString('ru-RU')} ₽`;
-        }
+        if (затраты && !isNaN(parseFloat(затраты))) затраты = `${parseFloat(затраты).toLocaleString('ru-RU')} ₽`;
         let price = p['Цена'];
-        if (price && !isNaN(parseFloat(price))) {
-            price = `${parseFloat(price).toLocaleString('ru-RU')} ₽`;
-        }
+        if (price && !isNaN(parseFloat(price))) price = `${parseFloat(price).toLocaleString('ru-RU')} ₽`;
         
         let html = `<div class="product-card">
             <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
             <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
             <div class="product-detail"><strong>📝 Описание:</strong> ${escapeHtml(p['Описание'] || '—')}</div>`;
         
-        if (p['Категория']) {
-            html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категория'])}</div>`;
-        }
-        if (price) {
-            html += `<div class="product-detail"><strong>💰 Цена:</strong> ${price}</div>`;
-        }
+        if (p['Категория']) html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категория'])}</div>`;
+        if (price) html += `<div class="product-detail"><strong>💰 Цена:</strong> ${price}</div>`;
         
         html += `<div class="product-detail"><strong>💰 Затраты:</strong> ${затраты || '—'}</div>
             <div class="product-detail"><strong>🛒 Закупка:</strong> ${escapeHtml(p['Закупка'] || '—')}</div>`;
@@ -327,40 +349,14 @@
             html += `<div class="product-detail"><strong>🔗 Авито:</strong> —</div>`;
         }
         
-        // ========== БЛОК ДОСТАВКИ ==========
-        if (p['Трек номер']) {
-            let statusClass = '';
-            let statusText = escapeHtml(p['Статус доставки'] || '—');
-            switch(p['Статус доставки']) {
-                case 'Доставлен': statusClass = 'status-delivered'; break;
-                case 'В пути': statusClass = 'status-transit'; break;
-                case 'Возврат': statusClass = 'status-return'; break;
-            }
-            
-            html += `<div class="delivery-block">
-                <strong>📦 ДОСТАВКА</strong><br>
-                <strong>🚚 ТК:</strong> ${escapeHtml(p['Транспортная компания'] || '—')}<br>
-                <strong>📬 Трек:</strong> ${p['Ссылка отслеживания'] 
-                    ? `<a href="${escapeHtml(p['Ссылка отслеживания'])}" target="_blank">${escapeHtml(p['Трек номер'])}</a>` 
-                    : escapeHtml(p['Трек номер'])}<br>
-                <strong>📅 Отправлено:</strong> ${escapeHtml(p['Дата отправки'] || '—')}<br>
-                <strong>📍 Статус:</strong> <span class="${statusClass}">${statusText}</span>
-            </div>`;
-        } else if (p['Транспортная компания']) {
-            html += `<div class="delivery-block">
-                <strong>📦 ДОСТАВКА</strong><br>
-                <strong>🚚 ТК:</strong> ${escapeHtml(p['Транспортная компания'] || '—')}<br>
-                <strong>📅 Отправлено:</strong> ${escapeHtml(p['Дата отправки'] || '—')}<br>
-                <strong>📍 Статус:</strong> ${escapeHtml(p['Статус доставки'] || 'Ожидает отправки')}
-            </div>`;
-        }
-        
         if (p['QR_Code']) {
             html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
         }
         
-        html += `<div style="margin-top: 15px; text-align: center;">
-            <button onclick="shareProductFromCard('${escapeHtml(p['Серийный номер'])}')" style="background: #64748b; width: auto; padding: 8px 20px; margin: 0; border: none; border-radius: 30px; color: white; cursor: pointer;">📤 Поделиться</button>
+        // Кнопки действий
+        html += `<div class="action-buttons">
+            <button class="action-btn" onclick="showDeliveryInfo()">📦 Доставка</button>
+            <button class="action-btn" onclick="shareProductFromCard('${escapeHtml(p['Серийный номер'])}')">📤 Поделиться</button>
         </div>`;
         
         html += `</div>`;
@@ -372,10 +368,9 @@
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
     
-    // ========== ФИЛЬТРЫ ==========
+    // Фильтры
     function applyFilters() {
         if (!allProducts.length) return;
-        
         const searchTerm = document.getElementById('search-name').value.toLowerCase().trim();
         const categoryFilter = document.getElementById('filter-category').value.toLowerCase().trim();
         const priceMin = parseFloat(document.getElementById('price-min').value);
@@ -383,14 +378,8 @@
         const sortBy = document.getElementById('sort-by').value;
         
         let filtered = allProducts.filter(product => {
-            if (searchTerm) {
-                const name = (product['Название'] || '').toLowerCase();
-                if (!name.includes(searchTerm)) return false;
-            }
-            if (categoryFilter) {
-                const category = (product['Категория'] || '').toLowerCase();
-                if (!category.includes(categoryFilter)) return false;
-            }
+            if (searchTerm && !(product['Название'] || '').toLowerCase().includes(searchTerm)) return false;
+            if (categoryFilter && !(product['Категория'] || '').toLowerCase().includes(categoryFilter)) return false;
             const price = parseFloat(product['Цена']) || 0;
             if (!isNaN(priceMin) && price < priceMin) return false;
             if (!isNaN(priceMax) && price > priceMax) return false;
@@ -406,27 +395,21 @@
                 default: return 0;
             }
         });
-        
         renderCatalog(filtered);
     }
     
     function renderCatalog(products) {
         const container = document.getElementById('catalog-content');
-        if (products.length === 0) {
-            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-            return;
-        }
+        if (products.length === 0) { container.innerHTML = '<div class="error">📭 Товары не найдены.</div>'; return; }
         let html = '<div class="products-grid">';
         products.forEach(product => {
             const price = product['Цена'] ? `${parseFloat(product['Цена']).toLocaleString('ru-RU')} ₽` : '—';
-            html += `
-                <div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Серийный номер'])}')">
-                    <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
-                    <small>📇 ${escapeHtml(product['Серийный номер'] || '—')}</small><br>
-                    <small>💰 ${price}</small>
-                    ${product['Категория'] ? `<br><small>📂 ${escapeHtml(product['Категория'])}</small>` : ''}
-                </div>
-            `;
+            html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Серийный номер'])}')">
+                <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
+                <small>📇 ${escapeHtml(product['Серийный номер'] || '—')}</small><br>
+                <small>💰 ${price}</small>
+                ${product['Категория'] ? `<br><small>📂 ${escapeHtml(product['Категория'])}</small>` : ''}
+            </div>`;
         });
         html += '</div>';
         container.innerHTML = html;
@@ -456,14 +439,9 @@
         try {
             const products = await getAllProducts();
             allProducts = products;
-            if (!products.length) {
-                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-                return;
-            }
+            if (!products.length) { container.innerHTML = '<div class="error">📭 Товары не найдены.</div>'; return; }
             applyFilters();
-        } catch (error) {
-            container.innerHTML = `<div class="error">❌ ${error.message}</div>`;
-        }
+        } catch (error) { container.innerHTML = `<div class="error">❌ ${error.message}</div>`; }
     }
     
     async function getAllProducts() {
@@ -471,7 +449,6 @@
         return await res.json();
     }
     
-    // ========== ОБРАБОТЧИКИ ==========
     document.getElementById('start-scan-btn').onclick = startScanner;
     document.getElementById('search-name').addEventListener('input', applyFilters);
     document.getElementById('filter-category').addEventListener('input', applyFilters);
@@ -480,10 +457,7 @@
     document.getElementById('sort-by').addEventListener('change', applyFilters);
     document.getElementById('reset-filters').addEventListener('click', resetFilters);
     
-    window.onload = function() {
-        loadCatalog();
-        handleUrlParams();
-    };
+    window.onload = function() { loadCatalog(); handleUrlParams(); };
 </script>
 </body>
 </html>
