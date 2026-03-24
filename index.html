@@ -41,7 +41,7 @@
         .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .filter-row input, .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
         .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
-        .share-btn { background: #64748b; width: auto; padding: 8px 16px; margin-top: 10px; font-size: 14px; display: inline-block; }
+        .share-btn { background: #64748b; width: auto; padding: 8px 20px; margin-top: 10px; font-size: 14px; display: inline-block; border: none; border-radius: 30px; color: white; cursor: pointer; }
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
         .install-banner button { background: #1e3c72; width: auto; padding: 8px 20px; margin: 5px 0 0; font-size: 14px; }
     </style>
@@ -53,7 +53,6 @@
         <p>Система учета дронов</p>
     </div>
     
-    <!-- Баннер для установки PWA -->
     <div id="install-banner" class="install-banner">
         📲 Установите приложение на телефон<br>
         <button id="install-btn">Установить</button>
@@ -65,7 +64,6 @@
         <button class="tab-btn" onclick="switchTab('catalog')">📦 Каталог</button>
     </div>
     
-    <!-- Панель сканера -->
     <div id="scan-panel" class="panel active">
         <h2>📷 Наведите на QR-код</h2>
         <div id="reader"></div>
@@ -73,7 +71,6 @@
         <button id="start-scan-btn">▶ Запустить камеру</button>
     </div>
     
-    <!-- Панель поиска -->
     <div id="search-panel" class="panel">
         <h2>🔍 Поиск по серийному номеру</h2>
         <div class="search-box">
@@ -83,7 +80,6 @@
         <div id="search-result"></div>
     </div>
     
-    <!-- Панель каталога с фильтрами -->
     <div id="catalog-panel" class="panel">
         <h2>📦 Каталог дронов</h2>
         
@@ -113,15 +109,14 @@
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    // ========== НАСТРОЙКИ ==========
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZeRvOc6oT7-jZ7YjpxpoK3l1UWAEcvKluoy1qAgo9sE0lU-7604yx7-2Ky9GD8hKU7g/exec';
     
     let html5QrCode = null;
     let isScanning = false;
     let allProducts = [];
-    let deferredPrompt = null; // для PWA
+    let deferredPrompt = null;
     
-    // ========== PWA: установка на телефон ==========
+    // ========== PWA ==========
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -138,7 +133,7 @@
         deferredPrompt = null;
     });
     
-    // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
+    // ========== ВКЛАДКИ ==========
     function switchTab(tab) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -150,7 +145,7 @@
         }
     }
     
-    // ========== СКАНЕР QR ==========
+    // ========== СКАНЕР ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
@@ -185,7 +180,7 @@
         }
     }
     
-    // ========== ПОИСК ПО СЕРИЙНОМУ НОМЕРУ ==========
+    // ========== ПОИСК ==========
     async function searchBySerial() {
         const serial = document.getElementById('serial-input').value.trim();
         const resultDiv = document.getElementById('search-result');
@@ -209,35 +204,47 @@
         return data;
     }
     
-    // ========== ФУНКЦИЯ "ПОДЕЛИТЬСЯ" ==========
-    async function shareProduct(product) {
-        const shareData = {
-            title: `Дрон: ${product['Название'] || 'Без названия'}`,
-            text: `Серийный номер: ${product['Серийный номер']}\nОписание: ${product['Описание'] || '—'}\nЗакупка: ${product['Закупка'] || '—'}\nАвито: ${product['Ссылка на объявление Авито'] || '—'}`,
-            url: window.location.href
-        };
-        
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                console.log('Поделиться не удалось', err);
-                // Если не удалось поделиться, копируем в буфер обмена
-                await copyToClipboard(shareData.text);
-                alert('Информация скопирована в буфер обмена');
-            }
-        } else {
-            // Если Web Share API не поддерживается, копируем в буфер
-            await copyToClipboard(shareData.text);
-            alert('Информация скопирована в буфер обмена');
-        }
-    }
-    
+    // ========== КОПИРОВАНИЕ В БУФЕР ==========
     async function copyToClipboard(text) {
         try {
             await navigator.clipboard.writeText(text);
         } catch (err) {
             console.error('Ошибка копирования:', err);
+        }
+    }
+    
+    // ========== ПОДЕЛИТЬСЯ (ИСПРАВЛЕНО) ==========
+    async function shareProductFromCard(serialNumber) {
+        try {
+            const product = await findProductBySerial(serialNumber);
+            
+            const shareText = `🚁 Дрон: ${product['Название'] || 'Без названия'}
+📇 Серийный номер: ${product['Серийный номер'] || '—'}
+📝 Описание: ${product['Описание'] || '—'}
+💰 Затраты: ${product['Затраты'] || '—'} ₽
+🛒 Закупка: ${product['Закупка'] || '—'}
+🔗 Авито: ${product['Ссылка на объявление Авито'] || '—'}`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Дрон: ${product['Название'] || 'Без названия'}`,
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        await copyToClipboard(shareText);
+                        alert('📋 Информация скопирована в буфер обмена');
+                    }
+                }
+            } else {
+                await copyToClipboard(shareText);
+                alert('📋 Информация скопирована в буфер обмена');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('❌ Не удалось поделиться');
         }
     }
     
@@ -259,7 +266,7 @@
             <div class="product-detail"><strong>📝 Описание:</strong> ${escapeHtml(p['Описание'] || '—')}</div>`;
         
         if (p['Категория']) {
-            html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категорија'])}</div>`;
+            html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категория'])}</div>`;
         }
         if (price) {
             html += `<div class="product-detail"><strong>💰 Цена:</strong> ${price}</div>`;
@@ -280,7 +287,7 @@
         
         // Кнопка "Поделиться"
         html += `<div style="margin-top: 15px; text-align: center;">
-            <button onclick="shareProduct(${JSON.stringify(p).replace(/</g, '\\u003c')})" style="background: #64748b; width: auto; padding: 8px 20px; margin: 0;">📤 Поделиться</button>
+            <button onclick="shareProductFromCard('${escapeHtml(p['Серийный номер'])}')" style="background: #64748b; width: auto; padding: 8px 20px; margin: 0; border: none; border-radius: 30px; color: white; cursor: pointer;">📤 Поделиться</button>
         </div>`;
         
         html += `</div>`;
@@ -292,7 +299,7 @@
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
     
-    // ========== ФИЛЬТРАЦИЯ КАТАЛОГА ==========
+    // ========== ФИЛЬТРЫ ==========
     function applyFilters() {
         if (!allProducts.length) return;
         
@@ -391,7 +398,7 @@
         return await res.json();
     }
     
-    // ========== НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ ==========
+    // ========== ОБРАБОТЧИКИ ==========
     document.getElementById('start-scan-btn').onclick = startScanner;
     document.getElementById('search-name').addEventListener('input', applyFilters);
     document.getElementById('filter-category').addEventListener('input', applyFilters);
