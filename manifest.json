@@ -1,6 +1,6 @@
 {
   "name": "QR Сканер",
-  "short_name": "Scanner QR",
+  "short_name": "QR Scanner",
   "description": "Система учета с QR-сканированием",
   "start_url": "/qr-scanner/",
   "scope": "/qr-scanner/",
