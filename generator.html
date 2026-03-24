@@ -130,6 +130,11 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
         }
+        .preview-item canvas {
+            display: block;
+            margin: 0 auto;
+            background: white;
+        }
         .preview-code {
             font-family: monospace;
             font-size: 11px;
@@ -160,10 +165,9 @@
             <button class="tab-btn" onclick="switchTab('help')">❓ Инструкция</button>
         </div>
         
-        <!-- Вкладка генерации -->
         <div id="generate-pane" class="tab-pane active">
             <div class="form-group">
-                <label>🚁 Модель товара/label>
+                <label>🚁 Модель товара</label>
                 <select id="model">
                     <option value="Mini 2" data-prefix="MINI2">Mini 2</option>
                     <option value="Mini 3" data-prefix="MINI3">Mini 3</option>
@@ -190,30 +194,25 @@
             <div id="info" class="info" style="display: none;"></div>
         </div>
         
-        <!-- Вкладка инструкции -->
         <div id="help-pane" class="tab-pane">
             <h2>📖 Инструкция</h2>
             <div class="info">
                 <strong>1. Создание наклеек:</strong><br>
                 • Выберите модель и количество<br>
-                • Выберите формат печати<br>
                 • Нажмите "Сгенерировать QR-коды"<br>
                 • Нажмите "Печать наклеек"<br><br>
                 
                 <strong>2. Формат "Термопринтер (58x40мм):</strong><br>
-                • Идеально для печати на этикетках<br>
                 • Размер каждой наклейки 58x40 мм<br>
                 • Подходит для принтеров: Zebra, Argox, TSC<br><br>
                 
                 <strong>3. Формат "A4":</strong><br>
                 • 9 наклеек на листе (3x3)<br>
-                • Для обычного принтера<br>
-                • Используйте самоклеящуюся бумагу<br><br>
+                • Для обычного принтера<br><br>
                 
                 <strong>4. Формат QR-кода:</strong><br>
                 • MINI2-001, MINI2-002 ... для Mini 2<br>
-                • AIR2S-001, AIR2S-002 ... для Air 2s<br>
-                • MAVIC-001, MAVIC-002 ... для Mavic<br>
+                • AIR2S-001, AIR2S-002 ... для Air 2s
             </div>
         </div>
     </div>
@@ -222,6 +221,7 @@
 <script>
     let currentQRCodes = [];
     let currentPrintMode = 'a4';
+    let qrCanvasList = [];
     
     function switchTab(tab) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -261,16 +261,44 @@
         return codes;
     }
     
-    function generateQRDataURL(text, size = 150) {
-        // Используем Google Charts API для генерации QR-кода
-        const encoded = encodeURIComponent(text);
-        return `https://chart.googleapis.com/chart?chs=${size}x${size}&cht=qr&chl=${encoded}&choe=UTF-8`;
+    // Создание QR-кода с помощью QRCode.js
+    function createQRCodeCanvas(text, size, callback) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        
+        // Используем API qrserver.com для генерации
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+            canvas.getContext('2d').drawImage(img, 0, 0, size, size);
+            callback(canvas);
+        };
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
     }
     
-    function previewQRCodes(codes) {
+    async function generateAllQRCodes(codes, size = 150) {
+        const canvases = [];
+        for (let i = 0; i < codes.length; i++) {
+            await new Promise((resolve) => {
+                createQRCodeCanvas(codes[i].text, size, (canvas) => {
+                    canvases.push(canvas);
+                    resolve();
+                });
+            });
+        }
+        return canvases;
+    }
+    
+    async function previewQRCodes(codes) {
         const previewDiv = document.getElementById('preview');
         const infoDiv = document.getElementById('info');
         const printBtn = document.getElementById('print-btn');
+        
+        previewDiv.innerHTML = '<div style="text-align:center; padding:20px;">⏳ Генерация QR-кодов...</div>';
+        
+        const canvases = await generateAllQRCodes(codes, 100);
+        qrCanvasList = canvases;
         
         previewDiv.innerHTML = '';
         
@@ -278,18 +306,17 @@
             const div = document.createElement('div');
             div.className = 'preview-item';
             
-            const img = document.createElement('img');
-            img.src = generateQRDataURL(code.text, 100);
-            img.style.width = '100px';
-            img.style.height = '100px';
-            img.style.margin = '0 auto';
-            img.style.display = 'block';
+            const canvas = canvases[idx];
+            canvas.style.width = '100px';
+            canvas.style.height = '100px';
+            canvas.style.display = 'block';
+            canvas.style.margin = '0 auto';
             
             const codeSpan = document.createElement('div');
             codeSpan.className = 'preview-code';
             codeSpan.textContent = code.text;
             
-            div.appendChild(img);
+            div.appendChild(canvas);
             div.appendChild(codeSpan);
             previewDiv.appendChild(div);
         });
@@ -305,7 +332,7 @@
         currentQRCodes = codes;
     }
     
-    function printQRCodes() {
+    async function printQRCodes() {
         if (currentQRCodes.length === 0) {
             alert('Сначала сгенерируйте QR-коды');
             return;
@@ -314,10 +341,13 @@
         const model = currentQRCodes[0].model;
         const codes = currentQRCodes;
         
+        // Генерируем большие QR-коды для печати
+        const size = currentPrintMode === 'thermal' ? 280 : 550;
+        const printCanvases = await generateAllQRCodes(codes, size);
+        
         let html = '';
         
         if (currentPrintMode === 'thermal') {
-            // Формат для термопринтера (58x40 мм)
             html = `<!DOCTYPE html>
             <html>
             <head>
@@ -359,17 +389,18 @@
             </head>
             <body>`;
             
-            codes.forEach(code => {
+            codes.forEach((code, idx) => {
+                const canvas = printCanvases[idx];
+                const imgData = canvas.toDataURL();
                 html += `
                     <div class="label">
-                        <img src="${generateQRDataURL(code.text, 280)}" alt="QR">
+                        <img src="${imgData}" alt="QR">
                         <div class="code">${code.text}</div>
                     </div>
                 `;
             });
             
         } else {
-            // Формат A4 (9 на лист)
             html = `<!DOCTYPE html>
             <html>
             <head>
@@ -416,9 +447,11 @@
                 
                 html += `<div class="grid">`;
                 for (let i = start; i < end; i++) {
+                    const canvas = printCanvases[i];
+                    const imgData = canvas.toDataURL();
                     html += `
                         <div class="label">
-                            <img src="${generateQRDataURL(codes[i].text, 550)}" alt="QR">
+                            <img src="${imgData}" alt="QR">
                             <div class="code">${codes[i].text}</div>
                         </div>
                     `;
@@ -438,20 +471,18 @@
         printWindow.print();
     }
     
-    // Назначение обработчиков
-    document.getElementById('generate-btn').onclick = () => {
+    document.getElementById('generate-btn').onclick = async () => {
         const model = document.getElementById('model').value;
         const quantity = parseInt(document.getElementById('quantity').value);
         const codes = generateQRCodes(model, quantity);
-        previewQRCodes(codes);
+        await previewQRCodes(codes);
     };
     
     document.getElementById('print-btn').onclick = printQRCodes;
     
-    // Генерация примера при загрузке
-    window.onload = () => {
+    window.onload = async () => {
         const codes = generateQRCodes('Mini 2', 10);
-        previewQRCodes(codes);
+        await previewQRCodes(codes);
     };
 </script>
 </body>
