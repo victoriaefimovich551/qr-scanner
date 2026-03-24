@@ -58,12 +58,6 @@
         button.thermal {
             background: #16a34a;
         }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
         .info {
             background: #eef2ff;
             padding: 12px;
@@ -83,6 +77,9 @@
             color: #1e3c72;
             margin: 0;
             padding: 12px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 30px;
         }
         .tab-btn.active {
             background: #1e3c72;
@@ -107,6 +104,9 @@
             padding: 10px;
             margin: 0;
             font-size: 14px;
+            cursor: pointer;
+            border-radius: 30px;
+            text-align: center;
         }
         .mode-btn.active {
             background: #1e3c72;
@@ -114,8 +114,8 @@
         }
         .preview-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
             margin-top: 20px;
             max-height: 400px;
             overflow-y: auto;
@@ -125,7 +125,7 @@
         }
         .preview-item {
             text-align: center;
-            padding: 10px;
+            padding: 8px;
             background: white;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
@@ -133,62 +133,78 @@
         .preview-item canvas {
             display: block;
             margin: 0 auto;
-            background: white;
         }
         .preview-code {
             font-family: monospace;
-            font-size: 11px;
+            font-size: 10px;
             word-break: break-all;
             margin-top: 5px;
             color: #475569;
         }
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
-            }
-            .no-print {
-                display: none !important;
-            }
+        .print-container {
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #16a34a;
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
-<div class="container no-print">
+<div class="container">
     <div class="card">
         <h1>🖨️ Генератор QR-кодов для наклеек</h1>
         <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших товаров.</p>
         
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('generate')">📱 Генерация QR</button>
-            <button class="tab-btn" onclick="switchTab('help')">❓ Инструкция</button>
+            <div class="tab-btn active" onclick="switchTab('generate')">📱 Генерация QR</div>
+            <div class="tab-btn" onclick="switchTab('help')">❓ Инструкция</div>
         </div>
         
         <div id="generate-pane" class="tab-pane active">
             <div class="form-group">
                 <label>🚁 Модель товара</label>
                 <select id="model">
-                    <option value="Mini 2" data-prefix="MINI2">Mini 2</option>
-                    <option value="Mini 3" data-prefix="MINI3">Mini 3</option>
-                    <option value="Air 2s" data-prefix="AIR2S">Air 2s</option>
-                    <option value="Mavic" data-prefix="MAVIC">Mavic</option>
-                    <option value="3T" data-prefix="3T">3T</option>
+                    <option value="Mini 2">Mini 2 → MINI2-XXX</option>
+                    <option value="Mini 3">Mini 3 → MINI3-XXX</option>
+                    <option value="Air 2s">Air 2s → AIR2S-XXX</option>
+                    <option value="Mavic">Mavic → MAVIC-XXX</option>
+                    <option value="3T">3T → 3T-XXX</option>
                 </select>
             </div>
             
             <div class="form-group">
                 <label>🔢 Количество наклеек</label>
-                <input type="number" id="quantity" value="10" min="1" max="200">
+                <input type="number" id="quantity" value="10" min="1" max="100">
             </div>
             
             <div class="print-mode-selector">
-                <button class="mode-btn active" data-mode="a4" onclick="setPrintMode('a4')">📄 A4 (9 на лист)</button>
-                <button class="mode-btn" data-mode="thermal" onclick="setPrintMode('thermal')">🏷️ Термопринтер (58x40мм)</button>
+                <div class="mode-btn active" data-mode="a4" onclick="setPrintMode('a4')">📄 A4 (9 на лист)</div>
+                <div class="mode-btn" data-mode="thermal" onclick="setPrintMode('thermal')">🏷️ Термопринтер (58x40мм)</div>
             </div>
             
             <button id="generate-btn">🎲 Сгенерировать QR-коды</button>
             <button id="print-btn" class="thermal" style="display: none;">🖨️ Печать наклеек</button>
+            
+            <div id="progress" style="display: none;">
+                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                <div id="progress-text" style="font-size: 12px; text-align: center;">Генерация...</div>
+            </div>
             
             <div id="preview" class="preview-grid"></div>
             <div id="info" class="info" style="display: none;"></div>
@@ -204,24 +220,26 @@
                 
                 <strong>2. Формат "Термопринтер (58x40мм):</strong><br>
                 • Размер каждой наклейки 58x40 мм<br>
-                • Подходит для принтеров: Zebra, Argox, TSC<br><br>
+                • В диалоге печати выберите "Фактический размер"<br>
+                • Масштаб: 100%<br><br>
                 
                 <strong>3. Формат "A4":</strong><br>
                 • 9 наклеек на листе (3x3)<br>
                 • Для обычного принтера<br><br>
                 
                 <strong>4. Формат QR-кода:</strong><br>
-                • MINI2-001, MINI2-002 ... для Mini 2<br>
-                • AIR2S-001, AIR2S-002 ... для Air 2s
+                • MINI2-001, MINI2-002 ... для Mini 2
             </div>
         </div>
     </div>
 </div>
 
+<div id="print-area" style="display: none;"></div>
+
 <script>
     let currentQRCodes = [];
     let currentPrintMode = 'a4';
-    let qrCanvasList = [];
+    let qrImages = [];
     
     function switchTab(tab) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -247,74 +265,73 @@
         return prefixes[model] || model.toUpperCase().replace(/\s/g, '');
     }
     
-    function generateQRCodes(model, quantity) {
+    function generateQRCodesList(model, quantity) {
         const prefix = getPrefix(model);
         const codes = [];
         for (let i = 1; i <= quantity; i++) {
-            const number = i.toString().padStart(3, '0');
-            codes.push({
-                text: `${prefix}-${number}`,
-                number: i,
-                model: model
-            });
+            codes.push(`${prefix}-${i.toString().padStart(3, '0')}`);
         }
         return codes;
     }
     
-    // Создание QR-кода с помощью QRCode.js
-    function createQRCodeCanvas(text, size, callback) {
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        
-        // Используем API qrserver.com для генерации
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = function() {
-            canvas.getContext('2d').drawImage(img, 0, 0, size, size);
-            callback(canvas);
-        };
-        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
+    async function generateQRImage(text, size) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
+        });
     }
     
-    async function generateAllQRCodes(codes, size = 150) {
-        const canvases = [];
+    async function generateAllImages(codes, size, onProgress) {
+        const images = [];
         for (let i = 0; i < codes.length; i++) {
-            await new Promise((resolve) => {
-                createQRCodeCanvas(codes[i].text, size, (canvas) => {
-                    canvases.push(canvas);
-                    resolve();
-                });
-            });
+            const img = await generateQRImage(codes[i], size);
+            images.push(img);
+            if (onProgress) onProgress(i + 1, codes.length);
         }
-        return canvases;
+        return images;
     }
     
-    async function previewQRCodes(codes) {
+    async function generatePreview() {
+        const model = document.getElementById('model').value;
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const codes = generateQRCodesList(model, quantity);
+        
         const previewDiv = document.getElementById('preview');
         const infoDiv = document.getElementById('info');
         const printBtn = document.getElementById('print-btn');
-        
-        previewDiv.innerHTML = '<div style="text-align:center; padding:20px;">⏳ Генерация QR-кодов...</div>';
-        
-        const canvases = await generateAllQRCodes(codes, 100);
-        qrCanvasList = canvases;
+        const progressDiv = document.getElementById('progress');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
         
         previewDiv.innerHTML = '';
+        progressDiv.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressText.textContent = 'Генерация QR-кодов...';
+        
+        const images = await generateAllImages(codes, 100, (done, total) => {
+            const percent = (done / total) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Генерация: ${done} из ${total}`;
+        });
+        
+        progressDiv.style.display = 'none';
+        qrImages = images;
+        currentQRCodes = codes;
         
         codes.forEach((code, idx) => {
             const div = document.createElement('div');
             div.className = 'preview-item';
             
-            const canvas = canvases[idx];
-            canvas.style.width = '100px';
-            canvas.style.height = '100px';
-            canvas.style.display = 'block';
-            canvas.style.margin = '0 auto';
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(images[idx], 0, 0, 100, 100);
             
             const codeSpan = document.createElement('div');
             codeSpan.className = 'preview-code';
-            codeSpan.textContent = code.text;
+            codeSpan.textContent = code;
             
             div.appendChild(canvas);
             div.appendChild(codeSpan);
@@ -323,13 +340,12 @@
         
         infoDiv.style.display = 'block';
         infoDiv.innerHTML = `
-            <strong>✅ Сгенерировано ${codes.length} QR-кодов для ${codes[0].model}</strong><br>
-            📋 Пример: ${codes[0].text}, ${codes[1]?.text || '...'}<br>
-            🖨️ Нажмите "Печать наклеек" для печати
+            <strong>✅ Сгенерировано ${codes.length} QR-кодов для ${model}</strong><br>
+            📋 Пример: ${codes[0]}, ${codes[1] || '...'}<br>
+            🖨️ Нажмите "Печать наклеек"
         `;
         
         printBtn.style.display = 'block';
-        currentQRCodes = codes;
     }
     
     async function printQRCodes() {
@@ -338,12 +354,18 @@
             return;
         }
         
-        const model = currentQRCodes[0].model;
+        const model = document.getElementById('model').value;
         const codes = currentQRCodes;
+        const size = currentPrintMode === 'thermal' ? 280 : 500;
         
-        // Генерируем большие QR-коды для печати
-        const size = currentPrintMode === 'thermal' ? 280 : 550;
-        const printCanvases = await generateAllQRCodes(codes, size);
+        // Показываем индикатор загрузки
+        const printBtn = document.getElementById('print-btn');
+        const originalText = printBtn.textContent;
+        printBtn.textContent = '⏳ Подготовка к печати...';
+        printBtn.disabled = true;
+        
+        // Генерируем большие изображения для печати
+        const printImages = await generateAllImages(codes, size, null);
         
         let html = '';
         
@@ -382,7 +404,7 @@
                     }
                     .code {
                         font-family: monospace;
-                        font-size: 10pt;
+                        font-size: 9pt;
                         font-weight: bold;
                     }
                 </style>
@@ -390,12 +412,17 @@
             <body>`;
             
             codes.forEach((code, idx) => {
-                const canvas = printCanvases[idx];
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(printImages[idx], 0, 0, size, size);
                 const imgData = canvas.toDataURL();
+                
                 html += `
                     <div class="label">
                         <img src="${imgData}" alt="QR">
-                        <div class="code">${code.text}</div>
+                        <div class="code">${code}</div>
                     </div>
                 `;
             });
@@ -434,7 +461,7 @@
                     .code {
                         font-family: monospace;
                         margin-top: 3mm;
-                        font-size: 11pt;
+                        font-size: 10pt;
                     }
                 </style>
             </head>
@@ -447,12 +474,17 @@
                 
                 html += `<div class="grid">`;
                 for (let i = start; i < end; i++) {
-                    const canvas = printCanvases[i];
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(printImages[i], 0, 0, size, size);
                     const imgData = canvas.toDataURL();
+                    
                     html += `
                         <div class="label">
                             <img src="${imgData}" alt="QR">
-                            <div class="code">${codes[i].text}</div>
+                            <div class="code">${codes[i]}</div>
                         </div>
                     `;
                 }
@@ -465,24 +497,34 @@
         
         html += `</body></html>`;
         
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.print();
+        // Создаём iframe для печати (не блокируется как всплывающее окно)
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+        
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(html);
+        iframe.contentWindow.document.close();
+        
+        iframe.contentWindow.print();
+        
+        // Удаляем iframe после печати
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+        }, 1000);
+        
+        printBtn.textContent = originalText;
+        printBtn.disabled = false;
     }
     
-    document.getElementById('generate-btn').onclick = async () => {
-        const model = document.getElementById('model').value;
-        const quantity = parseInt(document.getElementById('quantity').value);
-        const codes = generateQRCodes(model, quantity);
-        await previewQRCodes(codes);
-    };
-    
+    document.getElementById('generate-btn').onclick = generatePreview;
     document.getElementById('print-btn').onclick = printQRCodes;
     
-    window.onload = async () => {
-        const codes = generateQRCodes('Mini 2', 10);
-        await previewQRCodes(codes);
+    window.onload = () => {
+        generatePreview();
     };
 </script>
 </body>
