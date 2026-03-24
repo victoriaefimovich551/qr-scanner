@@ -27,124 +27,144 @@
         .product-card h3 { color: #1e3c72; margin-bottom: 15px; }
         .product-detail { margin: 8px 0; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
         .product-detail strong { display: inline-block; min-width: 110px; color: #475569; }
-        .product-detail a { color: #2a5298; text-decoration: none; }
-        .delivery-block { background: #f1f5f9; border-radius: 12px; margin-top: 10px; padding: 10px; }
-        .status-delivered { color: #16a34a; font-weight: bold; }
-        .status-transit { color: #eab308; font-weight: bold; }
-        .status-return { color: #dc2626; font-weight: bold; }
-        .qr-code { text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
-        .qr-code img { max-width: 120px; border-radius: 12px; padding: 8px; background: white; }
         .error { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 12px; margin-top: 15px; text-align: center; }
         .success { background: #dcfce7; color: #16a34a; padding: 12px; border-radius: 12px; margin-top: 15px; text-align: center; }
         .loading { text-align: center; padding: 30px; color: #64748b; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 15px; }
-        .product-item { background: #f8fafc; border-radius: 12px; padding: 15px; cursor: pointer; border: 1px solid #e2e8f0; }
-        .product-item:active { transform: scale(0.98); }
-        .filter-group { margin-bottom: 15px; }
-        .filter-input { width: 100%; padding: 10px 15px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; margin-bottom: 8px; }
-        .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .filter-row input, .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
-        .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
-        .install-banner button { background: #1e3c72; width: auto; padding: 8px 20px; margin: 5px 0 0; font-size: 14px; }
-        .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .action-btn { flex: 1; background: #64748b; width: auto; padding: 10px; margin: 0; font-size: 14px; text-align: center; cursor: pointer; border: none; border-radius: 30px; color: white; }
-        .delivery-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .delivery-modal-content { background: white; border-radius: 20px; padding: 20px; max-width: 90%; max-height: 80%; overflow-y: auto; }
-        .menu-delivery-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 12px 8px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; flex: 1; min-width: 80px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #1e3c72; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; }
+        .price-input-overlay { background: #f8fafc; border-radius: 16px; padding: 15px; margin-top: 15px; border: 2px solid #e2e8f0; }
+        .price-input-overlay h4 { color: #1e3c72; margin-bottom: 10px; }
+        .price-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .price-buttons button { margin: 0; padding: 10px; font-size: 14px; }
+        .model-selector { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .model-btn { flex: 1; background: #eef2ff; color: #1e3c72; border: 2px solid #e0e4e8; padding: 12px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .model-btn.active { background: #1e3c72; color: white; border-color: #1e3c72; }
+        .batch-result { margin-top: 15px; max-height: 300px; overflow-y: auto; }
+        .batch-item { background: #f8fafc; padding: 10px; margin: 5px 0; border-radius: 8px; font-size: 13px; }
+        .batch-success { border-left: 4px solid #16a34a; }
+        .batch-error { border-left: 4px solid #dc2626; }
+        .batch-pending { border-left: 4px solid #eab308; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <h1>📱 QR Сканер</h1>
+        <p>Приёмка с указанием цены</p>
     </div>
     
     <div id="install-banner" class="install-banner">
-        <div id="android-install" style="display: none;">
-            📲 Установите приложение на телефон<br>
-            <button id="install-btn">Установить</button>
-        </div>
-        <div id="ios-install" style="display: none;">
-            📱 Чтобы установить приложение на iPhone:<br>
-            <span style="font-size: 13px;">1️⃣ Поделиться → 2️⃣ На экран «Домой» → 3️⃣ Добавить ✅</span>
-        </div>
+        <div id="android-install" style="display: none;"><button id="install-btn">📲 Установить</button></div>
+        <div id="ios-install" style="display: none;">📱 Поделиться → На экран «Домой»</div>
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('scan')">📷 Сканер</button>
-        <button class="tab-btn" onclick="switchTab('search')">🔍 Поиск</button>
-        <button class="tab-btn" onclick="switchTab('catalog')">📦 Каталог</button>
-        <button class="tab-btn" onclick="showDeliveryMenu()">🚚 Доставка</button>
+        <button class="tab-btn active" onclick="switchTab('scan')">📷 Поиск</button>
+        <button class="tab-btn" onclick="switchTab('search')">🔍 Артикул</button>
+        <button class="tab-btn" onclick="switchTab('receive')">➕ Приёмка</button>
+        <button class="tab-btn" onclick="switchTab('batch')">📦 Пакетная</button>
     </div>
     
+    <!-- Панель поиска по QR -->
     <div id="scan-panel" class="panel active">
-        <h2>📷 Наведите на QR-код</h2>
+        <h2>📷 Поиск по QR-коду</h2>
         <div id="reader"></div>
         <div id="scan-result"></div>
         <button id="start-scan-btn">▶ Запустить камеру</button>
     </div>
     
+    <!-- Панель поиска по артикулу -->
     <div id="search-panel" class="panel">
-        <h2>🔍 Поиск по серийному номеру</h2>
+        <h2>🔍 Поиск по артикулу</h2>
         <div class="search-box">
-            <input type="text" id="serial-input" placeholder="Введите серийный номер">
+            <input type="text" id="serial-input" placeholder="Введите артикул (MN2-001)">
             <button onclick="searchBySerial()">Найти</button>
         </div>
         <div id="search-result"></div>
     </div>
     
-    <div id="catalog-panel" class="panel">
-        <h2>📦 Каталог</h2>
-        <div class="filter-group">
-            <input type="text" id="search-name" class="filter-input" placeholder="🔍 Поиск по названию...">
-            <div class="filter-row">
-                <input type="text" id="filter-category" placeholder="📂 Категория">
-                <input type="number" id="price-min" placeholder="💰 Цена от">
-                <input type="number" id="price-max" placeholder="💰 Цена до">
-            </div>
-            <div class="filter-row">
-                <select id="sort-by">
-                    <option value="name_asc">📋 По названию (А-Я)</option>
-                    <option value="name_desc">📋 По названию (Я-А)</option>
-                    <option value="price_asc">💵 По цене (сначала дешёвые)</option>
-                    <option value="price_desc">💵 По цене (сначала дорогие)</option>
-                </select>
-                <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
+    <!-- Панель приёмки с возможностью ввода цены -->
+    <div id="receive-panel" class="panel">
+        <h2>➕ Приём товаров</h2>
+        <p style="color: #666; margin-bottom: 15px;">Сканируйте QR-код → укажите цену → товар добавится автоматически</p>
+        
+        <div id="receive-reader" style="width: 100%; margin-bottom: 15px;"></div>
+        <button id="start-receive-scan">📷 Сканировать QR</button>
+        
+        <!-- Оверлей для ввода цены (появляется после сканирования) -->
+        <div id="price-overlay" class="price-input-overlay" style="display: none;">
+            <h4>💰 Введите цену для товара</h4>
+            <p id="price-model-info" style="color: #666; margin-bottom: 10px;"></p>
+            <input type="number" id="price-input" placeholder="Цена в рублях" style="width: 100%; padding: 12px; border-radius: 30px; border: 2px solid #e0e4e8; font-size: 16px;">
+            <div class="price-buttons">
+                <button id="price-submit" style="background: #16a34a;">✅ Добавить</button>
+                <button id="price-skip" style="background: #64748b;">⏭ Пропустить (стандартная цена)</button>
+                <button id="price-cancel" style="background: #dc2626;">❌ Отмена</button>
             </div>
         </div>
-        <div id="catalog-content" class="loading">⏳ Загрузка каталога...</div>
+        
+        <div id="receive-result"></div>
     </div>
-</div>
-
-<!-- Модальное окно с доставкой -->
-<div id="delivery-modal" class="delivery-modal">
-    <div class="delivery-modal-content">
-        <h3>🚚 Информация о доставке</h3>
-        <div id="delivery-info"></div>
-        <button onclick="closeDeliveryModal()" style="margin-top: 15px;">Закрыть</button>
+    
+    <!-- Панель пакетной приёмки с ценой -->
+    <div id="batch-panel" class="panel">
+        <h2>📦 Пакетная приёмка</h2>
+        <p style="color: #666; margin-bottom: 15px;">Выберите модель и цену, затем сканируйте QR-коды подряд</p>
+        
+        <div class="model-selector" id="model-selector">
+            <button class="model-btn" data-model="Mini 2" data-price="25000">Mini 2 (25000 ₽)</button>
+            <button class="model-btn" data-model="Mini 3" data-price="35000">Mini 3 (35000 ₽)</button>
+            <button class="model-btn" data-model="Air 2s" data-price="45000">Air 2s (45000 ₽)</button>
+            <button class="model-btn" data-model="Mavic" data-price="80000">Mavic (80000 ₽)</button>
+            <button class="model-btn" data-model="3T" data-price="100000">3T (100000 ₽)</button>
+        </div>
+        
+        <div class="form-group">
+            <label>💰 Своя цена (оставьте пустым для стандартной)</label>
+            <input type="number" id="batch-price" placeholder="Например: 27000">
+        </div>
+        
+        <div id="batch-reader" style="width: 100%; margin-bottom: 15px;"></div>
+        <button id="start-batch-scan">📷 Начать сканирование</button>
+        <button id="stop-batch-scan" style="background: #64748b;">⏹ Остановить</button>
+        
+        <div id="batch-result" class="batch-result"></div>
     </div>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxspTE7cATKJomSitk6C-RDm617pBRmvbk1YaVpMZi2VNhF-1ogB2q6Bl-7yk_YsZFfqA/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgRQG4f6GgtuLpD3TTn4_E6KIsLsB-uHMpHP6F2jBrfm8SUYV91zMGGmZi3imU-d5AFw/exec';
     
     let html5QrCode = null;
+    let receiveQrCode = null;
+    let batchQrCode = null;
     let isScanning = false;
-    let allProducts = [];
+    let isReceiveScanning = false;
+    let isBatchScanning = false;
     let currentProduct = null;
+    let pendingScanData = null;
+    let selectedModel = 'Mini 2';
+    let selectedModelPrice = 25000;
+    let batchResults = [];
+    
+    // Стандартные цены моделей
+    const defaultPrices = {
+        'Mini 2': 25000,
+        'Mini 3': 35000,
+        'Air 2s': 45000,
+        'Mavic': 80000,
+        '3T': 100000
+    };
     
     // PWA
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isAndroid = /Android/.test(navigator.userAgent);
-    const androidBanner = document.getElementById('android-install');
-    const iosBanner = document.getElementById('ios-install');
-    const installBanner = document.getElementById('install-banner');
-    
     if (isAndroid) {
-        androidBanner.style.display = 'block';
-        installBanner.style.display = 'block';
+        document.getElementById('android-install').style.display = 'block';
+        document.getElementById('install-banner').style.display = 'block';
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -153,48 +173,40 @@
         document.getElementById('install-btn')?.addEventListener('click', async () => {
             if (!deferredPrompt) { alert('Установка через Chrome'); return; }
             deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') installBanner.style.display = 'none';
             deferredPrompt = null;
         });
     } else if (isIOS) {
-        iosBanner.style.display = 'block';
-        installBanner.style.display = 'block';
+        document.getElementById('ios-install').style.display = 'block';
+        document.getElementById('install-banner').style.display = 'block';
     }
     
-    async function handleUrlParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const serial = urlParams.get('serial');
-        if (serial) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('search-panel').classList.add('active');
-            document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-            document.getElementById('serial-input').value = serial;
-            await searchBySerial();
-        }
-    }
+    // Выбор модели для пакетной приёмки
+    document.querySelectorAll('.model-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedModel = btn.dataset.model;
+            selectedModelPrice = parseInt(btn.dataset.price);
+        });
+    });
+    document.querySelector('.model-btn').classList.add('active');
     
     function switchTab(tab) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tab + '-panel').classList.add('active');
         event.target.classList.add('active');
-        if (tab === 'catalog') loadCatalog();
-        if (tab === 'scan' && html5QrCode && isScanning) {
-            html5QrCode.stop().then(() => isScanning = false);
-        }
+        
+        if (tab === 'scan') { stopReceiveScanner(); stopBatchScanner(); }
+        if (tab === 'receive') { stopScanner(); stopBatchScanner(); }
+        if (tab === 'batch') { stopScanner(); stopReceiveScanner(); }
+        
+        // Скрываем оверлей при смене вкладки
+        document.getElementById('price-overlay').style.display = 'none';
+        pendingScanData = null;
     }
     
-    // Кнопка доставки в основном меню
-    async function showDeliveryMenu() {
-        if (!currentProduct) {
-            alert('Сначала найдите товар через сканер или поиск');
-            return;
-        }
-        showDeliveryInfo();
-    }
-    
+    // ========== ОСНОВНОЙ СКАНЕР (поиск) ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
@@ -204,37 +216,253 @@
             await html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 300, height: 300 } },
-                (text) => handleScanResult(text),
+                async (text) => {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                    resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
+                    try {
+                        const product = await findProductBySerial(text);
+                        currentProduct = product;
+                        displayProduct(product, 'scan-result');
+                    } catch(e) {
+                        resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+                    }
+                },
                 (err) => console.log(err)
             );
             isScanning = true;
             resultDiv.innerHTML = '<div class="success">✅ Камера работает. Наведите на QR-код.</div>';
         } catch(e) {
-            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры. Проверьте разрешения.</div>';
+            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры.</div>';
         }
     }
     
-    async function handleScanResult(qrData) {
-        if (html5QrCode && isScanning) {
-            await html5QrCode.stop();
-            isScanning = false;
-        }
-        const resultDiv = document.getElementById('scan-result');
-        resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
+    function stopScanner() {
+        if (html5QrCode && isScanning) html5QrCode.stop().then(() => isScanning = false);
+    }
+    
+    // ========== ПРИЁМКА С ВВОДОМ ЦЕНЫ ==========
+    async function startReceiveScanner() {
+        const resultDiv = document.getElementById('receive-result');
+        resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
+        if (receiveQrCode && isReceiveScanning) await receiveQrCode.stop();
+        
+        receiveQrCode = new Html5Qrcode("receive-reader");
         try {
-            const product = await findProductBySerial(qrData);
-            currentProduct = product;
-            displayProduct(product, 'scan-result');
+            await receiveQrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 300, height: 300 } },
+                async (text) => {
+                    await receiveQrCode.stop();
+                    isReceiveScanning = false;
+                    
+                    // Определяем модель по QR-коду
+                    let model = null;
+                    let priceFromQR = null;
+                    
+                    // Парсим QR-код
+                    if (text.includes(':')) {
+                        const parts = text.split('|');
+                        for (let part of parts) {
+                            if (part.startsWith('MODEL:')) model = part.replace('MODEL:', '');
+                            if (part.startsWith('PRICE:')) priceFromQR = parseInt(part.replace('PRICE:', ''));
+                        }
+                    } else {
+                        // Простой текст — это модель
+                        const modelMap = {
+                            'MINI2': 'Mini 2', 'MINI3': 'Mini 3', 'AIR2S': 'Air 2s',
+                            'MAVIC': 'Mavic', '3T': '3T', 'Mini 2': 'Mini 2',
+                            'Mini 3': 'Mini 3', 'Air 2s': 'Air 2s', 'Mavic': 'Mavic'
+                        };
+                        model = modelMap[text] || text;
+                    }
+                    
+                    // Проверяем модель
+                    if (!defaultPrices[model]) {
+                        resultDiv.innerHTML = `<div class="error">❌ Неизвестная модель: ${model}. Доступные: Mini 2, Mini 3, Air 2s, Mavic, 3T</div>`;
+                        return;
+                    }
+                    
+                    // Сохраняем данные для оверлея
+                    pendingScanData = {
+                        model: model,
+                        qrText: text,
+                        priceFromQR: priceFromQR
+                    };
+                    
+                    // Показываем оверлей для ввода цены
+                    const overlay = document.getElementById('price-overlay');
+                    const modelInfo = document.getElementById('price-model-info');
+                    const priceInput = document.getElementById('price-input');
+                    
+                    if (priceFromQR) {
+                        modelInfo.innerHTML = `📦 Модель: <strong>${model}</strong><br>💰 Цена в QR: ${priceFromQR} ₽`;
+                        priceInput.value = priceFromQR;
+                    } else {
+                        modelInfo.innerHTML = `📦 Модель: <strong>${model}</strong><br>💰 Стандартная цена: ${defaultPrices[model]} ₽`;
+                        priceInput.value = '';
+                    }
+                    
+                    overlay.style.display = 'block';
+                    priceInput.focus();
+                    resultDiv.innerHTML = '';
+                },
+                (err) => console.log(err)
+            );
+            isReceiveScanning = true;
+            resultDiv.innerHTML = '<div class="success">✅ Камера работает. Сканируйте QR-код товара.</div>';
         } catch(e) {
-            resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры.</div>';
         }
     }
     
+    async function submitWithPrice() {
+        if (!pendingScanData) return;
+        
+        const priceInput = document.getElementById('price-input');
+        let price = parseInt(priceInput.value);
+        
+        // Если цена не указана, используем стандартную
+        if (isNaN(price)) {
+            price = defaultPrices[pendingScanData.model];
+        }
+        
+        const resultDiv = document.getElementById('receive-result');
+        resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
+        document.getElementById('price-overlay').style.display = 'none';
+        
+        try {
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=autoAdd`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    model: pendingScanData.model, 
+                    price: price 
+                })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                resultDiv.innerHTML = `<div class="success">${data.message}<br>💰 Цена: ${data.price} ₽<br>🔢 Артикул: ${data.sku}</div>`;
+                if (navigator.vibrate) navigator.vibrate(200);
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+        }
+        
+        pendingScanData = null;
+        
+        // Перезапускаем сканер
+        setTimeout(() => {
+            startReceiveScanner();
+        }, 1000);
+    }
+    
+    function submitWithDefaultPrice() {
+        if (!pendingScanData) return;
+        
+        const price = defaultPrices[pendingScanData.model];
+        document.getElementById('price-input').value = price;
+        submitWithPrice();
+    }
+    
+    function cancelPriceInput() {
+        document.getElementById('price-overlay').style.display = 'none';
+        pendingScanData = null;
+        // Перезапускаем сканер
+        setTimeout(() => {
+            startReceiveScanner();
+        }, 500);
+    }
+    
+    function stopReceiveScanner() {
+        if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+        document.getElementById('price-overlay').style.display = 'none';
+        pendingScanData = null;
+    }
+    
+    // ========== ПАКЕТНАЯ ПРИЁМКА ==========
+    async function startBatchScanner() {
+        const resultDiv = document.getElementById('batch-result');
+        batchResults = [];
+        resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры. Сканируйте QR-коды подряд...</div>';
+        
+        if (batchQrCode && isBatchScanning) await batchQrCode.stop();
+        
+        batchQrCode = new Html5Qrcode("batch-reader");
+        try {
+            await batchQrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 300, height: 300 } },
+                async (text) => {
+                    let price = document.getElementById('batch-price').value;
+                    const priceNum = price ? parseInt(price) : selectedModelPrice;
+                    
+                    const resultItem = { text: text, status: 'pending', message: 'Добавляется...' };
+                    batchResults.push(resultItem);
+                    updateBatchResults();
+                    
+                    try {
+                        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=autoAdd`, {
+                            method: 'POST',
+                            body: JSON.stringify({ model: selectedModel, price: priceNum })
+                        });
+                        const data = await response.json();
+                        
+                        const index = batchResults.findIndex(r => r.text === text);
+                        if (index !== -1) {
+                            if (data.success) {
+                                batchResults[index] = { text: text, status: 'success', message: data.sku, price: data.price };
+                            } else {
+                                batchResults[index] = { text: text, status: 'error', message: data.message };
+                            }
+                        }
+                        updateBatchResults();
+                        if (navigator.vibrate) navigator.vibrate(100);
+                    } catch (error) {
+                        const index = batchResults.findIndex(r => r.text === text);
+                        if (index !== -1) {
+                            batchResults[index] = { text: text, status: 'error', message: error.message };
+                        }
+                        updateBatchResults();
+                    }
+                },
+                (err) => console.log(err)
+            );
+            isBatchScanning = true;
+        } catch(e) {
+            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры.</div>';
+        }
+    }
+    
+    function stopBatchScanner() {
+        if (batchQrCode && isBatchScanning) batchQrCode.stop().then(() => isBatchScanning = false);
+    }
+    
+    function updateBatchResults() {
+        const container = document.getElementById('batch-result');
+        const successCount = batchResults.filter(r => r.status === 'success').length;
+        const errorCount = batchResults.filter(r => r.status === 'error').length;
+        
+        let html = `<div class="success">📊 Добавлено: ${successCount} | Ошибок: ${errorCount} | Всего: ${batchResults.length}</div>`;
+        batchResults.forEach(r => {
+            const statusClass = r.status === 'success' ? 'batch-success' : (r.status === 'error' ? 'batch-error' : 'batch-pending');
+            html += `<div class="batch-item ${statusClass}">
+                ${r.status === 'success' ? '✅' : (r.status === 'error' ? '❌' : '⏳')} 
+                ${r.message}
+                ${r.price ? ` — ${r.price} ₽` : ''}
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+    
+    // ========== ПОИСК ==========
     async function searchBySerial() {
         const serial = document.getElementById('serial-input').value.trim();
         const resultDiv = document.getElementById('search-result');
         if (!serial) {
-            resultDiv.innerHTML = '<div class="error">❌ Введите серийный номер</div>';
+            resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
             return;
         }
         resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
@@ -254,121 +482,18 @@
         return data;
     }
     
-    function showDeliveryInfo() {
-        if (!currentProduct) {
-            alert('Сначала найдите товар');
-            return;
-        }
-        
-        const modal = document.getElementById('delivery-modal');
-        const deliveryInfo = document.getElementById('delivery-info');
-        
-        let statusClass = '';
-        let statusText = currentProduct['Статус доставки'] || '—';
-        switch(currentProduct['Статус доставки']) {
-            case 'Доставлен': statusClass = 'status-delivered'; break;
-            case 'В пути': statusClass = 'status-transit'; break;
-            case 'Возврат': statusClass = 'status-return'; break;
-        }
-        
-        let html = `<div class="product-card" style="margin-top: 0;">
-            <h3>🚁 ${escapeHtml(currentProduct['Название'] || 'Без названия')}</h3>
-            <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(currentProduct['Серийный номер'] || '—')}</div>`;
-        
-        if (currentProduct['Трек номер']) {
-            html += `<div class="delivery-block">
-                <strong>🚚 ТК:</strong> ${escapeHtml(currentProduct['Транспортная компания'] || '—')}<br>
-                <strong>📬 Трек:</strong> ${currentProduct['Ссылка отслеживания'] 
-                    ? `<a href="${escapeHtml(currentProduct['Ссылка отслеживания'])}" target="_blank">${escapeHtml(currentProduct['Трек номер'])}</a>` 
-                    : escapeHtml(currentProduct['Трек номер'])}<br>
-                <strong>📅 Отправлено:</strong> ${escapeHtml(currentProduct['Дата отправки'] || '—')}<br>
-                <strong>📍 Статус:</strong> <span class="${statusClass}">${statusText}</span>
-            </div>`;
-        } else if (currentProduct['Транспортная компания']) {
-            html += `<div class="delivery-block">
-                <strong>🚚 ТК:</strong> ${escapeHtml(currentProduct['Транспортная компания'] || '—')}<br>
-                <strong>📅 Отправлено:</strong> ${escapeHtml(currentProduct['Дата отправки'] || '—')}<br>
-                <strong>📍 Статус:</strong> ${escapeHtml(currentProduct['Статус доставки'] || 'Ожидает отправки')}
-            </div>`;
-        } else {
-            html += `<div class="delivery-block">📭 Информация о доставке отсутствует</div>`;
-        }
-        
-        html += `</div>`;
-        deliveryInfo.innerHTML = html;
-        modal.style.display = 'flex';
-    }
-    
-    function closeDeliveryModal() {
-        document.getElementById('delivery-modal').style.display = 'none';
-    }
-    
-    async function shareProductFromCard(serialNumber) {
-        try {
-            const product = await findProductBySerial(serialNumber);
-            const shareText = `🚁 Товар: ${product['Название'] || 'Без названия'}
-📇 Серийный номер: ${product['Серийный номер'] || '—'}
-📝 Описание: ${product['Описание'] || '—'}
-💰 Затраты: ${product['Затраты'] || '—'} ₽
-🛒 Закупка: ${product['Закупка'] || '—'}`;
-            const productUrl = `${window.location.origin}${window.location.pathname}?serial=${encodeURIComponent(serialNumber)}`;
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: `Товар: ${product['Название']}`, text: shareText, url: productUrl });
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        await copyToClipboard(shareText + '\n\n🔗 ' + productUrl);
-                        alert('📋 Информация скопирована');
-                    }
-                }
-            } else {
-                await copyToClipboard(shareText + '\n\n🔗 ' + productUrl);
-                alert('📋 Информация скопирована');
-            }
-        } catch (error) {
-            alert('❌ Не удалось поделиться');
-        }
-    }
-    
-    async function copyToClipboard(text) {
-        try { await navigator.clipboard.writeText(text); } catch (err) { console.error(err); }
-    }
-    
     function displayProduct(p, containerId) {
         const container = document.getElementById(containerId);
-        let затраты = p['Затраты'];
-        if (затраты && !isNaN(parseFloat(затраты))) затраты = `${parseFloat(затраты).toLocaleString('ru-RU')} ₽`;
         let price = p['Цена'];
         if (price && !isNaN(parseFloat(price))) price = `${parseFloat(price).toLocaleString('ru-RU')} ₽`;
         
         let html = `<div class="product-card">
             <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
-            <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
-            <div class="product-detail"><strong>📝 Описание:</strong> ${escapeHtml(p['Описание'] || '—')}</div>`;
-        
-        if (p['Категория']) html += `<div class="product-detail"><strong>📂 Категория:</strong> ${escapeHtml(p['Категория'])}</div>`;
-        if (price) html += `<div class="product-detail"><strong>💰 Цена:</strong> ${price}</div>`;
-        
-        html += `<div class="product-detail"><strong>💰 Затраты:</strong> ${затраты || '—'}</div>
-            <div class="product-detail"><strong>🛒 Закупка:</strong> ${escapeHtml(p['Закупка'] || '—')}</div>`;
-        
-        if (p['Ссылка на объявление Авито']) {
-            html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на объявление Авито'])}" target="_blank">Открыть →</a></div>`;
-        } else {
-            html += `<div class="product-detail"><strong>🔗 Авито:</strong> —</div>`;
-        }
-        
-        if (p['QR_Code']) {
-            html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
-        }
-        
-        html += `<div class="action-buttons">
-            <button class="action-btn" onclick="showDeliveryInfo()">🚚 Доставка</button>
-            <button class="action-btn" onclick="shareProductFromCard('${escapeHtml(p['Серийный номер'])}')">📤 Поделиться</button>
+            <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
+            <div class="product-detail"><strong>📝 Описание:</strong> ${escapeHtml(p['Описание'] || '—')}</div>
+            ${p['Категория'] ? `<div class="product-detail"><strong>📂 Модель:</strong> ${escapeHtml(p['Категория'])}</div>` : ''}
+            ${price ? `<div class="product-detail"><strong>💰 Цена:</strong> ${price}</div>` : ''}
         </div>`;
-        
-        html += `</div>`;
         container.innerHTML = html;
     }
     
@@ -377,96 +502,16 @@
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
     
-    // Фильтры
-    function applyFilters() {
-        if (!allProducts.length) return;
-        const searchTerm = document.getElementById('search-name').value.toLowerCase().trim();
-        const categoryFilter = document.getElementById('filter-category').value.toLowerCase().trim();
-        const priceMin = parseFloat(document.getElementById('price-min').value);
-        const priceMax = parseFloat(document.getElementById('price-max').value);
-        const sortBy = document.getElementById('sort-by').value;
-        
-        let filtered = allProducts.filter(product => {
-            if (searchTerm && !(product['Название'] || '').toLowerCase().includes(searchTerm)) return false;
-            if (categoryFilter && !(product['Категория'] || '').toLowerCase().includes(categoryFilter)) return false;
-            const price = parseFloat(product['Цена']) || 0;
-            if (!isNaN(priceMin) && price < priceMin) return false;
-            if (!isNaN(priceMax) && price > priceMax) return false;
-            return true;
-        });
-        
-        filtered.sort((a, b) => {
-            switch(sortBy) {
-                case 'name_asc': return (a['Название'] || '').localeCompare(b['Название'] || '');
-                case 'name_desc': return (b['Название'] || '').localeCompare(a['Название'] || '');
-                case 'price_asc': return (parseFloat(a['Цена']) || 0) - (parseFloat(b['Цена']) || 0);
-                case 'price_desc': return (parseFloat(b['Цена']) || 0) - (parseFloat(a['Цена']) || 0);
-                default: return 0;
-            }
-        });
-        renderCatalog(filtered);
-    }
-    
-    function renderCatalog(products) {
-        const container = document.getElementById('catalog-content');
-        if (products.length === 0) { container.innerHTML = '<div class="error">📭 Товары не найдены.</div>'; return; }
-        let html = '<div class="products-grid">';
-        products.forEach(product => {
-            const price = product['Цена'] ? `${parseFloat(product['Цена']).toLocaleString('ru-RU')} ₽` : '—';
-            html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Серийный номер'])}')">
-                <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
-                <small>📇 ${escapeHtml(product['Серийный номер'] || '—')}</small><br>
-                <small>💰 ${price}</small>
-                ${product['Категория'] ? `<br><small>📂 ${escapeHtml(product['Категория'])}</small>` : ''}
-            </div>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-    }
-    
-    function resetFilters() {
-        document.getElementById('search-name').value = '';
-        document.getElementById('filter-category').value = '';
-        document.getElementById('price-min').value = '';
-        document.getElementById('price-max').value = '';
-        document.getElementById('sort-by').value = 'name_asc';
-        applyFilters();
-    }
-    
-    async function viewProductDetail(serialNumber) {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('search-panel').classList.add('active');
-        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-        document.getElementById('serial-input').value = serialNumber;
-        await searchBySerial();
-    }
-    
-    async function loadCatalog() {
-        const container = document.getElementById('catalog-content');
-        container.innerHTML = '<div class="loading">📦 Загрузка каталога...</div>';
-        try {
-            const products = await getAllProducts();
-            allProducts = products;
-            if (!products.length) { container.innerHTML = '<div class="error">📭 Товары не найдены.</div>'; return; }
-            applyFilters();
-        } catch (error) { container.innerHTML = `<div class="error">❌ ${error.message}</div>`; }
-    }
-    
-    async function getAllProducts() {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
-        return await res.json();
-    }
-    
+    // ========== НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ ==========
     document.getElementById('start-scan-btn').onclick = startScanner;
-    document.getElementById('search-name').addEventListener('input', applyFilters);
-    document.getElementById('filter-category').addEventListener('input', applyFilters);
-    document.getElementById('price-min').addEventListener('input', applyFilters);
-    document.getElementById('price-max').addEventListener('input', applyFilters);
-    document.getElementById('sort-by').addEventListener('change', applyFilters);
-    document.getElementById('reset-filters').addEventListener('click', resetFilters);
+    document.getElementById('start-receive-scan').onclick = startReceiveScanner;
+    document.getElementById('start-batch-scan').onclick = startBatchScanner;
+    document.getElementById('stop-batch-scan').onclick = stopBatchScanner;
+    document.getElementById('price-submit').onclick = submitWithPrice;
+    document.getElementById('price-skip').onclick = submitWithDefaultPrice;
+    document.getElementById('price-cancel').onclick = cancelPriceInput;
     
-    window.onload = function() { loadCatalog(); handleUrlParams(); };
+    window.onload = function() {};
 </script>
 </body>
 </html>
