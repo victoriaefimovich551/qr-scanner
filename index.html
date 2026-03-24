@@ -19,6 +19,7 @@
         .panel.active { display: block; }
         h2 { color: #1e3c72; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
         #reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; }
+        #receive-reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; }
         button { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; padding: 14px 28px; border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer; margin: 10px 0; width: 100%; }
         .search-box { display: flex; gap: 10px; margin: 15px 0; }
         .search-box input { flex: 1; padding: 12px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 16px; }
@@ -47,12 +48,12 @@
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
         .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         .action-btn { flex: 1; background: #64748b; width: auto; padding: 10px; margin: 0; font-size: 14px; text-align: center; cursor: pointer; border: none; border-radius: 30px; color: white; }
-        .delivery-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .delivery-modal-content { background: white; border-radius: 20px; padding: 20px; max-width: 90%; max-height: 80%; overflow-y: auto; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #1e3c72; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; }
         .form-group textarea { border-radius: 20px; }
+        .sku-display { background: #eef2ff; padding: 12px; border-radius: 12px; margin: 15px 0; text-align: center; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e3c72; }
+        .receive-scan-area { text-align: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -122,51 +123,66 @@
     
     <div id="receive-panel" class="panel">
         <h2>➕ Приёмка нового товара</h2>
-        <p style="color: #666; margin-bottom: 15px;">Заполните информацию о новом товаре</p>
+        <p style="color: #666; margin-bottom: 15px;">Сначала отсканируйте QR-код с наклейки, затем заполните информацию</p>
         
-        <div class="form-group">
-            <label>🚁 Модель *</label>
-            <select id="receive-model">
-                <option value="">Выберите модель</option>
-                <option value="DJI Mini 2">DJI Mini 2</option>
-                <option value="DJI Mini 2 тушка">DJI Mini 2 тушка</option>
-                <option value="DJI Air 2s">DJI Air 2s</option>
-                <option value="DJI Air 2s combo">DJI Air 2s combo</option>
-                <option value="DJI Air 2s тушка">DJI Air 2s тушка</option>
-                <option value="DJI Air 2 тушка">DJI Air 2 тушка</option>
-                <option value="DJI Air 3">DJI Air 3</option>
-            </select>
+        <div class="receive-scan-area">
+            <div id="receive-reader"></div>
+            <button id="start-receive-scan">📷 Сканировать QR-код</button>
         </div>
         
-        <div class="form-group">
-            <label>🔢 Серийный номер (заводской)</label>
-            <input type="text" id="receive-serial" placeholder="Например: 3YTBJ4900301RC">
+        <div id="scanned-sku-display" class="sku-display" style="display: none;">
+            🔢 Отсканированный артикул: <span id="scanned-sku"></span>
         </div>
         
-        <div class="form-group">
-            <label>💰 Цена закупки</label>
-            <input type="number" id="receive-price" placeholder="0">
-        </div>
-        
-        <div class="form-group">
-            <label>📝 Состояние / Описание</label>
-            <textarea id="receive-description" rows="3" placeholder="Состояние, комплектация, примечания..."></textarea>
+        <div id="receive-form" style="display: none;">
+            <div class="form-group">
+                <label>🚁 Модель *</label>
+                <select id="receive-model">
+                    <option value="">Выберите модель</option>
+                    <option value="DJI Mini 2">DJI Mini 2</option>
+                    <option value="DJI Mini 2 тушка">DJI Mini 2 тушка</option>
+                    <option value="DJI Air 2s">DJI Air 2s</option>
+                    <option value="DJI Air 2s combo">DJI Air 2s combo</option>
+                    <option value="DJI Air 2s тушка">DJI Air 2s тушка</option>
+                    <option value="DJI Air 2 тушка">DJI Air 2 тушка</option>
+                    <option value="DJI Air 3">DJI Air 3</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>🔢 Серийный номер (заводской)</label>
+                <input type="text" id="receive-serial" placeholder="Например: 3YTBJ4900301RC">
+            </div>
+            
+            <div class="form-group">
+                <label>💰 Цена закупки</label>
+                <input type="number" id="receive-price" placeholder="0">
+            </div>
+            
+            <div class="form-group">
+                <label>📝 Состояние / Описание</label>
+                <textarea id="receive-description" rows="3" placeholder="Состояние, комплектация, примечания..."></textarea>
+            </div>
+            
+            <button id="submit-receive-btn" style="background: #16a34a;">✅ Добавить товар</button>
+            <button id="cancel-receive-btn" style="background: #64748b;">🗑️ Отмена</button>
         </div>
         
         <div id="receive-result"></div>
-        <button id="submit-receive-btn" style="background: #16a34a;">✅ Добавить товар</button>
-        <button id="clear-receive-btn" style="background: #64748b;">🗑️ Очистить</button>
     </div>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtyJuhNQJwnIAOihy2yPkfxkymqf6-wNNQX-wWL_SdiR8eChy_YHyT8uPxuoUfpTR9ng/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZeRvOc6oT7-jZ7YjpxpoK3l1UWAEcvKluoy1qAgo9sE0lU-7604yx7-2Ky9GD8hKU7g/exec';
     
     let html5QrCode = null;
+    let receiveQrCode = null;
     let isScanning = false;
+    let isReceiveScanning = false;
     let allProducts = [];
     let currentProduct = null;
+    let pendingSku = null;
     
     // PWA
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -198,8 +214,14 @@
         if (tab === 'scan' && html5QrCode && isScanning) {
             html5QrCode.stop().then(() => isScanning = false);
         }
+        if (tab === 'receive') {
+            if (receiveQrCode && isReceiveScanning) {
+                receiveQrCode.stop().then(() => isReceiveScanning = false);
+            }
+        }
     }
     
+    // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
@@ -235,6 +257,118 @@
         }
     }
     
+    // ========== СКАНЕР ДЛЯ ПРИЁМКИ ==========
+    async function startReceiveScanner() {
+        const resultDiv = document.getElementById('receive-result');
+        resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
+        
+        if (receiveQrCode && isReceiveScanning) await receiveQrCode.stop();
+        
+        receiveQrCode = new Html5Qrcode("receive-reader");
+        try {
+            await receiveQrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 300, height: 300 } },
+                async (text) => {
+                    await receiveQrCode.stop();
+                    isReceiveScanning = false;
+                    
+                    // Проверяем, существует ли уже этот артикул
+                    const checkRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=checkSku&sku=${encodeURIComponent(text)}`);
+                    const checkData = await checkRes.json();
+                    
+                    if (checkData.exists) {
+                        resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${text}" уже существует в таблице!</div>`;
+                        document.getElementById('receive-form').style.display = 'none';
+                        document.getElementById('scanned-sku-display').style.display = 'none';
+                        pendingSku = null;
+                        return;
+                    }
+                    
+                    // Артикул новый — показываем форму
+                    pendingSku = text;
+                    document.getElementById('scanned-sku').textContent = text;
+                    document.getElementById('scanned-sku-display').style.display = 'block';
+                    document.getElementById('receive-form').style.display = 'block';
+                    resultDiv.innerHTML = '<div class="success">✅ QR-код отсканирован! Заполните информацию о товаре.</div>';
+                },
+                (err) => console.log(err)
+            );
+            isReceiveScanning = true;
+            resultDiv.innerHTML = '<div class="success">✅ Камера работает. Наведите на QR-код наклейки.</div>';
+        } catch(e) {
+            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры. Проверьте разрешения.</div>';
+        }
+    }
+    
+    // ========== СОХРАНЕНИЕ НОВОГО ТОВАРА ==========
+    async function submitNewProduct() {
+        if (!pendingSku) {
+            alert('Сначала отсканируйте QR-код с наклейки');
+            return;
+        }
+        
+        const model = document.getElementById('receive-model').value;
+        const serialNumber = document.getElementById('receive-serial').value.trim();
+        const purchasePrice = document.getElementById('receive-price').value;
+        const description = document.getElementById('receive-description').value;
+        
+        if (!model) {
+            alert('Выберите модель товара');
+            return;
+        }
+        
+        const resultDiv = document.getElementById('receive-result');
+        resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
+        
+        try {
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=autoAdd`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    sku: pendingSku,
+                    model: model,
+                    serialNumber: serialNumber,
+                    purchasePrice: purchasePrice,
+                    description: description
+                })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован</div>`;
+                // Очищаем форму
+                document.getElementById('receive-model').value = '';
+                document.getElementById('receive-serial').value = '';
+                document.getElementById('receive-price').value = '';
+                document.getElementById('receive-description').value = '';
+                document.getElementById('receive-form').style.display = 'none';
+                document.getElementById('scanned-sku-display').style.display = 'none';
+                pendingSku = null;
+                // Обновляем каталог
+                loadCatalog();
+            } else {
+                resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+        }
+    }
+    
+    function cancelReceive() {
+        document.getElementById('receive-form').style.display = 'none';
+        document.getElementById('scanned-sku-display').style.display = 'none';
+        document.getElementById('receive-result').innerHTML = '';
+        document.getElementById('receive-model').value = '';
+        document.getElementById('receive-serial').value = '';
+        document.getElementById('receive-price').value = '';
+        document.getElementById('receive-description').value = '';
+        pendingSku = null;
+        if (receiveQrCode && isReceiveScanning) {
+            receiveQrCode.stop().then(() => isReceiveScanning = false);
+        }
+    }
+    
+    // ========== ПОИСК ==========
     async function searchBySerial() {
         const sku = document.getElementById('serial-input').value.trim();
         const resultDiv = document.getElementById('search-result');
@@ -376,57 +510,6 @@
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
     
-    // ========== ПРИЁМКА ==========
-    async function submitNewProduct() {
-        const model = document.getElementById('receive-model').value;
-        const serialNumber = document.getElementById('receive-serial').value.trim();
-        const purchasePrice = document.getElementById('receive-price').value;
-        const description = document.getElementById('receive-description').value;
-        
-        if (!model) {
-            alert('Выберите модель товара');
-            return;
-        }
-        
-        const resultDiv = document.getElementById('receive-result');
-        resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
-        
-        try {
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=autoAdd`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    model: model,
-                    serialNumber: serialNumber,
-                    purchasePrice: purchasePrice,
-                    description: description
-                })
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован</div>`;
-                // Очищаем форму
-                document.getElementById('receive-serial').value = '';
-                document.getElementById('receive-price').value = '';
-                document.getElementById('receive-description').value = '';
-                // Обновляем каталог
-                loadCatalog();
-            } else {
-                resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
-            }
-        } catch (error) {
-            resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
-        }
-    }
-    
-    function clearReceiveForm() {
-        document.getElementById('receive-model').value = '';
-        document.getElementById('receive-serial').value = '';
-        document.getElementById('receive-price').value = '';
-        document.getElementById('receive-description').value = '';
-        document.getElementById('receive-result').innerHTML = '';
-    }
-    
     // ========== КАТАЛОГ ==========
     function applyFilters() {
         if (!allProducts.length) return;
@@ -523,8 +606,9 @@
     }
     
     document.getElementById('start-scan-btn').onclick = startScanner;
+    document.getElementById('start-receive-scan').onclick = startReceiveScanner;
     document.getElementById('submit-receive-btn').onclick = submitNewProduct;
-    document.getElementById('clear-receive-btn').onclick = clearReceiveForm;
+    document.getElementById('cancel-receive-btn').onclick = cancelReceive;
     document.getElementById('search-name').addEventListener('input', applyFilters);
     document.getElementById('filter-status').addEventListener('change', applyFilters);
     document.getElementById('price-min').addEventListener('input', applyFilters);
@@ -537,5 +621,3 @@
         handleUrlParams();
     };
 </script>
-</body>
-</html>
