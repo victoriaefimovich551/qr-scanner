@@ -97,17 +97,27 @@
     </div>
     
     <div id="catalog-panel" class="panel">
-        <h2>📦 Каталог дронов</h2>
+        <h2>📦 Каталог</h2>
+        <div id="catalog-stats" style="background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 14px;">
+    <strong>📊 Статистика по комплектациям:</strong>
+    <div id="stats-content">Загрузка...</div>
+</div>
         <div class="filter-group">
             <input type="text" id="search-name" class="filter-input" placeholder="🔍 Поиск по названию...">
             <div class="filter-row">
-                <select id="filter-status">
-                    <option value="">Все статусы</option>
-                    <option value="продан">Продан</option>
-                    <option value="не продан">Не продан</option>
-                    <option value="зарезервирован">Зарезервирован</option>
-                    <option value="в доставке">В доставке</option>
-                </select>
+    <select id="filter-model">
+        <option value="">Все комплектации</option>
+        <!-- Список будет заполняться автоматически из данных -->
+    </select>
+    <select id="filter-status">
+        <option value="">Все статусы</option>
+        <option value="продан">Продан</option>
+        <option value="не продан">Не продан</option>
+        <option value="зарезервирован">Зарезервирован</option>
+        <option value="в доставке">В доставке</option>
+    </select>
+</div>
+            <div class="filter-row">
                 <input type="number" id="price-min" placeholder="💰 Цена от">
                 <input type="number" id="price-max" placeholder="💰 Цена до">
             </div>
@@ -116,7 +126,7 @@
                     <option value="name_asc">По названию</option>
                     <option value="price_asc">По цене (дешёвые)</option>
                 </select>
-                <button id="reset-filters" class="btn-reset">Сбросить</button>
+                <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
             </div>
         </div>
         <div id="catalog-content" class="loading">⏳ Загрузка...</div>
@@ -139,15 +149,139 @@
             <div class="form-group">
                 <label>🚁 Модель *</label>
                 <select id="receive-model">
-                    <option value="">Выберите модель</option>
-                    <option value="DJI Mini 2">DJI Mini 2</option>
-                    <option value="DJI Mini 2 тушка">DJI Mini 2 тушка</option>
-                    <option value="DJI Air 2s">DJI Air 2s</option>
-                    <option value="DJI Air 2s combo">DJI Air 2s combo</option>
-                    <option value="DJI Air 2s тушка">DJI Air 2s тушка</option>
-                    <option value="DJI Air 2 тушка">DJI Air 2 тушка</option>
-                    <option value="DJI Air 3">DJI Air 3</option>
-                </select>
+    <option value="">Выберите модель</option>
+    
+    <optgroup label="Mavic 3 Серия">
+        <option value="DJI Mavic 3">DJI Mavic 3</option>
+        <option value="DJI Mavic 3 Only Drone">DJI Mavic 3 Only Drone</option>
+        <option value="DJI Mavic 3 Fly More Combo">DJI Mavic 3 Fly More Combo</option>
+        <option value="DJI Mavic 3 Cine">DJI Mavic 3 Cine</option>
+        <option value="DJI Mavic 3 Cine Only Drone">DJI Mavic 3 Cine Only Drone</option>
+        <option value="DJI Mavic 3 Cine Premium Combo">DJI Mavic 3 Cine Premium Combo</option>
+        <option value="DJI Mavic 3 Classic">DJI Mavic 3 Classic</option>
+        <option value="DJI Mavic 3 Classic Only Drone">DJI Mavic 3 Classic Only Drone</option>
+        <option value="DJI Mavic 3 Classic Fly More Combo">DJI Mavic 3 Classic Fly More Combo</option>
+        <option value="DJI Mavic 3 Pro">DJI Mavic 3 Pro</option>
+        <option value="DJI Mavic 3 Pro Only Drone">DJI Mavic 3 Pro Only Drone</option>
+        <option value="DJI Mavic 3 Pro Fly More Combo">DJI Mavic 3 Pro Fly More Combo</option>
+        <option value="DJI Mavic 3 Pro Cine">DJI Mavic 3 Pro Cine</option>
+        <option value="DJI Mavic 3 Pro Cine Only Drone">DJI Mavic 3 Pro Cine Only Drone</option>
+        <option value="DJI Mavic 3 Pro Cine Premium Combo">DJI Mavic 3 Pro Cine Premium Combo</option>
+        <option value="DJI Mavic 3 Enterprise (M3E)">DJI Mavic 3 Enterprise (M3E)</option>
+        <option value="DJI Mavic 3 Enterprise (M3E) Only Drone">DJI Mavic 3 Enterprise Only Drone</option>
+        <option value="DJI Mavic 3 Enterprise Fly More Combo">DJI Mavic 3 Enterprise Fly More Combo</option>
+        <option value="DJI Mavic 3E">DJI Mavic 3E</option>
+        <option value="DJI Mavic 3E Only Drone">DJI Mavic 3E Only Drone</option>
+        <option value="DJI Mavic 3E Fly More Combo">DJI Mavic 3E Fly More Combo</option>
+        <option value="DJI Mavic 3T">DJI Mavic 3T</option>
+        <option value="DJI Mavic 3T Only Drone">DJI Mavic 3T Only Drone</option>
+        <option value="DJI Mavic 3T Fly More Combo">DJI Mavic 3T Fly More Combo</option>
+        <option value="DJI Mavic 3M">DJI Mavic 3M</option>
+        <option value="DJI Mavic 3M Only Drone">DJI Mavic 3M Only Drone</option>
+        <option value="DJI Mavic 3M Fly More Combo">DJI Mavic 3M Fly More Combo</option>
+    </optgroup>
+    
+    <optgroup label="Mavic 2 Серия">
+        <option value="DJI Mavic 2 Pro">DJI Mavic 2 Pro</option>
+        <option value="DJI Mavic 2 Pro Only Drone">DJI Mavic 2 Pro Only Drone</option>
+        <option value="DJI Mavic 2 Pro Fly More Combo">DJI Mavic 2 Pro Fly More Combo</option>
+        <option value="DJI Mavic 2 Zoom">DJI Mavic 2 Zoom</option>
+        <option value="DJI Mavic 2 Zoom Only Drone">DJI Mavic 2 Zoom Only Drone</option>
+        <option value="DJI Mavic 2 Zoom Fly More Combo">DJI Mavic 2 Zoom Fly More Combo</option>
+        <option value="DJI Mavic Pro">DJI Mavic Pro</option>
+        <option value="DJI Mavic Pro Only Drone">DJI Mavic Pro Only Drone</option>
+    </optgroup>
+    
+    <optgroup label="Air Серия">
+        <option value="DJI Air 3S">DJI Air 3S</option>
+        <option value="DJI Air 3S Only Drone">DJI Air 3S Only Drone</option>
+        <option value="DJI Air 3S Fly More Combo">DJI Air 3S Fly More Combo</option>
+        <option value="DJI Air 3">DJI Air 3</option>
+        <option value="DJI Air 3 Only Drone">DJI Air 3 Only Drone</option>
+        <option value="DJI Air 3 Fly More Combo">DJI Air 3 Fly More Combo</option>
+        <option value="DJI Air 2S">DJI Air 2S</option>
+        <option value="DJI Air 2S Only Drone">DJI Air 2S Only Drone</option>
+        <option value="DJI Air 2S Fly More Combo">DJI Air 2S Fly More Combo</option>
+        <option value="DJI Air 2">DJI Air 2</option>
+        <option value="DJI Air 2 Only Drone">DJI Air 2 Only Drone</option>
+        <option value="DJI Air 2 Fly More Combo">DJI Air 2 Fly More Combo</option>
+    </optgroup>
+    
+    <optgroup label="Mini Серия">
+        <option value="DJI Mini 5 Pro">DJI Mini 5 Pro</option>
+        <option value="DJI Mini 5 Pro Only Drone">DJI Mini 5 Pro Only Drone</option>
+        <option value="DJI Mini 5 Pro Fly More Combo">DJI Mini 5 Pro Fly More Combo</option>
+        <option value="DJI Mini 4 Pro">DJI Mini 4 Pro</option>
+        <option value="DJI Mini 4 Pro Only Drone">DJI Mini 4 Pro Only Drone</option>
+        <option value="DJI Mini 4 Pro Fly More Combo">DJI Mini 4 Pro Fly More Combo</option>
+        <option value="DJI Mini 4K">DJI Mini 4K</option>
+        <option value="DJI Mini 4K Only Drone">DJI Mini 4K Only Drone</option>
+        <option value="DJI Mini 4K Fly More Combo">DJI Mini 4K Fly More Combo</option>
+        <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
+        <option value="DJI Mini 3 Pro Only Drone">DJI Mini 3 Pro Only Drone</option>
+        <option value="DJI Mini 3 Pro Fly More Combo">DJI Mini 3 Pro Fly More Combo</option>
+        <option value="DJI Mini 3">DJI Mini 3</option>
+        <option value="DJI Mini 3 Only Drone">DJI Mini 3 Only Drone</option>
+        <option value="DJI Mini 3 Fly More Combo">DJI Mini 3 Fly More Combo</option>
+        <option value="DJI Mini 2 SE">DJI Mini 2 SE</option>
+        <option value="DJI Mini 2 SE Only Drone">DJI Mini 2 SE Only Drone</option>
+        <option value="DJI Mini 2 SE Fly More Combo">DJI Mini 2 SE Fly More Combo</option>
+        <option value="DJI Mini 2">DJI Mini 2</option>
+        <option value="DJI Mini 2 Only Drone">DJI Mini 2 Only Drone</option>
+        <option value="DJI Mini 2 Fly More Combo">DJI Mini 2 Fly More Combo</option>
+        <option value="DJI Mini SE">DJI Mini SE</option>
+        <option value="DJI Mini SE Only Drone">DJI Mini SE Only Drone</option>
+    </optgroup>
+    
+    <optgroup label="Neo Серия">
+        <option value="DJI Neo 2">DJI Neo 2</option>
+        <option value="DJI Neo 2 Only Drone">DJI Neo 2 Only Drone</option>
+        <option value="DJI Neo 2 Fly More Combo">DJI Neo 2 Fly More Combo</option>
+        <option value="DJI Neo">DJI Neo</option>
+        <option value="DJI Neo Only Drone">DJI Neo Only Drone</option>
+        <option value="DJI Neo Fly More Combo">DJI Neo Fly More Combo</option>
+        <option value="DJI Neo Motion Fly More Combo">DJI Neo Motion Fly More Combo</option>
+    </optgroup>
+    
+    <optgroup label="Flip Серия">
+        <option value="DJI Flip">DJI Flip</option>
+        <option value="DJI Flip Only Drone">DJI Flip Only Drone</option>
+        <option value="DJI Flip Fly More Combo">DJI Flip Fly More Combo</option>
+    </optgroup>
+    
+    <optgroup label="Avata Серия">
+        <option value="DJI Avata 2">DJI Avata 2</option>
+        <option value="DJI Avata 2 Only Drone">DJI Avata 2 Only Drone</option>
+        <option value="DJI Avata 2 Fly More Combo">DJI Avata 2 Fly More Combo</option>
+        <option value="DJI Avata">DJI Avata</option>
+        <option value="DJI Avata Only Drone">DJI Avata Only Drone</option>
+        <option value="DJI Avata Fly More Combo">DJI Avata Fly More Combo</option>
+    </optgroup>
+    
+    <optgroup label="Inspire Серия">
+        <option value="DJI Inspire 3">DJI Inspire 3</option>
+        <option value="DJI Inspire 3 Only Drone">DJI Inspire 3 Only Drone</option>
+        <option value="DJI Inspire 3 Premium Combo">DJI Inspire 3 Premium Combo</option>
+        <option value="DJI Inspire 2">DJI Inspire 2</option>
+        <option value="DJI Inspire 2 Only Drone">DJI Inspire 2 Only Drone</option>
+        <option value="DJI Inspire 2 Fly More Combo">DJI Inspire 2 Fly More Combo</option>
+    </optgroup>
+    
+    <optgroup label="Matrice Серия">
+        <option value="DJI Matrice 350 RTK">DJI Matrice 350 RTK</option>
+        <option value="DJI Matrice 350 RTK Only Drone">DJI Matrice 350 RTK Only Drone</option>
+        <option value="DJI Matrice 350 RTK Combo">DJI Matrice 350 RTK Combo</option>
+        <option value="DJI Matrice 30">DJI Matrice 30</option>
+        <option value="DJI Matrice 30 Only Drone">DJI Matrice 30 Only Drone</option>
+        <option value="DJI Matrice 30 Combo">DJI Matrice 30 Combo</option>
+        <option value="DJI Matrice 30T">DJI Matrice 30T</option>
+        <option value="DJI Matrice 30T Only Drone">DJI Matrice 30T Only Drone</option>
+        <option value="DJI Matrice 30T Combo">DJI Matrice 30T Combo</option>
+        <option value="DJI Matrice 300 RTK">DJI Matrice 300 RTK</option>
+        <option value="DJI Matrice 300 RTK Only Drone">DJI Matrice 300 RTK Only Drone</option>
+        <option value="DJI Matrice 300 RTK Combo">DJI Matrice 300 RTK Combo</option>
+    </optgroup>
+</select>
             </div>
             
             <div class="form-group">
@@ -534,33 +668,89 @@
         if (!s) return '';
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
+
+    function updateStats(products) {
+    const stats = {};
+    let total = 0;
+    let sold = 0;
+    let reserved = 0;
+    let delivery = 0;
+    let unsold = 0;
+    
+    products.forEach(product => {
+        total++;
+        const model = product['Название'] || 'Без названия';
+        stats[model] = (stats[model] || 0) + 1;
+        
+        switch(product['Статус']) {
+            case 'продан': sold++; break;
+            case 'зарезервирован': reserved++; break;
+            case 'в доставке': delivery++; break;
+            default: unsold++;
+        }
+    });
+    
+    // Формируем HTML статистики
+    let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
+        <span>📦 Всего: <strong>${total}</strong></span>
+        <span style="color: #16a34a;">✅ Продан: <strong>${sold}</strong></span>
+        <span style="color: #eab308;">🔒 Зарезервирован: <strong>${reserved}</strong></span>
+        <span style="color: #3b82f6;">🚚 В доставке: <strong>${delivery}</strong></span>
+        <span style="color: #64748b;">📦 Не продан: <strong>${unsold}</strong></span>
+    </div>`;
+    
+    statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
+    for (const [model, count] of Object.entries(stats).sort()) {
+        statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+            ${model}: <strong>${count}</strong>
+        </span>`;
+    }
+    statsHtml += `</div>`;
+    
+    document.getElementById('stats-content').innerHTML = statsHtml;
+    
+    // Заполняем выпадающий список комплектаций
+    const filterSelect = document.getElementById('filter-model');
+    if (filterSelect) {
+        const currentValue = filterSelect.value;
+        filterSelect.innerHTML = '<option value="">Все комплектации</option>';
+        for (const model of Object.keys(stats).sort()) {
+            filterSelect.innerHTML += `<option value="${escapeHtml(model)}">${model} (${stats[model]})</option>`;
+        }
+        filterSelect.value = currentValue;
+    }
+}
     
     // ========== КАТАЛОГ ==========
     function applyFilters() {
-        if (!allProducts.length) return;
-        const searchTerm = document.getElementById('search-name').value.toLowerCase().trim();
-        const statusFilter = document.getElementById('filter-status').value;
-        const priceMin = parseFloat(document.getElementById('price-min').value);
-        const priceMax = parseFloat(document.getElementById('price-max').value);
-        const sortBy = document.getElementById('sort-by').value;
-        
-        let filtered = allProducts.filter(product => {
-            if (searchTerm && !(product['Название'] || '').toLowerCase().includes(searchTerm)) return false;
-            if (statusFilter && product['Статус'] !== statusFilter) return false;
-            const price = parseFloat(product['Цена продажа']) || 0;
-            if (!isNaN(priceMin) && price < priceMin) return false;
-            if (!isNaN(priceMax) && price > priceMax) return false;
-            return true;
-        });
-        
-        filtered.sort((a, b) => {
-            if (sortBy === 'name_asc') return (a['Название'] || '').localeCompare(b['Название'] || '');
-            if (sortBy === 'price_asc') return (parseFloat(a['Цена продажа']) || 0) - (parseFloat(b['Цена продажа']) || 0);
-            return 0;
-        });
-        
-        renderCatalog(filtered);
-    }
+    if (!allProducts.length) return;
+    
+    const searchTerm = document.getElementById('search-name').value.toLowerCase().trim();
+    const modelFilter = document.getElementById('filter-model')?.value || '';
+    const statusFilter = document.getElementById('filter-status').value;
+    const priceMin = parseFloat(document.getElementById('price-min').value);
+    const priceMax = parseFloat(document.getElementById('price-max').value);
+    const sortBy = document.getElementById('sort-by').value;
+    
+    let filtered = allProducts.filter(product => {
+        if (searchTerm && !(product['Название'] || '').toLowerCase().includes(searchTerm)) return false;
+        if (modelFilter && product['Название'] !== modelFilter) return false;
+        if (statusFilter && product['Статус'] !== statusFilter) return false;
+        const price = parseFloat(product['Цена продажа']) || 0;
+        if (!isNaN(priceMin) && price < priceMin) return false;
+        if (!isNaN(priceMax) && price > priceMax) return false;
+        return true;
+    });
+    
+    filtered.sort((a, b) => {
+        if (sortBy === 'name_asc') return (a['Название'] || '').localeCompare(b['Название'] || '');
+        if (sortBy === 'price_asc') return (parseFloat(a['Цена продажа']) || 0) - (parseFloat(b['Цена продажа']) || 0);
+        return 0;
+    });
+    
+    renderCatalog(filtered);
+    updateStats(filtered);  // ← обновляем статистику
+}
     
     function renderCatalog(products) {
     const container = document.getElementById('catalog-content');
@@ -599,21 +789,22 @@
         await searchBySerial();
     }
     
-    async function loadCatalog() {
-        const container = document.getElementById('catalog-content');
-        container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
-        try {
-            const products = await getAllProducts();
-            allProducts = products;
-            if (!products.length) {
-                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-                return;
-            }
-            applyFilters();
-        } catch (error) {
-            container.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+   async function loadCatalog() {
+    const container = document.getElementById('catalog-content');
+    container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+    try {
+        const products = await getAllProducts();
+        allProducts = products;
+        if (!products.length) {
+            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            document.getElementById('stats-content').innerHTML = 'Нет данных';
+            return;
         }
+        applyFilters();
+    } catch (error) {
+        container.innerHTML = `<div class="error">❌ ${error.message}</div>`;
     }
+}
     
     async function getAllProducts() {
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
