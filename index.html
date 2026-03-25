@@ -437,46 +437,75 @@
     }
     
     function displayProduct(p, containerId) {
-        const container = document.getElementById(containerId);
-        
-        let ценаЗакупка = p['Цена закупка'];
-        if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) {
-            ценаЗакупка = `${parseFloat(ценаЗакупка).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        let ценаПродажа = p['Цена продажа'];
-        if (ценаПродажа && !isNaN(parseFloat(ценаПродажа))) {
-            ценаПродажа = `${parseFloat(ценаПродажа).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        const statusClass = getStatusClass(p['Статус']);
-        const statusText = getStatusText(p['Статус']);
-        
-        let html = `<div class="product-card">
-            <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
-            <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Артикул'] || '—')}</div>
-            <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
-            <div class="product-detail"><strong>📝 Состояние:</strong> ${escapeHtml(p['Состояние'] || '—')}</div>
-            <div class="product-detail"><strong>💰 Цена закупки:</strong> ${ценаЗакупка || '—'}</div>
-            <div class="product-detail"><strong>💰 Цена продажи:</strong> ${ценаПродажа || '—'}</div>`;
-        
-        html += `<div class="product-detail"><strong>📌 Статус:</strong> <span class="${statusClass}">${statusText}</span></div>`;
-        
-        if (p['Ссылка на Авито']) {
-            html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на Авито'])}" target="_blank">Открыть →</a></div>`;
-        }
-        
-        if (p['QR_Code']) {
-            html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
-        }
-        
-        html += `<div class="action-buttons">
-            <button class="action-btn" onclick="shareProduct('${escapeHtml(p['Артикул'])}')">📤 Поделиться</button>
-        </div>`;
-        
-        html += `</div>`;
-        container.innerHTML = html;
+    const container = document.getElementById(containerId);
+    
+    let ценаЗакупка = p['Цена закупка'];
+    if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) {
+        ценаЗакупка = `${parseFloat(ценаЗакупка).toLocaleString('ru-RU')} ₽`;
     }
+    
+    let ценаПродажа = p['Цена продажа'];
+    if (ценаПродажа && !isNaN(parseFloat(ценаПродажа))) {
+        ценаПродажа = `${parseFloat(ценаПродажа).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    let прибыль = p['Прибыль'];
+    if (прибыль && !isNaN(parseFloat(прибыль))) {
+        прибыль = `${parseFloat(прибыль).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    let затратыРемонт = p['Затраты ремонт'];
+    if (затратыРемонт && !isNaN(parseFloat(затратыРемонт))) {
+        затратыРемонт = `${parseFloat(затратыРемонт).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    let затратыДоставка = p['Затраты доставка'];
+    if (затратыДоставка && !isNaN(parseFloat(затратыДоставка))) {
+        затратыДоставка = `${parseFloat(затратыДоставка).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    const statusClass = getStatusClass(p['Статус']);
+    const statusText = getStatusText(p['Статус']);
+    
+    let html = `<div class="product-card">
+        <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
+        <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Артикул'] || '—')}</div>
+        <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
+        <div class="product-detail"><strong>📝 Состояние:</strong> ${escapeHtml(p['Состояние'] || '—')}</div>
+        <div class="product-detail"><strong>💰 Цена закупки:</strong> ${ценаЗакупка || '—'}</div>
+        <div class="product-detail"><strong>💰 Цена продажи:</strong> ${ценаПродажа || '—'}</div>`;
+    
+    if (затратыРемонт) {
+        html += `<div class="product-detail"><strong>🔧 Затраты (ремонт):</strong> ${затратыРемонт}</div>`;
+    }
+    if (затратыДоставка) {
+        html += `<div class="product-detail"><strong>📦 Затраты (доставка):</strong> ${затратыДоставка}</div>`;
+    }
+    if (прибыль) {
+        html += `<div class="product-detail"><strong>💰 Прибыль:</strong> ${прибыль}</div>`;
+    }
+    
+    html += `<div class="product-detail"><strong>📌 Статус:</strong> <span class="${statusClass}">${statusText}</span></div>`;
+    
+    if (p['Ссылка на Авито']) {
+        html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на Авито'])}" target="_blank">Открыть →</a></div>`;
+    }
+    
+    if (p['Фото'] && p['Фото'] !== 'IMAGE') {
+        html += `<div class="product-detail"><strong>📷 Фото:</strong> <a href="${escapeHtml(p['Фото'])}" target="_blank">Посмотреть</a></div>`;
+    }
+    
+    if (p['QR_Code']) {
+        html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
+    }
+    
+    html += `<div class="action-buttons">
+        <button class="action-btn" onclick="shareProduct('${escapeHtml(p['Артикул'])}')">📤 Поделиться</button>
+    </div>`;
+    
+    html += `</div>`;
+    container.innerHTML = html;
+}
     
     async function shareProduct(sku) {
         try {
@@ -534,26 +563,26 @@
     }
     
     function renderCatalog(products) {
-        const container = document.getElementById('catalog-content');
-        if (products.length === 0) {
-            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-            return;
-        }
-        let html = '<div class="products-grid">';
-        products.forEach(product => {
-            const price = product['Цена продажа'] ? `${parseFloat(product['Цена продажа']).toLocaleString('ru-RU')} ₽` : '—';
-            const statusClass = getStatusClass(product['Статус']);
-            const statusText = getStatusText(product['Статус']);
-            html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
-                <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
-                <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
-                <small>💰 ${price}</small><br>
-                <small class="${statusClass}">${statusText}</small>
-            </div>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
+    const container = document.getElementById('catalog-content');
+    if (products.length === 0) {
+        container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+        return;
     }
+    let html = '<div class="products-grid">';
+    products.forEach(product => {
+        const price = product['Цена продажа'] ? `${parseFloat(product['Цена продажа']).toLocaleString('ru-RU')} ₽` : '—';
+        const statusClass = getStatusClass(product['Статус']);
+        const statusText = getStatusText(product['Статус']);
+        html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
+            <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
+            <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
+            <small>💰 ${price}</small><br>
+            <small class="${statusClass}">${statusText}</small>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
     
     function resetFilters() {
         document.getElementById('search-name').value = '';
