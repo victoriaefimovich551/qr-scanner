@@ -116,7 +116,7 @@
 <div class="container">
     <div class="card">
         <h1>🖨️ Генератор QR-кодов для наклеек</h1>
-        <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших дронов</p>
+        <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших товаров</p>
         
         <div class="tab-buttons">
             <button class="tab-btn active" onclick="switchTab('generate')">📱 Генерация QR</button>
@@ -125,127 +125,46 @@
         
         <div id="generate-pane" class="tab-pane active">
             <div class="form-group">
-                <label>🚁 Модель дрона</label>
+                <label>🚁 Модель товара</label>
                 <select id="model" size="10" style="height: auto;">
-                    <optgroup label="Mavic 3 Серия">
-                        <option value="DJI Mavic 3">Mavic 3 → M3-XXX</option>
-                        <option value="DJI Mavic 3 Only Drone">Mavic 3 Only Drone → M3-XXX</option>
-                        <option value="DJI Mavic 3 Fly More Combo">Mavic 3 Fly More Combo → M3-XXX</option>
-                        <option value="DJI Mavic 3 Cine">Mavic 3 Cine → M3C-XXX</option>
-                        <option value="DJI Mavic 3 Cine Only Drone">Mavic 3 Cine Only Drone → M3C-XXX</option>
-                        <option value="DJI Mavic 3 Cine Premium Combo">Mavic 3 Cine Premium Combo → M3C-XXX</option>
-                        <option value="DJI Mavic 3 Classic">Mavic 3 Classic → M3C-XXX</option>
-                        <option value="DJI Mavic 3 Classic Only Drone">Mavic 3 Classic Only Drone → M3C-XXX</option>
-                        <option value="DJI Mavic 3 Classic Fly More Combo">Mavic 3 Classic Fly More Combo → M3C-XXX</option>
-                        <option value="DJI Mavic 3 Pro">Mavic 3 Pro → M3P-XXX</option>
-                        <option value="DJI Mavic 3 Pro Only Drone">Mavic 3 Pro Only Drone → M3P-XXX</option>
-                        <option value="DJI Mavic 3 Pro Fly More Combo">Mavic 3 Pro Fly More Combo → M3P-XXX</option>
-                        <option value="DJI Mavic 3 Pro Cine">Mavic 3 Pro Cine → M3PC-XXX</option>
-                        <option value="DJI Mavic 3 Pro Cine Only Drone">Mavic 3 Pro Cine Only Drone → M3PC-XXX</option>
-                        <option value="DJI Mavic 3 Pro Cine Premium Combo">Mavic 3 Pro Cine Premium Combo → M3PC-XXX</option>
-                        <option value="DJI Mavic 3 Enterprise (M3E)">Mavic 3 Enterprise (M3E) → M3E-XXX</option>
-                        <option value="DJI Mavic 3 Enterprise (M3E) Only Drone">Mavic 3 Enterprise Only Drone → M3E-XXX</option>
-                        <option value="DJI Mavic 3 Enterprise Fly More Combo">Mavic 3 Enterprise Fly More Combo → M3E-XXX</option>
-                        <option value="DJI Mavic 3E">Mavic 3E → M3E-XXX</option>
-                        <option value="DJI Mavic 3E Only Drone">Mavic 3E Only Drone → M3E-XXX</option>
-                        <option value="DJI Mavic 3E Fly More Combo">Mavic 3E Fly More Combo → M3E-XXX</option>
-                        <option value="DJI Mavic 3T">Mavic 3T → M3T-XXX</option>
-                        <option value="DJI Mavic 3T Only Drone">Mavic 3T Only Drone → M3T-XXX</option>
-                        <option value="DJI Mavic 3T Fly More Combo">Mavic 3T Fly More Combo → M3T-XXX</option>
-                        <option value="DJI Mavic 3M">Mavic 3M → M3M-XXX</option>
-                        <option value="DJI Mavic 3M Only Drone">Mavic 3M Only Drone → M3M-XXX</option>
-                        <option value="DJI Mavic 3M Fly More Combo">Mavic 3M Fly More Combo → M3M-XXX</option>
-                    </optgroup>
-                    <optgroup label="Mavic 2 Серия">
-                        <option value="DJI Mavic 2 Pro">Mavic 2 Pro → M2P-XXX</option>
-                        <option value="DJI Mavic 2 Pro Only Drone">Mavic 2 Pro Only Drone → M2P-XXX</option>
-                        <option value="DJI Mavic 2 Pro Fly More Combo">Mavic 2 Pro Fly More Combo → M2P-XXX</option>
-                        <option value="DJI Mavic 2 Zoom">Mavic 2 Zoom → M2Z-XXX</option>
-                        <option value="DJI Mavic 2 Zoom Only Drone">Mavic 2 Zoom Only Drone → M2Z-XXX</option>
-                        <option value="DJI Mavic 2 Zoom Fly More Combo">Mavic 2 Zoom Fly More Combo → M2Z-XXX</option>
-                        <option value="DJI Mavic Pro">Mavic Pro → MP-XXX</option>
-                        <option value="DJI Mavic Pro Only Drone">Mavic Pro Only Drone → MP-XXX</option>
-                    </optgroup>
-                    <optgroup label="Air Серия">
-                        <option value="DJI Air 3S">Air 3S → A3S-XXX</option>
-                        <option value="DJI Air 3S Only Drone">Air 3S Only Drone → A3S-XXX</option>
-                        <option value="DJI Air 3S Fly More Combo">Air 3S Fly More Combo → A3S-XXX</option>
-                        <option value="DJI Air 3">Air 3 → A3-XXX</option>
-                        <option value="DJI Air 3 Only Drone">Air 3 Only Drone → A3-XXX</option>
-                        <option value="DJI Air 3 Fly More Combo">Air 3 Fly More Combo → A3-XXX</option>
-                        <option value="DJI Air 2S">Air 2S → A2S-XXX</option>
-                        <option value="DJI Air 2S Only Drone">Air 2S Only Drone → A2S-XXX</option>
-                        <option value="DJI Air 2S Fly More Combo">Air 2S Fly More Combo → A2S-XXX</option>
-                        <option value="DJI Air 2">Air 2 → A2-XXX</option>
-                        <option value="DJI Air 2 Only Drone">Air 2 Only Drone → A2-XXX</option>
-                        <option value="DJI Air 2 Fly More Combo">Air 2 Fly More Combo → A2-XXX</option>
-                    </optgroup>
-                    <optgroup label="Mini Серия">
-                        <option value="DJI Mini 5 Pro">Mini 5 Pro → MN5P-XXX</option>
-                        <option value="DJI Mini 5 Pro Only Drone">Mini 5 Pro Only Drone → MN5P-XXX</option>
-                        <option value="DJI Mini 5 Pro Fly More Combo">Mini 5 Pro Fly More Combo → MN5P-XXX</option>
-                        <option value="DJI Mini 4 Pro">Mini 4 Pro → MN4P-XXX</option>
-                        <option value="DJI Mini 4 Pro Only Drone">Mini 4 Pro Only Drone → MN4P-XXX</option>
-                        <option value="DJI Mini 4 Pro Fly More Combo">Mini 4 Pro Fly More Combo → MN4P-XXX</option>
-                        <option value="DJI Mini 4K">Mini 4K → MN4K-XXX</option>
-                        <option value="DJI Mini 4K Only Drone">Mini 4K Only Drone → MN4K-XXX</option>
-                        <option value="DJI Mini 4K Fly More Combo">Mini 4K Fly More Combo → MN4K-XXX</option>
-                        <option value="DJI Mini 3 Pro">Mini 3 Pro → MN3P-XXX</option>
-                        <option value="DJI Mini 3 Pro Only Drone">Mini 3 Pro Only Drone → MN3P-XXX</option>
-                        <option value="DJI Mini 3 Pro Fly More Combo">Mini 3 Pro Fly More Combo → MN3P-XXX</option>
-                        <option value="DJI Mini 3">Mini 3 → MN3-XXX</option>
-                        <option value="DJI Mini 3 Only Drone">Mini 3 Only Drone → MN3-XXX</option>
-                        <option value="DJI Mini 3 Fly More Combo">Mini 3 Fly More Combo → MN3-XXX</option>
-                        <option value="DJI Mini 2 SE">Mini 2 SE → MN2S-XXX</option>
-                        <option value="DJI Mini 2 SE Only Drone">Mini 2 SE Only Drone → MN2S-XXX</option>
-                        <option value="DJI Mini 2 SE Fly More Combo">Mini 2 SE Fly More Combo → MN2S-XXX</option>
-                        <option value="DJI Mini 2">Mini 2 → MN2-XXX</option>
-                        <option value="DJI Mini 2 Only Drone">Mini 2 Only Drone → MN2-XXX</option>
-                        <option value="DJI Mini 2 Fly More Combo">Mini 2 Fly More Combo → MN2-XXX</option>
-                        <option value="DJI Mini SE">Mini SE → MNSE-XXX</option>
-                        <option value="DJI Mini SE Only Drone">Mini SE Only Drone → MNSE-XXX</option>
-                    </optgroup>
-                    <optgroup label="Neo / Flip / Avata">
-                        <option value="DJI Neo 2">Neo 2 → NEO2-XXX</option>
-                        <option value="DJI Neo 2 Only Drone">Neo 2 Only Drone → NEO2-XXX</option>
-                        <option value="DJI Neo 2 Fly More Combo">Neo 2 Fly More Combo → NEO2-XXX</option>
-                        <option value="DJI Neo">Neo → NEO-XXX</option>
-                        <option value="DJI Neo Only Drone">Neo Only Drone → NEO-XXX</option>
-                        <option value="DJI Neo Fly More Combo">Neo Fly More Combo → NEO-XXX</option>
-                        <option value="DJI Neo Motion Fly More Combo">Neo Motion Fly More Combo → NEO-XXX</option>
-                        <option value="DJI Flip">Flip → FLP-XXX</option>
-                        <option value="DJI Flip Only Drone">Flip Only Drone → FLP-XXX</option>
-                        <option value="DJI Flip Fly More Combo">Flip Fly More Combo → FLP-XXX</option>
-                        <option value="DJI Avata 2">Avata 2 → AVA2-XXX</option>
-                        <option value="DJI Avata 2 Only Drone">Avata 2 Only Drone → AVA2-XXX</option>
-                        <option value="DJI Avata 2 Fly More Combo">Avata 2 Fly More Combo → AVA2-XXX</option>
-                        <option value="DJI Avata">Avata → AVA-XXX</option>
-                        <option value="DJI Avata Only Drone">Avata Only Drone → AVA-XXX</option>
-                        <option value="DJI Avata Fly More Combo">Avata Fly More Combo → AVA-XXX</option>
-                    </optgroup>
-                    <optgroup label="Inspire Серия">
-                        <option value="DJI Inspire 3">Inspire 3 → INS3-XXX</option>
-                        <option value="DJI Inspire 3 Only Drone">Inspire 3 Only Drone → INS3-XXX</option>
-                        <option value="DJI Inspire 3 Premium Combo">Inspire 3 Premium Combo → INS3-XXX</option>
-                        <option value="DJI Inspire 2">Inspire 2 → INS2-XXX</option>
-                        <option value="DJI Inspire 2 Only Drone">Inspire 2 Only Drone → INS2-XXX</option>
-                        <option value="DJI Inspire 2 Fly More Combo">Inspire 2 Fly More Combo → INS2-XXX</option>
-                    </optgroup>
-                    <optgroup label="Matrice Серия">
-                        <option value="DJI Matrice 350 RTK">Matrice 350 RTK → MTR350-XXX</option>
-                        <option value="DJI Matrice 350 RTK Only Drone">Matrice 350 RTK Only Drone → MTR350-XXX</option>
-                        <option value="DJI Matrice 350 RTK Combo">Matrice 350 RTK Combo → MTR350-XXX</option>
-                        <option value="DJI Matrice 30">Matrice 30 → MTR30-XXX</option>
-                        <option value="DJI Matrice 30 Only Drone">Matrice 30 Only Drone → MTR30-XXX</option>
-                        <option value="DJI Matrice 30 Combo">Matrice 30 Combo → MTR30-XXX</option>
-                        <option value="DJI Matrice 30T">Matrice 30T → MTR30T-XXX</option>
-                        <option value="DJI Matrice 30T Only Drone">Matrice 30T Only Drone → MTR30T-XXX</option>
-                        <option value="DJI Matrice 30T Combo">Matrice 30T Combo → MTR30T-XXX</option>
-                        <option value="DJI Matrice 300 RTK">Matrice 300 RTK → MTR300-XXX</option>
-                        <option value="DJI Matrice 300 RTK Only Drone">Matrice 300 RTK Only Drone → MTR300-XXX</option>
-                        <option value="DJI Matrice 300 RTK Combo">Matrice 300 RTK Combo → MTR300-XXX</option>
-                    </optgroup>
-                </select>
+    <optgroup label="Mavic 3 Серия">
+        <option value="Mavic 3">Mavic 3 → M3-XXX</option>
+    </optgroup>
+    <optgroup label="Mavic 2 Серия">
+        <option value="Mavic 2">Mavic 2 → M2-XXX</option>
+    </optgroup>
+    <optgroup label="Air Серия">
+        <option value="Air 3S">Air 3S → A3S-XXX</option>
+        <option value="Air 3">Air 3 → A3-XXX</option>
+        <option value="Air 2S">Air 2S → A2S-XXX</option>
+        <option value="Air 2">Air 2 → A2-XXX</option>
+    </optgroup>
+    <optgroup label="Mini Серия">
+        <option value="Mini 5 Pro">Mini 5 Pro → MN5P-XXX</option>
+        <option value="Mini 4 Pro">Mini 4 Pro → MN4P-XXX</option>
+        <option value="Mini 4K">Mini 4K → MN4K-XXX</option>
+        <option value="Mini 3 Pro">Mini 3 Pro → MN3P-XXX</option>
+        <option value="Mini 3">Mini 3 → MN3-XXX</option>
+        <option value="Mini 2 SE">Mini 2 SE → MN2S-XXX</option>
+        <option value="Mini 2">Mini 2 → MN2-XXX</option>
+        <option value="Mini SE">Mini SE → MNSE-XXX</option>
+    </optgroup>
+    <optgroup label="Neo / Flip / Avata">
+        <option value="Neo">Neo → NEO-XXX</option>
+        <option value="Flip">Flip → FLP-XXX</option>
+        <option value="Avata">Avata → AVA-XXX</option>
+    </optgroup>
+    <optgroup label="Inspire">
+        <option value="Inspire 3">Inspire 3 → INS3-XXX</option>
+        <option value="Inspire 2">Inspire 2 → INS2-XXX</option>
+    </optgroup>
+    <optgroup label="Matrice">
+        <option value="Matrice 350 RTK">Matrice 350 RTK → MTR350-XXX</option>
+        <option value="Matrice 30">Matrice 30 → MTR30-XXX</option>
+        <option value="Matrice 30T">Matrice 30T → MTR30T-XXX</option>
+        <option value="Matrice 300 RTK">Matrice 300 RTK → MTR300-XXX</option>
+    </optgroup>
+</select>
             </div>
             
             <div class="row">
