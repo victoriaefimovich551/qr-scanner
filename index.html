@@ -74,11 +74,12 @@
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('scan')">📷 Сканер</button>
-        <button class="tab-btn" onclick="switchTab('search')">🔍 Поиск</button>
-        <button class="tab-btn" onclick="switchTab('catalog')">📦 Каталог</button>
-        <button class="tab-btn" onclick="switchTab('receive')">➕ Приёмка</button>
-    </div>
+    <button class="tab-btn active" onclick="switchTab('scan')">📷 Сканер</button>
+    <button class="tab-btn" onclick="switchTab('search')">🔍 Поиск</button>
+    <button class="tab-btn" onclick="switchTab('catalog')">📦 Каталог</button>
+    <button class="tab-btn" onclick="switchTab('receive')">➕ Приёмка QR</button>
+    <button class="tab-btn" onclick="switchTab('receive-noqr')">📝 Приёмка без QR</button>
+</div>
     
     <div id="scan-panel" class="panel active">
         <h2>📷 Поиск по QR-коду</h2>
@@ -308,6 +309,160 @@
     </div>
 </div>
 
+    <!-- Панель приёмки без QR (новая) -->
+<div id="receive-noqr-panel" class="panel">
+    <h2>📝 Приёмка нового дрона (без QR)</h2>
+    <p style="color: #666; margin-bottom: 15px;">Заполните информацию о дроне. QR-код будет сгенерирован автоматически после добавления.</p>
+    
+    <div class="form-group">
+        <label>🚁 Модель *</label>
+        <select id="receive-noqr-model">
+            <option value="">Выберите модель</option>
+            <optgroup label="Mavic 3 Серия">
+                <option value="DJI Mavic 3">DJI Mavic 3</option>
+                <option value="DJI Mavic 3 Only Drone">DJI Mavic 3 Only Drone</option>
+                <option value="DJI Mavic 3 Fly More Combo">DJI Mavic 3 Fly More Combo</option>
+                <option value="DJI Mavic 3 Cine">DJI Mavic 3 Cine</option>
+                <option value="DJI Mavic 3 Cine Only Drone">DJI Mavic 3 Cine Only Drone</option>
+                <option value="DJI Mavic 3 Cine Premium Combo">DJI Mavic 3 Cine Premium Combo</option>
+                <option value="DJI Mavic 3 Classic">DJI Mavic 3 Classic</option>
+                <option value="DJI Mavic 3 Classic Only Drone">DJI Mavic 3 Classic Only Drone</option>
+                <option value="DJI Mavic 3 Classic Fly More Combo">DJI Mavic 3 Classic Fly More Combo</option>
+                <option value="DJI Mavic 3 Pro">DJI Mavic 3 Pro</option>
+                <option value="DJI Mavic 3 Pro Only Drone">DJI Mavic 3 Pro Only Drone</option>
+                <option value="DJI Mavic 3 Pro Fly More Combo">DJI Mavic 3 Pro Fly More Combo</option>
+                <option value="DJI Mavic 3 Pro Cine">DJI Mavic 3 Pro Cine</option>
+                <option value="DJI Mavic 3 Pro Cine Only Drone">DJI Mavic 3 Pro Cine Only Drone</option>
+                <option value="DJI Mavic 3 Pro Cine Premium Combo">DJI Mavic 3 Pro Cine Premium Combo</option>
+                <option value="DJI Mavic 3 Enterprise (M3E)">DJI Mavic 3 Enterprise (M3E)</option>
+                <option value="DJI Mavic 3 Enterprise (M3E) Only Drone">DJI Mavic 3 Enterprise Only Drone</option>
+                <option value="DJI Mavic 3 Enterprise Fly More Combo">DJI Mavic 3 Enterprise Fly More Combo</option>
+                <option value="DJI Mavic 3E">DJI Mavic 3E</option>
+                <option value="DJI Mavic 3E Only Drone">DJI Mavic 3E Only Drone</option>
+                <option value="DJI Mavic 3E Fly More Combo">DJI Mavic 3E Fly More Combo</option>
+                <option value="DJI Mavic 3T">DJI Mavic 3T</option>
+                <option value="DJI Mavic 3T Only Drone">DJI Mavic 3T Only Drone</option>
+                <option value="DJI Mavic 3T Fly More Combo">DJI Mavic 3T Fly More Combo</option>
+                <option value="DJI Mavic 3M">DJI Mavic 3M</option>
+                <option value="DJI Mavic 3M Only Drone">DJI Mavic 3M Only Drone</option>
+                <option value="DJI Mavic 3M Fly More Combo">DJI Mavic 3M Fly More Combo</option>
+            </optgroup>
+            <optgroup label="Mavic 2 Серия">
+                <option value="DJI Mavic 2 Pro">DJI Mavic 2 Pro</option>
+                <option value="DJI Mavic 2 Pro Only Drone">DJI Mavic 2 Pro Only Drone</option>
+                <option value="DJI Mavic 2 Pro Fly More Combo">DJI Mavic 2 Pro Fly More Combo</option>
+                <option value="DJI Mavic 2 Zoom">DJI Mavic 2 Zoom</option>
+                <option value="DJI Mavic 2 Zoom Only Drone">DJI Mavic 2 Zoom Only Drone</option>
+                <option value="DJI Mavic 2 Zoom Fly More Combo">DJI Mavic 2 Zoom Fly More Combo</option>
+                <option value="DJI Mavic Pro">DJI Mavic Pro</option>
+                <option value="DJI Mavic Pro Only Drone">DJI Mavic Pro Only Drone</option>
+            </optgroup>
+            <optgroup label="Air Серия">
+                <option value="DJI Air 3S">DJI Air 3S</option>
+                <option value="DJI Air 3S Only Drone">DJI Air 3S Only Drone</option>
+                <option value="DJI Air 3S Fly More Combo">DJI Air 3S Fly More Combo</option>
+                <option value="DJI Air 3">DJI Air 3</option>
+                <option value="DJI Air 3 Only Drone">DJI Air 3 Only Drone</option>
+                <option value="DJI Air 3 Fly More Combo">DJI Air 3 Fly More Combo</option>
+                <option value="DJI Air 2S">DJI Air 2S</option>
+                <option value="DJI Air 2S Only Drone">DJI Air 2S Only Drone</option>
+                <option value="DJI Air 2S Fly More Combo">DJI Air 2S Fly More Combo</option>
+                <option value="DJI Air 2">DJI Air 2</option>
+                <option value="DJI Air 2 Only Drone">DJI Air 2 Only Drone</option>
+                <option value="DJI Air 2 Fly More Combo">DJI Air 2 Fly More Combo</option>
+            </optgroup>
+            <optgroup label="Mini Серия">
+                <option value="DJI Mini 5 Pro">DJI Mini 5 Pro</option>
+                <option value="DJI Mini 5 Pro Only Drone">DJI Mini 5 Pro Only Drone</option>
+                <option value="DJI Mini 5 Pro Fly More Combo">DJI Mini 5 Pro Fly More Combo</option>
+                <option value="DJI Mini 4 Pro">DJI Mini 4 Pro</option>
+                <option value="DJI Mini 4 Pro Only Drone">DJI Mini 4 Pro Only Drone</option>
+                <option value="DJI Mini 4 Pro Fly More Combo">DJI Mini 4 Pro Fly More Combo</option>
+                <option value="DJI Mini 4K">DJI Mini 4K</option>
+                <option value="DJI Mini 4K Only Drone">DJI Mini 4K Only Drone</option>
+                <option value="DJI Mini 4K Fly More Combo">DJI Mini 4K Fly More Combo</option>
+                <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
+                <option value="DJI Mini 3 Pro Only Drone">DJI Mini 3 Pro Only Drone</option>
+                <option value="DJI Mini 3 Pro Fly More Combo">DJI Mini 3 Pro Fly More Combo</option>
+                <option value="DJI Mini 3">DJI Mini 3</option>
+                <option value="DJI Mini 3 Only Drone">DJI Mini 3 Only Drone</option>
+                <option value="DJI Mini 3 Fly More Combo">DJI Mini 3 Fly More Combo</option>
+                <option value="DJI Mini 2 SE">DJI Mini 2 SE</option>
+                <option value="DJI Mini 2 SE Only Drone">DJI Mini 2 SE Only Drone</option>
+                <option value="DJI Mini 2 SE Fly More Combo">DJI Mini 2 SE Fly More Combo</option>
+                <option value="DJI Mini 2">DJI Mini 2</option>
+                <option value="DJI Mini 2 Only Drone">DJI Mini 2 Only Drone</option>
+                <option value="DJI Mini 2 Fly More Combo">DJI Mini 2 Fly More Combo</option>
+                <option value="DJI Mini SE">DJI Mini SE</option>
+                <option value="DJI Mini SE Only Drone">DJI Mini SE Only Drone</option>
+            </optgroup>
+            <optgroup label="Neo Серия">
+                <option value="DJI Neo 2">DJI Neo 2</option>
+                <option value="DJI Neo 2 Only Drone">DJI Neo 2 Only Drone</option>
+                <option value="DJI Neo 2 Fly More Combo">DJI Neo 2 Fly More Combo</option>
+                <option value="DJI Neo">DJI Neo</option>
+                <option value="DJI Neo Only Drone">DJI Neo Only Drone</option>
+                <option value="DJI Neo Fly More Combo">DJI Neo Fly More Combo</option>
+                <option value="DJI Neo Motion Fly More Combo">DJI Neo Motion Fly More Combo</option>
+            </optgroup>
+            <optgroup label="Flip Серия">
+                <option value="DJI Flip">DJI Flip</option>
+                <option value="DJI Flip Only Drone">DJI Flip Only Drone</option>
+                <option value="DJI Flip Fly More Combo">DJI Flip Fly More Combo</option>
+            </optgroup>
+            <optgroup label="Avata Серия">
+                <option value="DJI Avata 2">DJI Avata 2</option>
+                <option value="DJI Avata 2 Only Drone">DJI Avata 2 Only Drone</option>
+                <option value="DJI Avata 2 Fly More Combo">DJI Avata 2 Fly More Combo</option>
+                <option value="DJI Avata">DJI Avata</option>
+                <option value="DJI Avata Only Drone">DJI Avata Only Drone</option>
+                <option value="DJI Avata Fly More Combo">DJI Avata Fly More Combo</option>
+            </optgroup>
+            <optgroup label="Inspire Серия">
+                <option value="DJI Inspire 3">DJI Inspire 3</option>
+                <option value="DJI Inspire 3 Only Drone">DJI Inspire 3 Only Drone</option>
+                <option value="DJI Inspire 3 Premium Combo">DJI Inspire 3 Premium Combo</option>
+                <option value="DJI Inspire 2">DJI Inspire 2</option>
+                <option value="DJI Inspire 2 Only Drone">DJI Inspire 2 Only Drone</option>
+                <option value="DJI Inspire 2 Fly More Combo">DJI Inspire 2 Fly More Combo</option>
+            </optgroup>
+            <optgroup label="Matrice Серия">
+                <option value="DJI Matrice 350 RTK">DJI Matrice 350 RTK</option>
+                <option value="DJI Matrice 350 RTK Only Drone">DJI Matrice 350 RTK Only Drone</option>
+                <option value="DJI Matrice 350 RTK Combo">DJI Matrice 350 RTK Combo</option>
+                <option value="DJI Matrice 30">DJI Matrice 30</option>
+                <option value="DJI Matrice 30 Only Drone">DJI Matrice 30 Only Drone</option>
+                <option value="DJI Matrice 30 Combo">DJI Matrice 30 Combo</option>
+                <option value="DJI Matrice 30T">DJI Matrice 30T</option>
+                <option value="DJI Matrice 30T Only Drone">DJI Matrice 30T Only Drone</option>
+                <option value="DJI Matrice 30T Combo">DJI Matrice 30T Combo</option>
+                <option value="DJI Matrice 300 RTK">DJI Matrice 300 RTK</option>
+                <option value="DJI Matrice 300 RTK Only Drone">DJI Matrice 300 RTK Only Drone</option>
+                <option value="DJI Matrice 300 RTK Combo">DJI Matrice 300 RTK Combo</option>
+            </optgroup>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>🔢 Серийный номер (заводской)</label>
+        <input type="text" id="receive-noqr-serial" placeholder="Например: 3YTBJ4900301RC">
+    </div>
+    
+    <div class="form-group">
+        <label>💰 Цена закупки</label>
+        <input type="number" id="receive-noqr-price" placeholder="0">
+    </div>
+    
+    <div class="form-group">
+        <label>📝 Состояние / Описание</label>
+        <textarea id="receive-noqr-description" rows="3" placeholder="Состояние, комплектация, примечания..."></textarea>
+    </div>
+    
+    <div id="receive-noqr-result"></div>
+    <button id="submit-noqr-btn" style="background: #16a34a;">✅ Добавить товар (QR создастся автоматически)</button>
+    <button id="clear-noqr-btn" style="background: #64748b;">🗑️ Очистить</button>
+</div>
+    
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfj5SYgFi36Jhk63L2ppLfdkHqg6cEKTgQ8KilB4UkTZBqqE3VkM6_S9yRfKDlpC6XHw/exec';
@@ -342,18 +497,23 @@
     }
     
     function switchTab(tab) {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tab + '-panel').classList.add('active');
-        event.target.classList.add('active');
-        if (tab === 'catalog') loadCatalog();
-        if (tab === 'scan' && html5QrCode && isScanning) {
-            html5QrCode.stop().then(() => isScanning = false);
-        }
-        if (tab === 'receive') {
-            if (receiveQrCode && isReceiveScanning) {
-                receiveQrCode.stop().then(() => isReceiveScanning = false);
-            }
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab + '-panel').classList.add('active');
+    event.target.classList.add('active');
+    if (tab === 'catalog') loadCatalog();
+    if (tab === 'scan' && html5QrCode && isScanning) {
+        html5QrCode.stop().then(() => isScanning = false);
+    }
+    if (tab === 'receive') {
+        if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+    }
+    if (tab === 'receive-noqr') {
+        // Останавливаем сканеры если были активны
+        if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+        if (html5QrCode && isScanning) html5QrCode.stop().then(() => isScanning = false);
+    }
+}
             // Скрываем форму при переключении
             document.getElementById('receive-form').style.display = 'none';
             document.getElementById('scanned-sku-display').style.display = 'none';
@@ -526,6 +686,62 @@
             receiveQrCode.stop().then(() => isReceiveScanning = false);
         }
     }
+
+    // ========== ПРИЁМКА БЕЗ QR (НОВАЯ) ==========
+async function submitNoQRProduct() {
+    const model = document.getElementById('receive-noqr-model').value;
+    const serialNumber = document.getElementById('receive-noqr-serial').value.trim();
+    const purchasePrice = document.getElementById('receive-noqr-price').value;
+    const description = document.getElementById('receive-noqr-description').value;
+    
+    if (!model) {
+        alert('Выберите модель дрона');
+        return;
+    }
+    
+    const resultDiv = document.getElementById('receive-noqr-result');
+    resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
+    
+    try {
+        // Отправляем запрос на добавление (без sku, сервер сам сгенерирует)
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=addWithoutSku`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: model,
+                serialNumber: serialNumber,
+                purchasePrice: purchasePrice,
+                description: description
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован: <a href="${data.qrCode}" target="_blank">Посмотреть QR</a></div>`;
+            // Очищаем форму
+            document.getElementById('receive-noqr-model').value = '';
+            document.getElementById('receive-noqr-serial').value = '';
+            document.getElementById('receive-noqr-price').value = '';
+            document.getElementById('receive-noqr-description').value = '';
+            // Обновляем каталог
+            loadCatalog();
+        } else {
+            resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+    }
+}
+
+function clearNoQRForm() {
+    document.getElementById('receive-noqr-model').value = '';
+    document.getElementById('receive-noqr-serial').value = '';
+    document.getElementById('receive-noqr-price').value = '';
+    document.getElementById('receive-noqr-description').value = '';
+    document.getElementById('receive-noqr-result').innerHTML = '';
+}
     
     // ========== ПОИСК ==========
     async function searchBySerial() {
@@ -831,6 +1047,8 @@
     document.getElementById('price-max').addEventListener('input', applyFilters);
     document.getElementById('sort-by').addEventListener('change', applyFilters);
     document.getElementById('reset-filters').addEventListener('click', resetFilters);
+    document.getElementById('submit-noqr-btn').onclick = submitNoQRProduct;
+    document.getElementById('clear-noqr-btn').onclick = clearNoQRForm;
     
     window.onload = function() {
         loadCatalog();
