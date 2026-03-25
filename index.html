@@ -420,18 +420,18 @@
     
     function getStatusClass(status) {
         switch(status) {
-            case 'продан': return 'status-sold';
-            case 'зарезервирован': return 'status-reserved';
-            case 'в доставке': return 'status-delivery';
+            case 'Продан': return 'status-sold';
+            case 'Зарезервирован': return 'status-reserved';
+            case 'В доставке': return 'status-delivery';
             default: return 'status-unsold';
         }
     }
     
     function getStatusText(status) {
         switch(status) {
-            case 'продан': return '✅ Продан';
-            case 'зарезервирован': return '🔒 Зарезервирован';
-            case 'в доставке': return '🚚 В доставке';
+            case 'Продан': return '✅ Продан';
+            case 'Зарезервирован': return '🔒 Зарезервирован';
+            case 'В доставке': return '🚚 В доставке';
             default: return '📦 Не продан';
         }
     }
