@@ -676,48 +676,40 @@
     
     // ========== ПРИЁМКА БЕЗ QR ==========
     async function submitNoQRProduct() {
-        const model = document.getElementById('receive-noqr-model').value;
-        const serialNumber = document.getElementById('receive-noqr-serial').value.trim();
-        const purchasePrice = document.getElementById('receive-noqr-price').value;
-        const description = document.getElementById('receive-noqr-description').value;
-        
-        if (!model) {
-            alert('Выберите модель дрона');
-            return;
-        }
-        
-        const resultDiv = document.getElementById('receive-noqr-result');
-        resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
-        
-        try {
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=addWithoutSku`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: model,
-                    serialNumber: serialNumber,
-                    purchasePrice: purchasePrice,
-                    description: description
-                })
-            });
-            const data = await response.json();
-            
-            if (data.success) {
-                resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован: <a href="${data.qrCode}" target="_blank">Посмотреть QR</a></div>`;
-                document.getElementById('receive-noqr-model').value = '';
-                document.getElementById('receive-noqr-serial').value = '';
-                document.getElementById('receive-noqr-price').value = '';
-                document.getElementById('receive-noqr-description').value = '';
-                loadCatalog();
-            } else {
-                resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
-            }
-        } catch (error) {
-            resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
-        }
+    const model = document.getElementById('receive-noqr-model').value;
+    const serialNumber = document.getElementById('receive-noqr-serial').value.trim();
+    const purchasePrice = document.getElementById('receive-noqr-price').value;
+    const description = document.getElementById('receive-noqr-description').value;
+    
+    if (!model) {
+        alert('Выберите модель дрона');
+        return;
     }
+    
+    const resultDiv = document.getElementById('receive-noqr-result');
+    resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
+    
+    // Используем GET запрос (как в autoAdd)
+    const url = `${GOOGLE_SCRIPT_URL}?action=addWithoutSku&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}`;
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован: <a href="${data.qrCode}" target="_blank">Посмотреть QR</a></div>`;
+            document.getElementById('receive-noqr-model').value = '';
+            document.getElementById('receive-noqr-serial').value = '';
+            document.getElementById('receive-noqr-price').value = '';
+            document.getElementById('receive-noqr-description').value = '';
+            loadCatalog();
+        } else {
+            resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+    }
+}
     
     function clearNoQRForm() {
         document.getElementById('receive-noqr-model').value = '';
