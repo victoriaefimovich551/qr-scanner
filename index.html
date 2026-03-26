@@ -1138,17 +1138,15 @@ async function saveProductChanges(data) {
         document.getElementById('scan-result').innerHTML = '<div class="loading">💾 Сохранение...</div>';
     }
     
+    // Используем GET запрос (как в других функциях)
+    const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}`;
+    
     try {
-        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=updateProduct`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+        const response = await fetch(url);
         const result = await response.json();
         
         if (result.success) {
             alert('✅ Товар обновлён');
-            // Обновляем отображение
             const updatedProduct = await findProductBySKU(data.sku);
             currentProduct = updatedProduct;
             if (document.getElementById('search-result').style.display !== 'none') {
@@ -1156,11 +1154,12 @@ async function saveProductChanges(data) {
             } else {
                 displayProduct(updatedProduct, 'scan-result');
             }
-            loadCatalog(); // Обновляем каталог
+            loadCatalog();
         } else {
             alert('❌ Ошибка: ' + result.message);
         }
     } catch (error) {
+        console.error('Ошибка:', error);
         alert('❌ Ошибка: ' + error.message);
     }
 }
