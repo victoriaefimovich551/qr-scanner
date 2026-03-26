@@ -60,13 +60,19 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>📱 QR Сканер</h1>
-        <div style="margin-top: 8px;">
-            <a href="generator.html" target="_blank" style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; color: white; text-decoration: none; font-size: 12px; display: inline-block;">
-                🖨️ Создать наклейки
-            </a>
-        </div>
+    <h1>📱 QR Сканер</h1>
+    <div style="margin-top: 8px;">
+        <a href="generator.html" target="_blank" style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; color: white; text-decoration: none; font-size: 12px; display: inline-block;">
+            🖨️ Создать наклейки
+        </a>
     </div>
+</div>
+
+<!-- НОВАЯ ПАНЕЛЬ НАВИГАЦИИ -->
+<div id="nav-bar" style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+    <button id="back-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 16px; margin: 0; font-size: 14px;">⬅️ Назад</button>
+    <button id="home-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 16px; margin: 0; font-size: 14px;">🏠 Главная</button>
+</div>
     
     <div id="install-banner" class="install-banner">
         <div id="android-install" style="display: none;"><button id="install-btn">📲 Установить</button></div>
@@ -486,29 +492,54 @@
         document.getElementById('install-banner').style.display = 'block';
     }
     
-    function switchTab(tab) {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tab + '-panel').classList.add('active');
-        event.target.classList.add('active');
-        if (tab === 'catalog') loadCatalog();
-        if (tab === 'scan' && html5QrCode && isScanning) {
-            html5QrCode.stop().then(() => isScanning = false);
-        }
-        if (tab === 'receive') {
-            if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
-            // Скрываем форму при переключении
-            document.getElementById('receive-form').style.display = 'none';
-            document.getElementById('scanned-sku-display').style.display = 'none';
-            document.getElementById('receive-result').innerHTML = '';
-            pendingSku = null;
-        }
-        if (tab === 'receive-noqr') {
-            // Останавливаем сканеры если были активны
-            if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
-            if (html5QrCode && isScanning) html5QrCode.stop().then(() => isScanning = false);
-        }
+    // ========== НАВИГАЦИЯ ==========
+let navigationStack = []; // История переходов
+
+function goBack() {
+    if (navigationStack.length > 1) {
+        navigationStack.pop(); // Удаляем текущую
+        const previousTab = navigationStack.pop(); // Получаем предыдущую
+        switchTab(previousTab);
+    } else {
+        // Если истории нет, переходим на вкладку сканера
+        switchTab('scan');
     }
+}
+
+function goHome() {
+    navigationStack = ['scan']; // Сбрасываем историю
+    switchTab('scan');
+}
+
+// Обновляем функцию switchTab для сохранения истории
+function switchTab(tab) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab + '-panel').classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
+    
+    // Сохраняем в историю (если это не навигационный переход)
+    if (navigationStack[navigationStack.length - 1] !== tab) {
+        navigationStack.push(tab);
+    }
+    
+    if (tab === 'catalog') loadCatalog();
+    if (tab === 'scan' && html5QrCode && isScanning) {
+        html5QrCode.stop().then(() => isScanning = false);
+    }
+    if (tab === 'receive') {
+        if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+        document.getElementById('receive-form').style.display = 'none';
+        document.getElementById('scanned-sku-display').style.display = 'none';
+        document.getElementById('receive-result').innerHTML = '';
+        pendingSku = null;
+    }
+    if (tab === 'receive-noqr') {
+        if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+        if (html5QrCode && isScanning) html5QrCode.stop().then(() => isScanning = false);
+    }
+}
+
     
     // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
     async function startScanner() {
@@ -763,75 +794,78 @@
     }
     
     function displayProduct(p, containerId) {
-        const container = document.getElementById(containerId);
-        
-        let ценаЗакупка = p['Цена закупка'];
-        if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) {
-            ценаЗакупка = `${parseFloat(ценаЗакупка).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        let ценаПродажа = p['Цена продажа'];
-        if (ценаПродажа && !isNaN(parseFloat(ценаПродажа))) {
-            ценаПродажа = `${parseFloat(ценаПродажа).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        let прибыль = p['Прибыль'];
-        if (прибыль && !isNaN(parseFloat(прибыль))) {
-            прибыль = `${parseFloat(прибыль).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        let затратыРемонт = p['Затраты ремонт'];
-        if (затратыРемонт && !isNaN(parseFloat(затратыРемонт))) {
-            затратыРемонт = `${parseFloat(затратыРемонт).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        let затратыДоставка = p['Затраты доставка'];
-        if (затратыДоставка && !isNaN(parseFloat(затратыДоставка))) {
-            затратыДоставка = `${parseFloat(затратыДоставка).toLocaleString('ru-RU')} ₽`;
-        }
-        
-        const statusClass = getStatusClass(p['Статус']);
-        const statusText = getStatusText(p['Статус']);
-        
-        let html = `<div class="product-card">
-            <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
-            <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Артикул'] || '—')}</div>
-            <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
-            <div class="product-detail"><strong>📝 Состояние:</strong> ${escapeHtml(p['Состояние'] || '—')}</div>
-            <div class="product-detail"><strong>💰 Цена закупки:</strong> ${ценаЗакупка || '—'}</div>
-            <div class="product-detail"><strong>💰 Цена продажи:</strong> ${ценаПродажа || '—'}</div>`;
-        
-        if (затратыРемонт) {
-            html += `<div class="product-detail"><strong>🔧 Затраты (ремонт):</strong> ${затратыРемонт}</div>`;
-        }
-        if (затратыДоставка) {
-            html += `<div class="product-detail"><strong>📦 Затраты (доставка):</strong> ${затратыДоставка}</div>`;
-        }
-        if (прибыль) {
-            html += `<div class="product-detail"><strong>💰 Прибыль:</strong> ${прибыль}</div>`;
-        }
-        
-        html += `<div class="product-detail"><strong>📌 Статус:</strong> <span class="${statusClass}">${statusText}</span></div>`;
-        
-        if (p['Ссылка на Авито']) {
-            html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на Авито'])}" target="_blank">Открыть →</a></div>`;
-        }
-        
-        if (p['Фото'] && p['Фото'] !== 'IMAGE') {
-            html += `<div class="product-detail"><strong>📷 Фото:</strong> <a href="${escapeHtml(p['Фото'])}" target="_blank">Посмотреть</a></div>`;
-        }
-        
-        if (p['QR_Code']) {
-            html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
-        }
-        
-        html += `<div class="action-buttons">
-            <button class="action-btn" onclick="shareProduct('${escapeHtml(p['Артикул'])}')">📤 Поделиться</button>
-        </div>`;
-        
-        html += `</div>`;
-        container.innerHTML = html;
+    const container = document.getElementById(containerId);
+    
+    let ценаЗакупка = p['Цена закупка'];
+    if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) {
+        ценаЗакупка = `${parseFloat(ценаЗакупка).toLocaleString('ru-RU')} ₽`;
     }
+    
+    let ценаПродажа = p['Цена продажа'];
+    if (ценаПродажа && !isNaN(parseFloat(ценаПродажа))) {
+        ценаПродажа = `${parseFloat(ценаПродажа).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    let прибыль = p['Прибыль'];
+    if (прибыль && !isNaN(parseFloat(прибыль))) {
+        прибыль = `${parseFloat(прибыль).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    let затратыРемонт = p['Затраты ремонт'];
+    if (затратыРемонт && !isNaN(parseFloat(затратыРемонт))) {
+        затратыРемонт = `${parseFloat(затратыРемонт).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    let затратыДоставка = p['Затраты доставка'];
+    if (затратыДоставка && !isNaN(parseFloat(затратыДоставка))) {
+        затратыДоставка = `${parseFloat(затратыДоставка).toLocaleString('ru-RU')} ₽`;
+    }
+    
+    const statusClass = getStatusClass(p['Статус']);
+    const statusText = getStatusText(p['Статус']);
+    
+    let html = `<div class="product-card" id="product-card-${escapeHtml(p['Артикул'])}">
+        <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
+        <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Артикул'] || '—')}</div>
+        <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
+        <div class="product-detail"><strong>📝 Состояние:</strong> ${escapeHtml(p['Состояние'] || '—')}</div>
+        <div class="product-detail"><strong>💰 Цена закупки:</strong> ${ценаЗакупка || '—'}</div>
+        <div class="product-detail"><strong>💰 Цена продажи:</strong> ${ценаПродажа || '—'}</div>`;
+    
+    if (затратыРемонт) {
+        html += `<div class="product-detail"><strong>🔧 Затраты (ремонт):</strong> ${затратыРемонт}</div>`;
+    }
+    if (затратыДоставка) {
+        html += `<div class="product-detail"><strong>📦 Затраты (доставка):</strong> ${затратыДоставка}</div>`;
+    }
+    if (прибыль) {
+        html += `<div class="product-detail"><strong>💰 Прибыль:</strong> ${прибыль}</div>`;
+    }
+    
+    html += `<div class="product-detail"><strong>📌 Статус:</strong> <span class="${statusClass}">${statusText}</span></div>`;
+    
+    if (p['Ссылка на Авито']) {
+        html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на Авито'])}" target="_blank">Открыть →</a></div>`;
+    }
+    
+    if (p['Фото'] && p['Фото'] !== 'IMAGE') {
+        html += `<div class="product-detail"><strong>📷 Фото:</strong> <a href="${escapeHtml(p['Фото'])}" target="_blank">Посмотреть</a></div>`;
+    }
+    
+    if (p['QR_Code']) {
+        html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
+    }
+    
+    // Кнопки действий
+    html += `<div class="action-buttons">
+        <button class="action-btn" onclick="shareProduct('${escapeHtml(p['Артикул'])}')">📤 Поделиться</button>
+        <button class="action-btn" onclick="editProduct('${escapeHtml(p['Артикул'])}')" style="background: #eab308;">✏️ Редактировать</button>
+        <button class="action-btn" onclick="deleteProduct('${escapeHtml(p['Артикул'])}')" style="background: #dc2626;">🗑️ Удалить</button>
+    </div>`;
+    
+    html += `</div>`;
+    container.innerHTML = html;
+}
     
     async function shareProduct(sku) {
         try {
@@ -1000,6 +1034,169 @@
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
         return await res.json();
     }
+
+    // ========== РЕДАКТИРОВАНИЕ ТОВАРА ==========
+function editProduct(sku) {
+    // Сохраняем текущий товар
+    currentProduct = allProducts.find(p => p['Артикул'] === sku);
+    if (!currentProduct) return;
+    
+    // Создаём форму редактирования
+    const modal = document.createElement('div');
+    modal.id = 'edit-modal';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+    
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 20px; max-width: 500px; width: 90%; max-height: 80%; overflow-y: auto;">
+            <h3 style="color: #1e3c72; margin-bottom: 15px;">✏️ Редактирование: ${escapeHtml(currentProduct['Артикул'])}</h3>
+            
+            <div class="form-group">
+                <label>🚁 Название / Комплектация</label>
+                <input type="text" id="edit-name" value="${escapeHtml(currentProduct['Название'])}">
+            </div>
+            
+            <div class="form-group">
+                <label>📇 Серийный номер</label>
+                <input type="text" id="edit-serial" value="${escapeHtml(currentProduct['Серийный номер'])}">
+            </div>
+            
+            <div class="form-group">
+                <label>📝 Состояние / Описание</label>
+                <textarea id="edit-description" rows="3">${escapeHtml(currentProduct['Состояние'])}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>💰 Цена закупки</label>
+                <input type="number" id="edit-purchase-price" value="${currentProduct['Цена закупка']}">
+            </div>
+            
+            <div class="form-group">
+                <label>💰 Цена продажи</label>
+                <input type="number" id="edit-sale-price" value="${currentProduct['Цена продажа']}">
+            </div>
+            
+            <div class="form-group">
+                <label>📌 Статус</label>
+                <select id="edit-status">
+                    <option value="Не продан" ${currentProduct['Статус'] === 'Не продан' ? 'selected' : ''}>Не продан</option>
+                    <option value="Продан" ${currentProduct['Статус'] === 'Продан' ? 'selected' : ''}>Продан</option>
+                    <option value="Зарезервирован" ${currentProduct['Статус'] === 'Зарезервирован' ? 'selected' : ''}>Зарезервирован</option>
+                    <option value="В доставке" ${currentProduct['Статус'] === 'В доставке' ? 'selected' : ''}>В доставке</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>🔗 Ссылка на Авито</label>
+                <input type="url" id="edit-avito" value="${escapeHtml(currentProduct['Ссылка на Авито'])}">
+            </div>
+            
+            <div class="form-group">
+                <label>🔧 Затраты (ремонт)</label>
+                <input type="number" id="edit-repair-cost" value="${currentProduct['Затраты ремонт']}">
+            </div>
+            
+            <div class="form-group">
+                <label>📦 Затраты (доставка)</label>
+                <input type="number" id="edit-delivery-cost" value="${currentProduct['Затраты доставка']}">
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 20px;">
+                <button id="save-edit-btn" style="background: #16a34a;">💾 Сохранить</button>
+                <button id="cancel-edit-btn" style="background: #64748b;">❌ Отмена</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('save-edit-btn').onclick = async () => {
+        const updatedData = {
+            sku: currentProduct['Артикул'],
+            name: document.getElementById('edit-name').value,
+            serialNumber: document.getElementById('edit-serial').value,
+            description: document.getElementById('edit-description').value,
+            purchasePrice: document.getElementById('edit-purchase-price').value,
+            salePrice: document.getElementById('edit-sale-price').value,
+            status: document.getElementById('edit-status').value,
+            avitoLink: document.getElementById('edit-avito').value,
+            repairCost: document.getElementById('edit-repair-cost').value,
+            deliveryCost: document.getElementById('edit-delivery-cost').value
+        };
+        
+        await saveProductChanges(updatedData);
+        modal.remove();
+    };
+    
+    document.getElementById('cancel-edit-btn').onclick = () => modal.remove();
+}
+
+async function saveProductChanges(data) {
+    const resultDiv = document.getElementById('scan-result');
+    if (document.getElementById('search-result').style.display !== 'none') {
+        document.getElementById('search-result').innerHTML = '<div class="loading">💾 Сохранение...</div>';
+    } else {
+        document.getElementById('scan-result').innerHTML = '<div class="loading">💾 Сохранение...</div>';
+    }
+    
+    try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=updateProduct`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ Товар обновлён');
+            // Обновляем отображение
+            const updatedProduct = await findProductBySKU(data.sku);
+            currentProduct = updatedProduct;
+            if (document.getElementById('search-result').style.display !== 'none') {
+                displayProduct(updatedProduct, 'search-result');
+            } else {
+                displayProduct(updatedProduct, 'scan-result');
+            }
+            loadCatalog(); // Обновляем каталог
+        } else {
+            alert('❌ Ошибка: ' + result.message);
+        }
+    } catch (error) {
+        alert('❌ Ошибка: ' + error.message);
+    }
+}
+
+// ========== УДАЛЕНИЕ ТОВАРА ==========
+async function deleteProduct(sku) {
+    const confirmed = confirm(`⚠️ Вы уверены, что хотите удалить товар с артикулом ${sku}? Это действие нельзя отменить.`);
+    if (!confirmed) return;
+    
+    const resultDiv = document.getElementById('search-result');
+    if (document.getElementById('search-result').style.display !== 'none') {
+        resultDiv.innerHTML = '<div class="loading">🗑️ Удаление...</div>';
+    } else {
+        document.getElementById('scan-result').innerHTML = '<div class="loading">🗑️ Удаление...</div>';
+    }
+    
+    try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deleteProduct&sku=${encodeURIComponent(sku)}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`✅ Товар ${sku} удалён`);
+            // Очищаем карточку
+            if (document.getElementById('search-result').style.display !== 'none') {
+                document.getElementById('search-result').innerHTML = '';
+            } else {
+                document.getElementById('scan-result').innerHTML = '<div class="success">✅ Товар удалён</div>';
+            }
+            loadCatalog(); // Обновляем каталог
+        } else {
+            alert('❌ Ошибка: ' + result.message);
+        }
+    } catch (error) {
+        alert('❌ Ошибка: ' + error.message);
+    }
+}
     
     function handleUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -1023,6 +1220,8 @@
     document.getElementById('price-max').addEventListener('input', applyFilters);
     document.getElementById('sort-by').addEventListener('change', applyFilters);
     document.getElementById('reset-filters').addEventListener('click', resetFilters);
+    document.getElementById('back-btn').onclick = goBack;
+    document.getElementById('home-btn').onclick = goHome;
     
     window.onload = function() {
         loadCatalog();
