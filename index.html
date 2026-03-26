@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#1e3c72">
     <link rel="manifest" href="manifest.json">
-    <title>QR Сканер - Дроны</title>
+    <title>QR Сканер</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 16px; }
@@ -133,7 +133,7 @@
     </div>
     
     <div id="receive-panel" class="panel">
-        <h2>➕ Приёмка нового дрона</h2>
+        <h2>➕ Приёмка нового товара</h2>
         <p style="color: #666; margin-bottom: 15px;">Сначала отсканируйте QR-код с наклейки, затем заполните информацию</p>
         
         <div class="receive-scan-area">
@@ -300,8 +300,8 @@
 
     <!-- Панель приёмки без QR (новая) -->
     <div id="receive-noqr-panel" class="panel">
-        <h2>📝 Приёмка нового дрона (без QR)</h2>
-        <p style="color: #666; margin-bottom: 15px;">Заполните информацию о дроне. QR-код будет сгенерирован автоматически после добавления.</p>
+        <h2>📝 Приёмка нового товара (без QR)</h2>
+        <p style="color: #666; margin-bottom: 15px;">Заполните информацию о товаре. QR-код будет сгенерирован автоматически после добавления.</p>
         
         <div class="form-group">
             <label>🚁 Модель *</label>
@@ -588,7 +588,7 @@
                         document.getElementById('scanned-sku').textContent = text;
                         document.getElementById('scanned-sku-display').style.display = 'block';
                         document.getElementById('receive-form').style.display = 'block';
-                        resultDiv.innerHTML = '<div class="success">✅ QR-код отсканирован! Заполните информацию о дроне.</div>';
+                        resultDiv.innerHTML = '<div class="success">✅ QR-код отсканирован! Заполните информацию о товаре.</div>';
                         debugDiv.innerHTML += `<br>✅ Форма открыта для артикула: ${text}`;
                         
                     } catch (fetchError) {
@@ -682,7 +682,7 @@
     const description = document.getElementById('receive-noqr-description').value;
     
     if (!model) {
-        alert('Выберите модель дрона');
+        alert('Выберите модель товара');
         return;
     }
     
@@ -836,7 +836,7 @@
     async function shareProduct(sku) {
         try {
             const product = await findProductBySKU(sku);
-            const shareText = `🚁 Дрон: ${product['Название']}
+            const shareText = `🚁 Товар: ${product['Название']}
 🔢 Артикул: ${product['Артикул']}
 📇 Серийный номер: ${product['Серийный номер'] || '—'}
 📝 Состояние: ${product['Состояние'] || '—'}
@@ -846,7 +846,7 @@
             const productUrl = `${window.location.origin}${window.location.pathname}?sku=${encodeURIComponent(sku)}`;
             
             if (navigator.share) {
-                await navigator.share({ title: `Дрон: ${product['Название']}`, text: shareText, url: productUrl });
+                await navigator.share({ title: `Товар: ${product['Название']}`, text: shareText, url: productUrl });
             } else {
                 await navigator.clipboard.writeText(shareText + '\n\n🔗 ' + productUrl);
                 alert('📋 Информация скопирована');
