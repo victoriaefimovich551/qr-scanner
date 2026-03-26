@@ -876,61 +876,25 @@
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
     
-    function updateStats(products) {
-        const stats = {};
-        let total = 0;
-        let sold = 0;
-        let reserved = 0;
-        let delivery = 0;
-        let unsold = 0;
-        
-        products.forEach(product => {
-            total++;
-            const model = product['Название'] || 'Без названия';
-            stats[model] = (stats[model] || 0) + 1;
-            
-            switch(product['Статус']) {
-                case 'Продан': sold++; break;
-                case 'Зарезервирован': reserved++; break;
-                case 'В доставке': delivery++; break;
-                default: unsold++;
-            }
-        });
-        
-        let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
-            <span>📦 Всего: <strong>${total}</strong></span>
-            <span style="color: #16a34a;">✅ Продан: <strong>${sold}</strong></span>
-            <span style="color: #eab308;">🔒 Зарезервирован: <strong>${reserved}</strong></span>
-            <span style="color: #3b82f6;">🚚 В доставке: <strong>${delivery}</strong></span>
-            <span style="color: #64748b;">📦 Не продан: <strong>${unsold}</strong></span>
-        </div>`;
-        
-        statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
-        for (const [model, count] of Object.entries(stats).sort()) {
-            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterByModel('${escapeHtml(model)}')">
-                ${escapeHtml(model)}: <strong>${count}</strong>
-            </span>`;
-        }
-        statsHtml += `</div>`;
-        
-        document.getElementById('stats-content').innerHTML = statsHtml;
-    }
-    
-    // Функция фильтрации по модели
     function filterByModel(model) {
-        let modelSelect = document.getElementById('filter-model');
-        if (!modelSelect) {
-            modelSelect = document.createElement('select');
-            modelSelect.id = 'filter-model';
-            modelSelect.style.display = 'none';
-            document.body.appendChild(modelSelect);
-        }
-        modelSelect.value = model;
-        if (document.getElementById('catalog-panel').style.display !== 'block') {
-            switchTab('catalog');
-        }
+    // Создаём скрытый select для фильтра, если его нет
+    let modelSelect = document.getElementById('filter-model');
+    if (!modelSelect) {
+        modelSelect = document.createElement('select');
+        modelSelect.id = 'filter-model';
+        modelSelect.style.display = 'none';
+        document.body.appendChild(modelSelect);
+    }
+    modelSelect.value = model;
+    
+    // Переключаемся на каталог, если мы не в нём
+    if (document.getElementById('catalog-panel').style.display !== 'block') {
+        switchTab('catalog');
+    } else {
+        // Если уже в каталоге, просто применяем фильтр
         applyFilters();
     }
+}
     
     // ========== КАТАЛОГ С КЭШИРОВАНИЕМ ==========
     async function loadCatalog(forceReload = false) {
@@ -961,20 +925,21 @@
     }
     
     function applyFilters() {
-        if (!allProducts.length) return;
-        
-        const modelFilter = document.getElementById('filter-model')?.value || '';
-        const statusFilter = document.getElementById('filter-status').value;
-        
-        let filtered = allProducts.filter(product => {
-            if (modelFilter && product['Название'] !== modelFilter) return false;
-            if (statusFilter && product['Статус'] !== statusFilter) return false;
-            return true;
-        });
-        
-        renderCatalog(filtered);
-        updateStats(filtered);
-    }
+    if (!allProducts.length) return;
+    
+    const modelSelect = document.getElementById('filter-model');
+    const modelFilter = modelSelect ? modelSelect.value : '';
+    const statusFilter = document.getElementById('filter-status').value;
+    
+    let filtered = allProducts.filter(product => {
+        if (modelFilter && product['Название'] !== modelFilter) return false;
+        if (statusFilter && product['Статус'] !== statusFilter) return false;
+        return true;
+    });
+    
+    renderCatalog(filtered);
+    updateStats(filtered);
+}
     
     function renderCatalog(products) {
         const container = document.getElementById('catalog-content');
@@ -997,11 +962,11 @@
     }
     
     function resetFilters() {
-        const modelSelect = document.getElementById('filter-model');
-        if (modelSelect) modelSelect.value = '';
-        document.getElementById('filter-status').value = '';
-        applyFilters();
-    }
+    const modelSelect = document.getElementById('filter-model');
+    if (modelSelect) modelSelect.value = '';
+    document.getElementById('filter-status').value = '';
+    applyFilters();
+}
     
     async function viewProductDetail(sku) {
         switchTab('search');
