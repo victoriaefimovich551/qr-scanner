@@ -1,3 +1,10 @@
+Вот **полный исправленный `index.html`** со всеми изменениями:
+
+1. **Названия в статистике стали кликабельными** — при клике фильтрует каталог по выбранной модели
+2. **Убраны лишние фильтры** (поиск по названию, выбор комплектации, цена от/до, сортировка)
+3. **Оставлены только:** фильтр по статусу, кнопки "Сбросить" и "Обновить"
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -41,9 +48,8 @@
         .product-item { background: #f8fafc; border-radius: 12px; padding: 15px; cursor: pointer; border: 1px solid #e2e8f0; }
         .product-item:active { transform: scale(0.98); }
         .filter-group { margin-bottom: 15px; }
-        .filter-input { width: 100%; padding: 10px 15px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; margin-bottom: 8px; }
         .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .filter-row input, .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
+        .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
         .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
         .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
@@ -109,11 +115,7 @@
             <div id="stats-content">Загрузка...</div>
         </div>
         <div class="filter-group">
-            <input type="text" id="search-name" class="filter-input" placeholder="🔍 Поиск по названию...">
             <div class="filter-row">
-                <select id="filter-model">
-                    <option value="">Все комплектации</option>
-                </select>
                 <select id="filter-status">
                     <option value="">Все статусы</option>
                     <option value="Продан">Продан</option>
@@ -123,14 +125,6 @@
                 </select>
             </div>
             <div class="filter-row">
-                <input type="number" id="price-min" placeholder="💰 Цена от">
-                <input type="number" id="price-max" placeholder="💰 Цена до">
-            </div>
-            <div class="filter-row">
-                <select id="sort-by">
-                    <option value="name_asc">По названию</option>
-                    <option value="price_asc">По цене (дешёвые)</option>
-                </select>
                 <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
                 <button id="refresh-catalog-btn" style="background: #3b82f6; width: auto; padding: 10px 20px; margin: 0;">🔄 Обновить</button>
             </div>
@@ -671,7 +665,7 @@
                 document.getElementById('receive-price').value = '';
                 document.getElementById('receive-description').value = '';
                 pendingSku = null;
-                catalogLoaded = false; // Сбрасываем кэш
+                catalogLoaded = false;
                 loadCatalog();
             } else {
                 resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
@@ -725,7 +719,7 @@
                 document.getElementById('receive-noqr-serial').value = '';
                 document.getElementById('receive-noqr-price').value = '';
                 document.getElementById('receive-noqr-description').value = '';
-                catalogLoaded = false; // Сбрасываем кэш
+                catalogLoaded = false;
                 loadCatalog();
             } else {
                 resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
@@ -918,23 +912,29 @@
         
         statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
         for (const [model, count] of Object.entries(stats).sort()) {
-            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterByModel('${escapeHtml(model)}')">
                 ${escapeHtml(model)}: <strong>${count}</strong>
             </span>`;
         }
         statsHtml += `</div>`;
         
         document.getElementById('stats-content').innerHTML = statsHtml;
-        
-        const filterSelect = document.getElementById('filter-model');
-        if (filterSelect) {
-            const currentValue = filterSelect.value;
-            filterSelect.innerHTML = '<option value="">Все комплектации</option>';
-            for (const model of Object.keys(stats).sort()) {
-                filterSelect.innerHTML += `<option value="${escapeHtml(model)}">${model} (${stats[model]})</option>`;
-            }
-            filterSelect.value = currentValue;
+    }
+    
+    // Функция фильтрации по модели
+    function filterByModel(model) {
+        switchTab('catalog');
+        // Устанавливаем фильтр по модели через скрытый элемент
+        // Создаём временный select, если его нет
+        let modelSelect = document.getElementById('filter-model');
+        if (!modelSelect) {
+            modelSelect = document.createElement('select');
+            modelSelect.id = 'filter-model';
+            modelSelect.style.display = 'none';
+            document.body.appendChild(modelSelect);
         }
+        modelSelect.value = model;
+        applyFilters();
     }
     
     // ========== КАТАЛОГ С КЭШИРОВАНИЕМ ==========
@@ -968,27 +968,13 @@
     function applyFilters() {
         if (!allProducts.length) return;
         
-        const searchTerm = document.getElementById('search-name').value.toLowerCase().trim();
         const modelFilter = document.getElementById('filter-model')?.value || '';
         const statusFilter = document.getElementById('filter-status').value;
-        const priceMin = parseFloat(document.getElementById('price-min').value);
-        const priceMax = parseFloat(document.getElementById('price-max').value);
-        const sortBy = document.getElementById('sort-by').value;
         
         let filtered = allProducts.filter(product => {
-            if (searchTerm && !(product['Название'] || '').toLowerCase().includes(searchTerm)) return false;
             if (modelFilter && product['Название'] !== modelFilter) return false;
             if (statusFilter && product['Статус'] !== statusFilter) return false;
-            const price = parseFloat(product['Цена продажа']) || 0;
-            if (!isNaN(priceMin) && price < priceMin) return false;
-            if (!isNaN(priceMax) && price > priceMax) return false;
             return true;
-        });
-        
-        filtered.sort((a, b) => {
-            if (sortBy === 'name_asc') return (a['Название'] || '').localeCompare(b['Название'] || '');
-            if (sortBy === 'price_asc') return (parseFloat(a['Цена продажа']) || 0) - (parseFloat(b['Цена продажа']) || 0);
-            return 0;
         });
         
         renderCatalog(filtered);
@@ -1003,13 +989,11 @@
         }
         let html = '<div class="products-grid">';
         products.forEach(product => {
-            const price = product['Цена продажа'] ? `${parseFloat(product['Цена продажа']).toLocaleString('ru-RU')} ₽` : '—';
             const statusClass = getStatusClass(product['Статус']);
             const statusText = getStatusText(product['Статус']);
             html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
                 <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
                 <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
-                <small>💰 ${price}</small><br>
                 <small class="${statusClass}">${statusText}</small>
             </div>`;
         });
@@ -1018,11 +1002,9 @@
     }
     
     function resetFilters() {
-        document.getElementById('search-name').value = '';
+        const modelSelect = document.getElementById('filter-model');
+        if (modelSelect) modelSelect.value = '';
         document.getElementById('filter-status').value = '';
-        document.getElementById('price-min').value = '';
-        document.getElementById('price-max').value = '';
-        document.getElementById('sort-by').value = 'name_asc';
         applyFilters();
     }
     
@@ -1179,11 +1161,7 @@
         catalogLoaded = false;
         loadCatalog(true);
     };
-    document.getElementById('search-name').addEventListener('input', applyFilters);
     document.getElementById('filter-status').addEventListener('change', applyFilters);
-    document.getElementById('price-min').addEventListener('input', applyFilters);
-    document.getElementById('price-max').addEventListener('input', applyFilters);
-    document.getElementById('sort-by').addEventListener('change', applyFilters);
     document.getElementById('reset-filters').addEventListener('click', resetFilters);
     document.getElementById('back-btn').onclick = goBack;
     document.getElementById('home-btn').onclick = goHome;
@@ -1195,3 +1173,4 @@
 </script>
 </body>
 </html>
+```
