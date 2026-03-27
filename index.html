@@ -947,12 +947,12 @@
         </div>`;
         
         statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
-        for (const [model, count] of Object.entries(stats).sort()) {
-            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterByModel('${escapeHtml(model)}')">
-                ${escapeHtml(model)}: <strong>${count}</strong>
-            </span>`;
-        }
-        statsHtml += `</div>`;
+for (const [model, count] of Object.entries(stats).sort()) {
+    statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="alert('Нажали на: ${escapeHtml(model)}')">
+        ${escapeHtml(model)}: <strong>${count}</strong>
+    </span>`;
+}
+statsHtml += `</div>`;
         
         const statsContainer = document.getElementById('stats-content');
         if (statsContainer) statsContainer.innerHTML = statsHtml;
