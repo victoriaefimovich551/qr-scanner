@@ -120,7 +120,6 @@
             <div class="filter-row">
     <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
     <button id="refresh-catalog-btn" style="background: #3b82f6;">🔄 Обновить</button>
-    <button id="clear-model-filter" style="background: #64748b;">❌ Снять фильтр</button>
 </div>
         </div>
         <div id="catalog-content" class="loading">⏳ Загрузка...</div>
@@ -1234,7 +1233,6 @@ statsHtml += `</div>`;
     if (refreshBtn) refreshBtn.onclick = () => {
         catalogLoaded = false;
         loadCatalog(true);
-        document.getElementById('clear-model-filter').onclick = function() {
     renderCatalog(allProducts);
     updateStats(allProducts);
     const statsHeader = document.querySelector('#catalog-stats strong');
