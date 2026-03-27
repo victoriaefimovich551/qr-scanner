@@ -959,6 +959,7 @@
     }
     
     function filterByModel(model) {
+        console.log('✅ filterByModel вызвана с моделью:', model);
         let modelSelect = document.getElementById('filter-model');
         if (!modelSelect) {
             modelSelect = document.createElement('select');
@@ -981,6 +982,8 @@
         const modelSelect = document.getElementById('filter-model');
         const modelFilter = modelSelect ? modelSelect.value : '';
         const statusFilter = document.getElementById('filter-status')?.value || '';
+
+         console.log('🔍 applyFilters: modelFilter =', modelFilter, 'statusFilter =', statusFilter);
         
         let filtered = allProducts.filter(product => {
             if (modelFilter && product['Название'] !== modelFilter) return false;
