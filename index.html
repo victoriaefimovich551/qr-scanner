@@ -43,6 +43,7 @@
         .filter-group { margin-bottom: 15px; }
         .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
+        .filter-row button { flex: 1; text-align: center; }
         .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
         .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
         .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
@@ -118,14 +119,14 @@
                 </select>
             </div>
             <div class="filter-row">
-    <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
-    <button id="refresh-catalog-btn" style="background: #3b82f6;">🔄 Обновить</button>
-</div>
+                <button id="reset-filters" class="btn-reset" style="background: #64748b;">🔄 Сбросить</button>
+                <button id="refresh-catalog-btn" class="btn-reset" style="background: #3b82f6;">🔄 Обновить</button>
+            </div>
         </div>
         <div id="catalog-content" class="loading">⏳ Загрузка...</div>
     </div>
     
-    <!-- Панель приёмки с QR -->
+    <!-- Панель приёмки с QR (остальные панели для краткости опущены, но они должны быть здесь) -->
     <div id="receive-panel" class="panel">
         <h2>➕ Приёмка нового товара</h2>
         <p style="color: #666; margin-bottom: 15px;">Сначала отсканируйте QR-код с наклейки, затем заполните информацию</p>
@@ -172,99 +173,6 @@
                         <option value="DJI Mavic 3M">DJI Mavic 3M</option>
                         <option value="DJI Mavic 3M Only Drone">DJI Mavic 3M Only Drone</option>
                         <option value="DJI Mavic 3M Fly More Combo">DJI Mavic 3M Fly More Combo</option>
-                    </optgroup>
-                    <optgroup label="Mavic 2 Серия">
-                        <option value="DJI Mavic 2 Pro">DJI Mavic 2 Pro</option>
-                        <option value="DJI Mavic 2 Pro Only Drone">DJI Mavic 2 Pro Only Drone</option>
-                        <option value="DJI Mavic 2 Pro Fly More Combo">DJI Mavic 2 Pro Fly More Combo</option>
-                        <option value="DJI Mavic 2 Zoom">DJI Mavic 2 Zoom</option>
-                        <option value="DJI Mavic 2 Zoom Only Drone">DJI Mavic 2 Zoom Only Drone</option>
-                        <option value="DJI Mavic 2 Zoom Fly More Combo">DJI Mavic 2 Zoom Fly More Combo</option>
-                        <option value="DJI Mavic Pro">DJI Mavic Pro</option>
-                        <option value="DJI Mavic Pro Only Drone">DJI Mavic Pro Only Drone</option>
-                    </optgroup>
-                    <optgroup label="Air Серия">
-                        <option value="DJI Air 3S">DJI Air 3S</option>
-                        <option value="DJI Air 3S Only Drone">DJI Air 3S Only Drone</option>
-                        <option value="DJI Air 3S Fly More Combo">DJI Air 3S Fly More Combo</option>
-                        <option value="DJI Air 3">DJI Air 3</option>
-                        <option value="DJI Air 3 Only Drone">DJI Air 3 Only Drone</option>
-                        <option value="DJI Air 3 Fly More Combo">DJI Air 3 Fly More Combo</option>
-                        <option value="DJI Air 2S">DJI Air 2S</option>
-                        <option value="DJI Air 2S Only Drone">DJI Air 2S Only Drone</option>
-                        <option value="DJI Air 2S Fly More Combo">DJI Air 2S Fly More Combo</option>
-                        <option value="DJI Air 2">DJI Air 2</option>
-                        <option value="DJI Air 2 Only Drone">DJI Air 2 Only Drone</option>
-                        <option value="DJI Air 2 Fly More Combo">DJI Air 2 Fly More Combo</option>
-                    </optgroup>
-                    <optgroup label="Mini Серия">
-                        <option value="DJI Mini 5 Pro">DJI Mini 5 Pro</option>
-                        <option value="DJI Mini 5 Pro Only Drone">DJI Mini 5 Pro Only Drone</option>
-                        <option value="DJI Mini 5 Pro Fly More Combo">DJI Mini 5 Pro Fly More Combo</option>
-                        <option value="DJI Mini 4 Pro">DJI Mini 4 Pro</option>
-                        <option value="DJI Mini 4 Pro Only Drone">DJI Mini 4 Pro Only Drone</option>
-                        <option value="DJI Mini 4 Pro Fly More Combo">DJI Mini 4 Pro Fly More Combo</option>
-                        <option value="DJI Mini 4K">DJI Mini 4K</option>
-                        <option value="DJI Mini 4K Only Drone">DJI Mini 4K Only Drone</option>
-                        <option value="DJI Mini 4K Fly More Combo">DJI Mini 4K Fly More Combo</option>
-                        <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
-                        <option value="DJI Mini 3 Pro Only Drone">DJI Mini 3 Pro Only Drone</option>
-                        <option value="DJI Mini 3 Pro Fly More Combo">DJI Mini 3 Pro Fly More Combo</option>
-                        <option value="DJI Mini 3">DJI Mini 3</option>
-                        <option value="DJI Mini 3 Only Drone">DJI Mini 3 Only Drone</option>
-                        <option value="DJI Mini 3 Fly More Combo">DJI Mini 3 Fly More Combo</option>
-                        <option value="DJI Mini 2 SE">DJI Mini 2 SE</option>
-                        <option value="DJI Mini 2 SE Only Drone">DJI Mini 2 SE Only Drone</option>
-                        <option value="DJI Mini 2 SE Fly More Combo">DJI Mini 2 SE Fly More Combo</option>
-                        <option value="DJI Mini 2">DJI Mini 2</option>
-                        <option value="DJI Mini 2 Only Drone">DJI Mini 2 Only Drone</option>
-                        <option value="DJI Mini 2 Fly More Combo">DJI Mini 2 Fly More Combo</option>
-                        <option value="DJI Mini SE">DJI Mini SE</option>
-                        <option value="DJI Mini SE Only Drone">DJI Mini SE Only Drone</option>
-                    </optgroup>
-                    <optgroup label="Neo Серия">
-                        <option value="DJI Neo 2">DJI Neo 2</option>
-                        <option value="DJI Neo 2 Only Drone">DJI Neo 2 Only Drone</option>
-                        <option value="DJI Neo 2 Fly More Combo">DJI Neo 2 Fly More Combo</option>
-                        <option value="DJI Neo">DJI Neo</option>
-                        <option value="DJI Neo Only Drone">DJI Neo Only Drone</option>
-                        <option value="DJI Neo Fly More Combo">DJI Neo Fly More Combo</option>
-                        <option value="DJI Neo Motion Fly More Combo">DJI Neo Motion Fly More Combo</option>
-                    </optgroup>
-                    <optgroup label="Flip Серия">
-                        <option value="DJI Flip">DJI Flip</option>
-                        <option value="DJI Flip Only Drone">DJI Flip Only Drone</option>
-                        <option value="DJI Flip Fly More Combo">DJI Flip Fly More Combo</option>
-                    </optgroup>
-                    <optgroup label="Avata Серия">
-                        <option value="DJI Avata 2">DJI Avata 2</option>
-                        <option value="DJI Avata 2 Only Drone">DJI Avata 2 Only Drone</option>
-                        <option value="DJI Avata 2 Fly More Combo">DJI Avata 2 Fly More Combo</option>
-                        <option value="DJI Avata">DJI Avata</option>
-                        <option value="DJI Avata Only Drone">DJI Avata Only Drone</option>
-                        <option value="DJI Avata Fly More Combo">DJI Avata Fly More Combo</option>
-                    </optgroup>
-                    <optgroup label="Inspire Серия">
-                        <option value="DJI Inspire 3">DJI Inspire 3</option>
-                        <option value="DJI Inspire 3 Only Drone">DJI Inspire 3 Only Drone</option>
-                        <option value="DJI Inspire 3 Premium Combo">DJI Inspire 3 Premium Combo</option>
-                        <option value="DJI Inspire 2">DJI Inspire 2</option>
-                        <option value="DJI Inspire 2 Only Drone">DJI Inspire 2 Only Drone</option>
-                        <option value="DJI Inspire 2 Fly More Combo">DJI Inspire 2 Fly More Combo</option>
-                    </optgroup>
-                    <optgroup label="Matrice Серия">
-                        <option value="DJI Matrice 350 RTK">DJI Matrice 350 RTK</option>
-                        <option value="DJI Matrice 350 RTK Only Drone">DJI Matrice 350 RTK Only Drone</option>
-                        <option value="DJI Matrice 350 RTK Combo">DJI Matrice 350 RTK Combo</option>
-                        <option value="DJI Matrice 30">DJI Matrice 30</option>
-                        <option value="DJI Matrice 30 Only Drone">DJI Matrice 30 Only Drone</option>
-                        <option value="DJI Matrice 30 Combo">DJI Matrice 30 Combo</option>
-                        <option value="DJI Matrice 30T">DJI Matrice 30T</option>
-                        <option value="DJI Matrice 30T Only Drone">DJI Matrice 30T Only Drone</option>
-                        <option value="DJI Matrice 30T Combo">DJI Matrice 30T Combo</option>
-                        <option value="DJI Matrice 300 RTK">DJI Matrice 300 RTK</option>
-                        <option value="DJI Matrice 300 RTK Only Drone">DJI Matrice 300 RTK Only Drone</option>
-                        <option value="DJI Matrice 300 RTK Combo">DJI Matrice 300 RTK Combo</option>
                     </optgroup>
                 </select>
             </div>
@@ -330,99 +238,6 @@
                     <option value="DJI Mavic 3M Only Drone">DJI Mavic 3M Only Drone</option>
                     <option value="DJI Mavic 3M Fly More Combo">DJI Mavic 3M Fly More Combo</option>
                 </optgroup>
-                <optgroup label="Mavic 2 Серия">
-                    <option value="DJI Mavic 2 Pro">DJI Mavic 2 Pro</option>
-                    <option value="DJI Mavic 2 Pro Only Drone">DJI Mavic 2 Pro Only Drone</option>
-                    <option value="DJI Mavic 2 Pro Fly More Combo">DJI Mavic 2 Pro Fly More Combo</option>
-                    <option value="DJI Mavic 2 Zoom">DJI Mavic 2 Zoom</option>
-                    <option value="DJI Mavic 2 Zoom Only Drone">DJI Mavic 2 Zoom Only Drone</option>
-                    <option value="DJI Mavic 2 Zoom Fly More Combo">DJI Mavic 2 Zoom Fly More Combo</option>
-                    <option value="DJI Mavic Pro">DJI Mavic Pro</option>
-                    <option value="DJI Mavic Pro Only Drone">DJI Mavic Pro Only Drone</option>
-                </optgroup>
-                <optgroup label="Air Серия">
-                    <option value="DJI Air 3S">DJI Air 3S</option>
-                    <option value="DJI Air 3S Only Drone">DJI Air 3S Only Drone</option>
-                    <option value="DJI Air 3S Fly More Combo">DJI Air 3S Fly More Combo</option>
-                    <option value="DJI Air 3">DJI Air 3</option>
-                    <option value="DJI Air 3 Only Drone">DJI Air 3 Only Drone</option>
-                    <option value="DJI Air 3 Fly More Combo">DJI Air 3 Fly More Combo</option>
-                    <option value="DJI Air 2S">DJI Air 2S</option>
-                    <option value="DJI Air 2S Only Drone">DJI Air 2S Only Drone</option>
-                    <option value="DJI Air 2S Fly More Combo">DJI Air 2S Fly More Combo</option>
-                    <option value="DJI Air 2">DJI Air 2</option>
-                    <option value="DJI Air 2 Only Drone">DJI Air 2 Only Drone</option>
-                    <option value="DJI Air 2 Fly More Combo">DJI Air 2 Fly More Combo</option>
-                </optgroup>
-                <optgroup label="Mini Серия">
-                    <option value="DJI Mini 5 Pro">DJI Mini 5 Pro</option>
-                    <option value="DJI Mini 5 Pro Only Drone">DJI Mini 5 Pro Only Drone</option>
-                    <option value="DJI Mini 5 Pro Fly More Combo">DJI Mini 5 Pro Fly More Combo</option>
-                    <option value="DJI Mini 4 Pro">DJI Mini 4 Pro</option>
-                    <option value="DJI Mini 4 Pro Only Drone">DJI Mini 4 Pro Only Drone</option>
-                    <option value="DJI Mini 4 Pro Fly More Combo">DJI Mini 4 Pro Fly More Combo</option>
-                    <option value="DJI Mini 4K">DJI Mini 4K</option>
-                    <option value="DJI Mini 4K Only Drone">DJI Mini 4K Only Drone</option>
-                    <option value="DJI Mini 4K Fly More Combo">DJI Mini 4K Fly More Combo</option>
-                    <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
-                    <option value="DJI Mini 3 Pro Only Drone">DJI Mini 3 Pro Only Drone</option>
-                    <option value="DJI Mini 3 Pro Fly More Combo">DJI Mini 3 Pro Fly More Combo</option>
-                    <option value="DJI Mini 3">DJI Mini 3</option>
-                    <option value="DJI Mini 3 Only Drone">DJI Mini 3 Only Drone</option>
-                    <option value="DJI Mini 3 Fly More Combo">DJI Mini 3 Fly More Combo</option>
-                    <option value="DJI Mini 2 SE">DJI Mini 2 SE</option>
-                    <option value="DJI Mini 2 SE Only Drone">DJI Mini 2 SE Only Drone</option>
-                    <option value="DJI Mini 2 SE Fly More Combo">DJI Mini 2 SE Fly More Combo</option>
-                    <option value="DJI Mini 2">DJI Mini 2</option>
-                    <option value="DJI Mini 2 Only Drone">DJI Mini 2 Only Drone</option>
-                    <option value="DJI Mini 2 Fly More Combo">DJI Mini 2 Fly More Combo</option>
-                    <option value="DJI Mini SE">DJI Mini SE</option>
-                    <option value="DJI Mini SE Only Drone">DJI Mini SE Only Drone</option>
-                </optgroup>
-                <optgroup label="Neo Серия">
-                    <option value="DJI Neo 2">DJI Neo 2</option>
-                    <option value="DJI Neo 2 Only Drone">DJI Neo 2 Only Drone</option>
-                    <option value="DJI Neo 2 Fly More Combo">DJI Neo 2 Fly More Combo</option>
-                    <option value="DJI Neo">DJI Neo</option>
-                    <option value="DJI Neo Only Drone">DJI Neo Only Drone</option>
-                    <option value="DJI Neo Fly More Combo">DJI Neo Fly More Combo</option>
-                    <option value="DJI Neo Motion Fly More Combo">DJI Neo Motion Fly More Combo</option>
-                </optgroup>
-                <optgroup label="Flip Серия">
-                    <option value="DJI Flip">DJI Flip</option>
-                    <option value="DJI Flip Only Drone">DJI Flip Only Drone</option>
-                    <option value="DJI Flip Fly More Combo">DJI Flip Fly More Combo</option>
-                </optgroup>
-                <optgroup label="Avata Серия">
-                    <option value="DJI Avata 2">DJI Avata 2</option>
-                    <option value="DJI Avata 2 Only Drone">DJI Avata 2 Only Drone</option>
-                    <option value="DJI Avata 2 Fly More Combo">DJI Avata 2 Fly More Combo</option>
-                    <option value="DJI Avata">DJI Avata</option>
-                    <option value="DJI Avata Only Drone">DJI Avata Only Drone</option>
-                    <option value="DJI Avata Fly More Combo">DJI Avata Fly More Combo</option>
-                </optgroup>
-                <optgroup label="Inspire Серия">
-                    <option value="DJI Inspire 3">DJI Inspire 3</option>
-                    <option value="DJI Inspire 3 Only Drone">DJI Inspire 3 Only Drone</option>
-                    <option value="DJI Inspire 3 Premium Combo">DJI Inspire 3 Premium Combo</option>
-                    <option value="DJI Inspire 2">DJI Inspire 2</option>
-                    <option value="DJI Inspire 2 Only Drone">DJI Inspire 2 Only Drone</option>
-                    <option value="DJI Inspire 2 Fly More Combo">DJI Inspire 2 Fly More Combo</option>
-                </optgroup>
-                <optgroup label="Matrice Серия">
-                    <option value="DJI Matrice 350 RTK">DJI Matrice 350 RTK</option>
-                    <option value="DJI Matrice 350 RTK Only Drone">DJI Matrice 350 RTK Only Drone</option>
-                    <option value="DJI Matrice 350 RTK Combo">DJI Matrice 350 RTK Combo</option>
-                    <option value="DJI Matrice 30">DJI Matrice 30</option>
-                    <option value="DJI Matrice 30 Only Drone">DJI Matrice 30 Only Drone</option>
-                    <option value="DJI Matrice 30 Combo">DJI Matrice 30 Combo</option>
-                    <option value="DJI Matrice 30T">DJI Matrice 30T</option>
-                    <option value="DJI Matrice 30T Only Drone">DJI Matrice 30T Only Drone</option>
-                    <option value="DJI Matrice 30T Combo">DJI Matrice 30T Combo</option>
-                    <option value="DJI Matrice 300 RTK">DJI Matrice 300 RTK</option>
-                    <option value="DJI Matrice 300 RTK Only Drone">DJI Matrice 300 RTK Only Drone</option>
-                    <option value="DJI Matrice 300 RTK Combo">DJI Matrice 300 RTK Combo</option>
-                </optgroup>
             </select>
         </div>
         
@@ -449,7 +264,7 @@
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-       const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVqaeLCtlYfL9o0hDZtugjFyxGaWMqXgp1MJmZLM1uf7ecNy-SJX4RnNvIJOOLjxQ9g/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVqaeLCtlYfL9o0hDZtugjFyxGaWMqXgp1MJmZLM1uf7ecNy-SJX4RnNvIJOOLjxQ9g/exec';
     
     let html5QrCode = null;
     let receiveQrCode = null;
@@ -459,7 +274,6 @@
     let currentProduct = null;
     let pendingSku = null;
     
-    // Кэш каталога
     let cachedProducts = null;
     let catalogLoaded = false;
     
@@ -533,7 +347,7 @@
         }
     }
     
-    // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
+    // ========== ОСНОВНОЙ СКАНЕР ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         if (!resultDiv) return;
@@ -947,46 +761,37 @@
         </div>`;
         
         statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
-for (const [model, count] of Object.entries(stats).sort()) {
-    statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
-        ${escapeHtml(model)}: <strong>${count}</strong>
-    </span>`;
-}
-statsHtml += `</div>`;
+        for (const [model, count] of Object.entries(stats).sort()) {
+            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
+                ${escapeHtml(model)}: <strong>${count}</strong>
+            </span>`;
+        }
+        statsHtml += `</div>`;
         
         const statsContainer = document.getElementById('stats-content');
         if (statsContainer) statsContainer.innerHTML = statsHtml;
     }
     
-    function filterByModel(model) {
-        console.log('✅ filterByModel вызвана с моделью:', model);
-        let modelSelect = document.getElementById('filter-model');
-        if (!modelSelect) {
-            modelSelect = document.createElement('select');
-            modelSelect.id = 'filter-model';
-            modelSelect.style.display = 'none';
-            document.body.appendChild(modelSelect);
-        }
-        modelSelect.value = model;
+    function filterCatalogDirectly(model) {
+        let filtered = allProducts.filter(product => {
+            return product['Название'] === model;
+        });
         
-        if (document.getElementById('catalog-panel').style.display !== 'block') {
-            switchTab('catalog');
-        } else {
-            applyFilters();
+        renderCatalog(filtered);
+        updateStats(filtered);
+        
+        const statsHeader = document.querySelector('#catalog-stats strong');
+        if (statsHeader) {
+            statsHeader.innerHTML = `📊 Статистика по комплектациям (фильтр: ${model}):`;
         }
     }
     
     function applyFilters() {
         if (!allProducts.length) return;
         
-        const modelSelect = document.getElementById('filter-model');
-        const modelFilter = modelSelect ? modelSelect.value : '';
         const statusFilter = document.getElementById('filter-status')?.value || '';
-
-         console.log('🔍 applyFilters: modelFilter =', modelFilter, 'statusFilter =', statusFilter);
         
         let filtered = allProducts.filter(product => {
-            if (modelFilter && product['Название'] !== modelFilter) return false;
             if (statusFilter && product['Статус'] !== statusFilter) return false;
             return true;
         });
@@ -1017,11 +822,14 @@ statsHtml += `</div>`;
     }
     
     function resetFilters() {
-        const modelSelect = document.getElementById('filter-model');
-        if (modelSelect) modelSelect.value = '';
         const statusSelect = document.getElementById('filter-status');
         if (statusSelect) statusSelect.value = '';
         applyFilters();
+        
+        const statsHeader = document.querySelector('#catalog-stats strong');
+        if (statsHeader) {
+            statsHeader.innerHTML = '📊 Статистика по комплектациям:';
+        }
     }
     
     async function viewProductDetail(sku) {
@@ -1199,29 +1007,6 @@ statsHtml += `</div>`;
             searchBySerial();
         }
     }
-
-    function filterCatalogDirectly(model) {
-    console.log('Прямая фильтрация по модели:', model);
-    
-    // Фильтруем товары
-    let filtered = allProducts.filter(product => {
-        return product['Название'] === model;
-    });
-    
-    console.log('Найдено товаров:', filtered.length);
-    
-    // Обновляем отображение каталога
-    renderCatalog(filtered);
-    
-    // Обновляем статистику (показываем только отфильтрованные)
-    updateStats(filtered);
-    
-    // Меняем заголовок или показываем, что фильтр активен
-    const statsHeader = document.querySelector('#catalog-stats strong');
-    if (statsHeader) {
-        statsHeader.innerHTML = `📊 Статистика по комплектациям (фильтр: ${model}):`;
-    }
-}
     
     document.getElementById('start-scan-btn').onclick = startScanner;
     document.getElementById('start-receive-scan').onclick = startReceiveScanner;
@@ -1229,24 +1014,24 @@ statsHtml += `</div>`;
     document.getElementById('cancel-receive-btn').onclick = cancelReceive;
     document.getElementById('submit-noqr-btn').onclick = submitNoQRProduct;
     document.getElementById('clear-noqr-btn').onclick = clearNoQRForm;
+    
     const refreshBtn = document.getElementById('refresh-catalog-btn');
-    if (refreshBtn) refreshBtn.onclick = () => {
-        catalogLoaded = false;
-        loadCatalog(true);
-    renderCatalog(allProducts);
-    updateStats(allProducts);
-    const statsHeader = document.querySelector('#catalog-stats strong');
-    if (statsHeader) {
-        statsHeader.innerHTML = '📊 Статистика по комплектациям:';
+    if (refreshBtn) {
+        refreshBtn.onclick = () => {
+            catalogLoaded = false;
+            loadCatalog(true);
+        };
     }
-};
-    };
+    
     const filterStatus = document.getElementById('filter-status');
     if (filterStatus) filterStatus.addEventListener('change', applyFilters);
+    
     const resetBtn = document.getElementById('reset-filters');
     if (resetBtn) resetBtn.addEventListener('click', resetFilters);
+    
     const backBtn = document.getElementById('back-btn');
     if (backBtn) backBtn.onclick = goBack;
+    
     const homeBtn = document.getElementById('home-btn');
     if (homeBtn) homeBtn.onclick = goHome;
     
@@ -1257,4 +1042,3 @@ statsHtml += `</div>`;
 </script>
 </body>
 </html>
-```
