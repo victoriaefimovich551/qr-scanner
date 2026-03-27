@@ -12,6 +12,9 @@
         .container { max-width: 600px; margin: 0 auto; }
         .header { text-align: center; color: white; margin-bottom: 20px; }
         .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .category-switch { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .category-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; flex: 1; max-width: 150px; }
+        .category-btn.active { background: white; color: #1e3c72; }
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn { flex: 1; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.2); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
         .tab-btn.active { background: white; color: #1e3c72; }
@@ -68,6 +71,11 @@
         </div>
     </div>
 
+    <div class="category-switch">
+        <button id="btn-drones" class="category-btn active" onclick="switchCategory('Дроны')">🚁 Дроны</button>
+        <button id="btn-scooters" class="category-btn" onclick="switchCategory('Самокаты')">🛴 Самокаты</button>
+    </div>
+
     <div id="nav-bar" style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
         <button id="back-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 16px; margin: 0; font-size: 14px;">⬅️ Назад</button>
         <button id="home-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 16px; margin: 0; font-size: 14px;">🏠 Главная</button>
@@ -119,14 +127,13 @@
                 </select>
             </div>
             <div class="filter-row">
-                <button id="reset-filters" class="btn-reset" style="background: #64748b;">🔄 Сбросить</button>
+                <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
                 <button id="refresh-catalog-btn" class="btn-reset" style="background: #3b82f6;">🔄 Обновить</button>
             </div>
         </div>
         <div id="catalog-content" class="loading">⏳ Загрузка...</div>
     </div>
     
-    <!-- Панель приёмки с QR (остальные панели для краткости опущены, но они должны быть здесь) -->
     <div id="receive-panel" class="panel">
         <h2>➕ Приёмка нового товара</h2>
         <p style="color: #666; margin-bottom: 15px;">Сначала отсканируйте QR-код с наклейки, затем заполните информацию</p>
@@ -174,6 +181,99 @@
                         <option value="DJI Mavic 3M Only Drone">DJI Mavic 3M Only Drone</option>
                         <option value="DJI Mavic 3M Fly More Combo">DJI Mavic 3M Fly More Combo</option>
                     </optgroup>
+                    <optgroup label="Mavic 2 Серия">
+                        <option value="DJI Mavic 2 Pro">DJI Mavic 2 Pro</option>
+                        <option value="DJI Mavic 2 Pro Only Drone">DJI Mavic 2 Pro Only Drone</option>
+                        <option value="DJI Mavic 2 Pro Fly More Combo">DJI Mavic 2 Pro Fly More Combo</option>
+                        <option value="DJI Mavic 2 Zoom">DJI Mavic 2 Zoom</option>
+                        <option value="DJI Mavic 2 Zoom Only Drone">DJI Mavic 2 Zoom Only Drone</option>
+                        <option value="DJI Mavic 2 Zoom Fly More Combo">DJI Mavic 2 Zoom Fly More Combo</option>
+                        <option value="DJI Mavic Pro">DJI Mavic Pro</option>
+                        <option value="DJI Mavic Pro Only Drone">DJI Mavic Pro Only Drone</option>
+                    </optgroup>
+                    <optgroup label="Air Серия">
+                        <option value="DJI Air 3S">DJI Air 3S</option>
+                        <option value="DJI Air 3S Only Drone">DJI Air 3S Only Drone</option>
+                        <option value="DJI Air 3S Fly More Combo">DJI Air 3S Fly More Combo</option>
+                        <option value="DJI Air 3">DJI Air 3</option>
+                        <option value="DJI Air 3 Only Drone">DJI Air 3 Only Drone</option>
+                        <option value="DJI Air 3 Fly More Combo">DJI Air 3 Fly More Combo</option>
+                        <option value="DJI Air 2S">DJI Air 2S</option>
+                        <option value="DJI Air 2S Only Drone">DJI Air 2S Only Drone</option>
+                        <option value="DJI Air 2S Fly More Combo">DJI Air 2S Fly More Combo</option>
+                        <option value="DJI Air 2">DJI Air 2</option>
+                        <option value="DJI Air 2 Only Drone">DJI Air 2 Only Drone</option>
+                        <option value="DJI Air 2 Fly More Combo">DJI Air 2 Fly More Combo</option>
+                    </optgroup>
+                    <optgroup label="Mini Серия">
+                        <option value="DJI Mini 5 Pro">DJI Mini 5 Pro</option>
+                        <option value="DJI Mini 5 Pro Only Drone">DJI Mini 5 Pro Only Drone</option>
+                        <option value="DJI Mini 5 Pro Fly More Combo">DJI Mini 5 Pro Fly More Combo</option>
+                        <option value="DJI Mini 4 Pro">DJI Mini 4 Pro</option>
+                        <option value="DJI Mini 4 Pro Only Drone">DJI Mini 4 Pro Only Drone</option>
+                        <option value="DJI Mini 4 Pro Fly More Combo">DJI Mini 4 Pro Fly More Combo</option>
+                        <option value="DJI Mini 4K">DJI Mini 4K</option>
+                        <option value="DJI Mini 4K Only Drone">DJI Mini 4K Only Drone</option>
+                        <option value="DJI Mini 4K Fly More Combo">DJI Mini 4K Fly More Combo</option>
+                        <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
+                        <option value="DJI Mini 3 Pro Only Drone">DJI Mini 3 Pro Only Drone</option>
+                        <option value="DJI Mini 3 Pro Fly More Combo">DJI Mini 3 Pro Fly More Combo</option>
+                        <option value="DJI Mini 3">DJI Mini 3</option>
+                        <option value="DJI Mini 3 Only Drone">DJI Mini 3 Only Drone</option>
+                        <option value="DJI Mini 3 Fly More Combo">DJI Mini 3 Fly More Combo</option>
+                        <option value="DJI Mini 2 SE">DJI Mini 2 SE</option>
+                        <option value="DJI Mini 2 SE Only Drone">DJI Mini 2 SE Only Drone</option>
+                        <option value="DJI Mini 2 SE Fly More Combo">DJI Mini 2 SE Fly More Combo</option>
+                        <option value="DJI Mini 2">DJI Mini 2</option>
+                        <option value="DJI Mini 2 Only Drone">DJI Mini 2 Only Drone</option>
+                        <option value="DJI Mini 2 Fly More Combo">DJI Mini 2 Fly More Combo</option>
+                        <option value="DJI Mini SE">DJI Mini SE</option>
+                        <option value="DJI Mini SE Only Drone">DJI Mini SE Only Drone</option>
+                    </optgroup>
+                    <optgroup label="Neo Серия">
+                        <option value="DJI Neo 2">DJI Neo 2</option>
+                        <option value="DJI Neo 2 Only Drone">DJI Neo 2 Only Drone</option>
+                        <option value="DJI Neo 2 Fly More Combo">DJI Neo 2 Fly More Combo</option>
+                        <option value="DJI Neo">DJI Neo</option>
+                        <option value="DJI Neo Only Drone">DJI Neo Only Drone</option>
+                        <option value="DJI Neo Fly More Combo">DJI Neo Fly More Combo</option>
+                        <option value="DJI Neo Motion Fly More Combo">DJI Neo Motion Fly More Combo</option>
+                    </optgroup>
+                    <optgroup label="Flip Серия">
+                        <option value="DJI Flip">DJI Flip</option>
+                        <option value="DJI Flip Only Drone">DJI Flip Only Drone</option>
+                        <option value="DJI Flip Fly More Combo">DJI Flip Fly More Combo</option>
+                    </optgroup>
+                    <optgroup label="Avata Серия">
+                        <option value="DJI Avata 2">DJI Avata 2</option>
+                        <option value="DJI Avata 2 Only Drone">DJI Avata 2 Only Drone</option>
+                        <option value="DJI Avata 2 Fly More Combo">DJI Avata 2 Fly More Combo</option>
+                        <option value="DJI Avata">DJI Avata</option>
+                        <option value="DJI Avata Only Drone">DJI Avata Only Drone</option>
+                        <option value="DJI Avata Fly More Combo">DJI Avata Fly More Combo</option>
+                    </optgroup>
+                    <optgroup label="Inspire Серия">
+                        <option value="DJI Inspire 3">DJI Inspire 3</option>
+                        <option value="DJI Inspire 3 Only Drone">DJI Inspire 3 Only Drone</option>
+                        <option value="DJI Inspire 3 Premium Combo">DJI Inspire 3 Premium Combo</option>
+                        <option value="DJI Inspire 2">DJI Inspire 2</option>
+                        <option value="DJI Inspire 2 Only Drone">DJI Inspire 2 Only Drone</option>
+                        <option value="DJI Inspire 2 Fly More Combo">DJI Inspire 2 Fly More Combo</option>
+                    </optgroup>
+                    <optgroup label="Matrice Серия">
+                        <option value="DJI Matrice 350 RTK">DJI Matrice 350 RTK</option>
+                        <option value="DJI Matrice 350 RTK Only Drone">DJI Matrice 350 RTK Only Drone</option>
+                        <option value="DJI Matrice 350 RTK Combo">DJI Matrice 350 RTK Combo</option>
+                        <option value="DJI Matrice 30">DJI Matrice 30</option>
+                        <option value="DJI Matrice 30 Only Drone">DJI Matrice 30 Only Drone</option>
+                        <option value="DJI Matrice 30 Combo">DJI Matrice 30 Combo</option>
+                        <option value="DJI Matrice 30T">DJI Matrice 30T</option>
+                        <option value="DJI Matrice 30T Only Drone">DJI Matrice 30T Only Drone</option>
+                        <option value="DJI Matrice 30T Combo">DJI Matrice 30T Combo</option>
+                        <option value="DJI Matrice 300 RTK">DJI Matrice 300 RTK</option>
+                        <option value="DJI Matrice 300 RTK Only Drone">DJI Matrice 300 RTK Only Drone</option>
+                        <option value="DJI Matrice 300 RTK Combo">DJI Matrice 300 RTK Combo</option>
+                    </optgroup>
                 </select>
             </div>
             
@@ -200,7 +300,6 @@
         <div id="receive-debug" class="debug-info"></div>
     </div>
 
-    <!-- Панель приёмки без QR -->
     <div id="receive-noqr-panel" class="panel">
         <h2>📝 Приёмка нового товара (без QR)</h2>
         <p style="color: #666; margin-bottom: 15px;">Заполните информацию о товаре. QR-код будет сгенерирован автоматически после добавления.</p>
@@ -238,6 +337,99 @@
                     <option value="DJI Mavic 3M Only Drone">DJI Mavic 3M Only Drone</option>
                     <option value="DJI Mavic 3M Fly More Combo">DJI Mavic 3M Fly More Combo</option>
                 </optgroup>
+                <optgroup label="Mavic 2 Серия">
+                    <option value="DJI Mavic 2 Pro">DJI Mavic 2 Pro</option>
+                    <option value="DJI Mavic 2 Pro Only Drone">DJI Mavic 2 Pro Only Drone</option>
+                    <option value="DJI Mavic 2 Pro Fly More Combo">DJI Mavic 2 Pro Fly More Combo</option>
+                    <option value="DJI Mavic 2 Zoom">DJI Mavic 2 Zoom</option>
+                    <option value="DJI Mavic 2 Zoom Only Drone">DJI Mavic 2 Zoom Only Drone</option>
+                    <option value="DJI Mavic 2 Zoom Fly More Combo">DJI Mavic 2 Zoom Fly More Combo</option>
+                    <option value="DJI Mavic Pro">DJI Mavic Pro</option>
+                    <option value="DJI Mavic Pro Only Drone">DJI Mavic Pro Only Drone</option>
+                </optgroup>
+                <optgroup label="Air Серия">
+                    <option value="DJI Air 3S">DJI Air 3S</option>
+                    <option value="DJI Air 3S Only Drone">DJI Air 3S Only Drone</option>
+                    <option value="DJI Air 3S Fly More Combo">DJI Air 3S Fly More Combo</option>
+                    <option value="DJI Air 3">DJI Air 3</option>
+                    <option value="DJI Air 3 Only Drone">DJI Air 3 Only Drone</option>
+                    <option value="DJI Air 3 Fly More Combo">DJI Air 3 Fly More Combo</option>
+                    <option value="DJI Air 2S">DJI Air 2S</option>
+                    <option value="DJI Air 2S Only Drone">DJI Air 2S Only Drone</option>
+                    <option value="DJI Air 2S Fly More Combo">DJI Air 2S Fly More Combo</option>
+                    <option value="DJI Air 2">DJI Air 2</option>
+                    <option value="DJI Air 2 Only Drone">DJI Air 2 Only Drone</option>
+                    <option value="DJI Air 2 Fly More Combo">DJI Air 2 Fly More Combo</option>
+                </optgroup>
+                <optgroup label="Mini Серия">
+                    <option value="DJI Mini 5 Pro">DJI Mini 5 Pro</option>
+                    <option value="DJI Mini 5 Pro Only Drone">DJI Mini 5 Pro Only Drone</option>
+                    <option value="DJI Mini 5 Pro Fly More Combo">DJI Mini 5 Pro Fly More Combo</option>
+                    <option value="DJI Mini 4 Pro">DJI Mini 4 Pro</option>
+                    <option value="DJI Mini 4 Pro Only Drone">DJI Mini 4 Pro Only Drone</option>
+                    <option value="DJI Mini 4 Pro Fly More Combo">DJI Mini 4 Pro Fly More Combo</option>
+                    <option value="DJI Mini 4K">DJI Mini 4K</option>
+                    <option value="DJI Mini 4K Only Drone">DJI Mini 4K Only Drone</option>
+                    <option value="DJI Mini 4K Fly More Combo">DJI Mini 4K Fly More Combo</option>
+                    <option value="DJI Mini 3 Pro">DJI Mini 3 Pro</option>
+                    <option value="DJI Mini 3 Pro Only Drone">DJI Mini 3 Pro Only Drone</option>
+                    <option value="DJI Mini 3 Pro Fly More Combo">DJI Mini 3 Pro Fly More Combo</option>
+                    <option value="DJI Mini 3">DJI Mini 3</option>
+                    <option value="DJI Mini 3 Only Drone">DJI Mini 3 Only Drone</option>
+                    <option value="DJI Mini 3 Fly More Combo">DJI Mini 3 Fly More Combo</option>
+                    <option value="DJI Mini 2 SE">DJI Mini 2 SE</option>
+                    <option value="DJI Mini 2 SE Only Drone">DJI Mini 2 SE Only Drone</option>
+                    <option value="DJI Mini 2 SE Fly More Combo">DJI Mini 2 SE Fly More Combo</option>
+                    <option value="DJI Mini 2">DJI Mini 2</option>
+                    <option value="DJI Mini 2 Only Drone">DJI Mini 2 Only Drone</option>
+                    <option value="DJI Mini 2 Fly More Combo">DJI Mini 2 Fly More Combo</option>
+                    <option value="DJI Mini SE">DJI Mini SE</option>
+                    <option value="DJI Mini SE Only Drone">DJI Mini SE Only Drone</option>
+                </optgroup>
+                <optgroup label="Neo Серия">
+                    <option value="DJI Neo 2">DJI Neo 2</option>
+                    <option value="DJI Neo 2 Only Drone">DJI Neo 2 Only Drone</option>
+                    <option value="DJI Neo 2 Fly More Combo">DJI Neo 2 Fly More Combo</option>
+                    <option value="DJI Neo">DJI Neo</option>
+                    <option value="DJI Neo Only Drone">DJI Neo Only Drone</option>
+                    <option value="DJI Neo Fly More Combo">DJI Neo Fly More Combo</option>
+                    <option value="DJI Neo Motion Fly More Combo">DJI Neo Motion Fly More Combo</option>
+                </optgroup>
+                <optgroup label="Flip Серия">
+                    <option value="DJI Flip">DJI Flip</option>
+                    <option value="DJI Flip Only Drone">DJI Flip Only Drone</option>
+                    <option value="DJI Flip Fly More Combo">DJI Flip Fly More Combo</option>
+                </optgroup>
+                <optgroup label="Avata Серия">
+                    <option value="DJI Avata 2">DJI Avata 2</option>
+                    <option value="DJI Avata 2 Only Drone">DJI Avata 2 Only Drone</option>
+                    <option value="DJI Avata 2 Fly More Combo">DJI Avata 2 Fly More Combo</option>
+                    <option value="DJI Avata">DJI Avata</option>
+                    <option value="DJI Avata Only Drone">DJI Avata Only Drone</option>
+                    <option value="DJI Avata Fly More Combo">DJI Avata Fly More Combo</option>
+                </optgroup>
+                <optgroup label="Inspire Серия">
+                    <option value="DJI Inspire 3">DJI Inspire 3</option>
+                    <option value="DJI Inspire 3 Only Drone">DJI Inspire 3 Only Drone</option>
+                    <option value="DJI Inspire 3 Premium Combo">DJI Inspire 3 Premium Combo</option>
+                    <option value="DJI Inspire 2">DJI Inspire 2</option>
+                    <option value="DJI Inspire 2 Only Drone">DJI Inspire 2 Only Drone</option>
+                    <option value="DJI Inspire 2 Fly More Combo">DJI Inspire 2 Fly More Combo</option>
+                </optgroup>
+                <optgroup label="Matrice Серия">
+                    <option value="DJI Matrice 350 RTK">DJI Matrice 350 RTK</option>
+                    <option value="DJI Matrice 350 RTK Only Drone">DJI Matrice 350 RTK Only Drone</option>
+                    <option value="DJI Matrice 350 RTK Combo">DJI Matrice 350 RTK Combo</option>
+                    <option value="DJI Matrice 30">DJI Matrice 30</option>
+                    <option value="DJI Matrice 30 Only Drone">DJI Matrice 30 Only Drone</option>
+                    <option value="DJI Matrice 30 Combo">DJI Matrice 30 Combo</option>
+                    <option value="DJI Matrice 30T">DJI Matrice 30T</option>
+                    <option value="DJI Matrice 30T Only Drone">DJI Matrice 30T Only Drone</option>
+                    <option value="DJI Matrice 30T Combo">DJI Matrice 30T Combo</option>
+                    <option value="DJI Matrice 300 RTK">DJI Matrice 300 RTK</option>
+                    <option value="DJI Matrice 300 RTK Only Drone">DJI Matrice 300 RTK Only Drone</option>
+                    <option value="DJI Matrice 300 RTK Combo">DJI Matrice 300 RTK Combo</option>
+                </optgroup>
             </select>
         </div>
         
@@ -273,6 +465,7 @@
     let allProducts = [];
     let currentProduct = null;
     let pendingSku = null;
+    let currentCategory = 'Дроны';
     
     let cachedProducts = null;
     let catalogLoaded = false;
@@ -347,7 +540,36 @@
         }
     }
     
-    // ========== ОСНОВНОЙ СКАНЕР ==========
+    // ========== ПЕРЕКЛЮЧЕНИЕ КАТЕГОРИЙ ==========
+    async function switchCategory(category) {
+        if (currentCategory === category) return;
+        
+        currentCategory = category;
+        
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        if (category === 'Дроны') {
+            document.getElementById('btn-drones').classList.add('active');
+        } else {
+            document.getElementById('btn-scooters').classList.add('active');
+        }
+        
+        catalogLoaded = false;
+        cachedProducts = null;
+        allProducts = [];
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set('category', category);
+        window.history.pushState({}, '', url);
+        
+        await loadCatalog();
+        
+        const headerTitle = document.querySelector('#catalog-panel h2');
+        if (headerTitle) {
+            headerTitle.innerHTML = `📦 Каталог ${category}`;
+        }
+    }
+    
+    // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         if (!resultDiv) return;
@@ -410,7 +632,7 @@
                     if (debugDiv) debugDiv.innerHTML += `<br>🔍 Проверка артикула: ${text}...`;
                     
                     try {
-                        const checkRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=checkSku&sku=${encodeURIComponent(text)}`);
+                        const checkRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=checkSku&sku=${encodeURIComponent(text)}&category=${encodeURIComponent(currentCategory)}`);
                         const checkData = await checkRes.json();
                         if (debugDiv) debugDiv.innerHTML += `<br>📡 Ответ: ${JSON.stringify(checkData)}`;
                         
@@ -471,7 +693,7 @@
         const debugDiv = document.getElementById('receive-debug');
         if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
         
-        const url = `${GOOGLE_SCRIPT_URL}?action=autoAdd&sku=${encodeURIComponent(pendingSku)}&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=autoAdd&sku=${encodeURIComponent(pendingSku)}&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}&category=${encodeURIComponent(currentCategory)}`;
         if (debugDiv) debugDiv.innerHTML = `📤 GET запрос: ${url}`;
         
         try {
@@ -547,7 +769,7 @@
         const resultDiv = document.getElementById('receive-noqr-result');
         if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
         
-        const url = `${GOOGLE_SCRIPT_URL}?action=addWithoutSku&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=addWithoutSku&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}&category=${encodeURIComponent(currentCategory)}`;
         
         try {
             const response = await fetch(url);
@@ -605,7 +827,7 @@
     }
     
     async function findProductBySKU(sku) {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}`);
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         return data;
@@ -713,7 +935,7 @@
 💰 Цена закупки: ${product['Цена закупка'] || '—'} ₽
 📌 Статус: ${product['Статус'] || 'не продан'}`;
             
-            const productUrl = `${window.location.origin}${window.location.pathname}?sku=${encodeURIComponent(sku)}`;
+            const productUrl = `${window.location.origin}${window.location.pathname}?sku=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`;
             
             if (navigator.share) {
                 await navigator.share({ title: `Товар: ${product['Название']}`, text: shareText, url: productUrl });
@@ -851,13 +1073,18 @@
         
         container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
         try {
-            const products = await getAllProducts();
-            cachedProducts = products;
-            allProducts = products;
+            const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.error) throw new Error(data.error);
+            
+            cachedProducts = data.products;
+            allProducts = data.products;
             catalogLoaded = true;
             
-            if (!products.length) {
-                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            if (!allProducts.length) {
+                container.innerHTML = `<div class="error">📭 Товары в категории "${currentCategory}" не найдены.</div>`;
                 const statsContent = document.getElementById('stats-content');
                 if (statsContent) statsContent.innerHTML = 'Нет данных';
                 return;
@@ -869,7 +1096,8 @@
     }
     
     async function getAllProducts() {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAll`);
+        const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
+        const res = await fetch(url);
         return await res.json();
     }
     
@@ -937,7 +1165,7 @@
             resultDiv.innerHTML = '<div class="loading">💾 Сохранение...</div>';
         }
         
-        const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}&category=${encodeURIComponent(currentCategory)}`;
         
         try {
             const response = await fetch(url);
@@ -977,7 +1205,7 @@
         }
         
         try {
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deleteProduct&sku=${encodeURIComponent(sku)}`);
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deleteProduct&sku=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`);
             const result = await response.json();
             
             if (result.success) {
@@ -999,6 +1227,12 @@
     
     function handleUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
+        
+        const category = urlParams.get('category');
+        if (category && (category === 'Дроны' || category === 'Самокаты')) {
+            switchCategory(category);
+        }
+        
         const sku = urlParams.get('sku');
         if (sku) {
             switchTab('search');
@@ -1036,8 +1270,8 @@
     if (homeBtn) homeBtn.onclick = goHome;
     
     window.onload = function() {
-        loadCatalog();
         handleUrlParams();
+        loadCatalog();
     };
 </script>
 </body>
