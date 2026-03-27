@@ -449,7 +449,7 @@
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVqaeLCtlYfL9o0hDZtugjFyxGaWMqXgp1MJmZLM1uf7ecNy-SJX4RnNvIJOOLjxQ9g/exec';
+       const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVqaeLCtlYfL9o0hDZtugjFyxGaWMqXgp1MJmZLM1uf7ecNy-SJX4RnNvIJOOLjxQ9g/exec';
     
     let html5QrCode = null;
     let receiveQrCode = null;
@@ -505,7 +505,8 @@
     function switchTab(tab) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tab + '-panel').classList.add('active');
+        const panel = document.getElementById(tab + '-panel');
+        if (panel) panel.classList.add('active');
         if (event && event.target) event.target.classList.add('active');
         
         if (navigationStack[navigationStack.length - 1] !== tab) {
@@ -518,9 +519,12 @@
         }
         if (tab === 'receive') {
             if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
-            document.getElementById('receive-form').style.display = 'none';
-            document.getElementById('scanned-sku-display').style.display = 'none';
-            document.getElementById('receive-result').innerHTML = '';
+            const receiveForm = document.getElementById('receive-form');
+            const scannedDisplay = document.getElementById('scanned-sku-display');
+            const receiveResult = document.getElementById('receive-result');
+            if (receiveForm) receiveForm.style.display = 'none';
+            if (scannedDisplay) scannedDisplay.style.display = 'none';
+            if (receiveResult) receiveResult.innerHTML = '';
             pendingSku = null;
         }
         if (tab === 'receive-noqr') {
@@ -532,6 +536,7 @@
     // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
+        if (!resultDiv) return;
         resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
         if (html5QrCode && isScanning) await html5QrCode.stop();
         html5QrCode = new Html5Qrcode("reader");
@@ -555,6 +560,7 @@
             isScanning = false;
         }
         const resultDiv = document.getElementById('scan-result');
+        if (!resultDiv) return;
         resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
         try {
             const product = await findProductBySKU(qrData);
@@ -569,9 +575,12 @@
     async function startReceiveScanner() {
         const resultDiv = document.getElementById('receive-result');
         const debugDiv = document.getElementById('receive-debug');
+        if (!resultDiv) return;
         resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
-        debugDiv.style.display = 'block';
-        debugDiv.innerHTML = 'Запуск камеры...';
+        if (debugDiv) {
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML = 'Запуск камеры...';
+        }
         
         if (receiveQrCode && isReceiveScanning) await receiveQrCode.stop();
         
@@ -581,44 +590,49 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 300, height: 300 } },
                 async (text) => {
-                    debugDiv.innerHTML = `📱 Отсканировано: ${text}`;
+                    if (debugDiv) debugDiv.innerHTML = `📱 Отсканировано: ${text}`;
                     await receiveQrCode.stop();
                     isReceiveScanning = false;
-                    debugDiv.innerHTML += `<br>🔍 Проверка артикула: ${text}...`;
+                    if (debugDiv) debugDiv.innerHTML += `<br>🔍 Проверка артикула: ${text}...`;
                     
                     try {
                         const checkRes = await fetch(`${GOOGLE_SCRIPT_URL}?action=checkSku&sku=${encodeURIComponent(text)}`);
                         const checkData = await checkRes.json();
-                        debugDiv.innerHTML += `<br>📡 Ответ: ${JSON.stringify(checkData)}`;
+                        if (debugDiv) debugDiv.innerHTML += `<br>📡 Ответ: ${JSON.stringify(checkData)}`;
                         
                         if (checkData.exists) {
                             resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${text}" уже существует в таблице!</div>`;
-                            document.getElementById('receive-form').style.display = 'none';
-                            document.getElementById('scanned-sku-display').style.display = 'none';
+                            const receiveForm = document.getElementById('receive-form');
+                            const scannedDisplay = document.getElementById('scanned-sku-display');
+                            if (receiveForm) receiveForm.style.display = 'none';
+                            if (scannedDisplay) scannedDisplay.style.display = 'none';
                             pendingSku = null;
                             return;
                         }
                         
                         pendingSku = text;
-                        document.getElementById('scanned-sku').textContent = text;
-                        document.getElementById('scanned-sku-display').style.display = 'block';
-                        document.getElementById('receive-form').style.display = 'block';
+                        const scannedSkuSpan = document.getElementById('scanned-sku');
+                        const scannedDisplay = document.getElementById('scanned-sku-display');
+                        const receiveForm = document.getElementById('receive-form');
+                        if (scannedSkuSpan) scannedSkuSpan.textContent = text;
+                        if (scannedDisplay) scannedDisplay.style.display = 'block';
+                        if (receiveForm) receiveForm.style.display = 'block';
                         resultDiv.innerHTML = '<div class="success">✅ QR-код отсканирован! Заполните информацию о товаре.</div>';
-                        debugDiv.innerHTML += `<br>✅ Форма открыта для артикула: ${text}`;
+                        if (debugDiv) debugDiv.innerHTML += `<br>✅ Форма открыта для артикула: ${text}`;
                         
                     } catch (fetchError) {
-                        debugDiv.innerHTML += `<br>❌ Ошибка проверки: ${fetchError.message}`;
+                        if (debugDiv) debugDiv.innerHTML += `<br>❌ Ошибка проверки: ${fetchError.message}`;
                         resultDiv.innerHTML = `<div class="error">❌ Ошибка проверки: ${fetchError.message}</div>`;
                     }
                 },
-                (err) => { debugDiv.innerHTML = `Сканирование... ${err}`; }
+                (err) => { if (debugDiv) debugDiv.innerHTML = `Сканирование... ${err}`; }
             );
             isReceiveScanning = true;
             resultDiv.innerHTML = '<div class="success">✅ Камера работает. Наведите на QR-код наклейки.</div>';
-            debugDiv.innerHTML = 'Камера запущена, ждём сканирования...';
+            if (debugDiv) debugDiv.innerHTML = 'Камера запущена, ждём сканирования...';
         } catch(e) {
             resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры. Проверьте разрешения.</div>';
-            debugDiv.innerHTML = `❌ Ошибка: ${e.message}`;
+            if (debugDiv) debugDiv.innerHTML = `❌ Ошибка: ${e.message}`;
         }
     }
     
@@ -629,10 +643,10 @@
             return;
         }
         
-        const model = document.getElementById('receive-model').value;
-        const serialNumber = document.getElementById('receive-serial').value.trim();
-        const purchasePrice = document.getElementById('receive-price').value;
-        const description = document.getElementById('receive-description').value;
+        const model = document.getElementById('receive-model')?.value;
+        const serialNumber = document.getElementById('receive-serial')?.value.trim() || '';
+        const purchasePrice = document.getElementById('receive-price')?.value || '';
+        const description = document.getElementById('receive-description')?.value || '';
         
         if (!model) {
             alert('Выберите модель');
@@ -641,46 +655,63 @@
         
         const resultDiv = document.getElementById('receive-result');
         const debugDiv = document.getElementById('receive-debug');
-        resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
         
         const url = `${GOOGLE_SCRIPT_URL}?action=autoAdd&sku=${encodeURIComponent(pendingSku)}&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}`;
-        debugDiv.innerHTML = `📤 GET запрос: ${url}`;
+        if (debugDiv) debugDiv.innerHTML = `📤 GET запрос: ${url}`;
         
         try {
             const response = await fetch(url);
             const data = await response.json();
-            debugDiv.innerHTML += `<br>📡 Ответ: ${JSON.stringify(data)}`;
+            if (debugDiv) debugDiv.innerHTML += `<br>📡 Ответ: ${JSON.stringify(data)}`;
             
             if (data.success) {
-                resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}</div>`;
-                document.getElementById('receive-form').style.display = 'none';
-                document.getElementById('scanned-sku-display').style.display = 'none';
-                document.getElementById('receive-model').value = '';
-                document.getElementById('receive-serial').value = '';
-                document.getElementById('receive-price').value = '';
-                document.getElementById('receive-description').value = '';
+                if (resultDiv) resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}</div>`;
+                const receiveForm = document.getElementById('receive-form');
+                const scannedDisplay = document.getElementById('scanned-sku-display');
+                if (receiveForm) receiveForm.style.display = 'none';
+                if (scannedDisplay) scannedDisplay.style.display = 'none';
+                const receiveModel = document.getElementById('receive-model');
+                const receiveSerial = document.getElementById('receive-serial');
+                const receivePrice = document.getElementById('receive-price');
+                const receiveDescription = document.getElementById('receive-description');
+                if (receiveModel) receiveModel.value = '';
+                if (receiveSerial) receiveSerial.value = '';
+                if (receivePrice) receivePrice.value = '';
+                if (receiveDescription) receiveDescription.value = '';
                 pendingSku = null;
                 catalogLoaded = false;
                 loadCatalog();
             } else {
-                resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
             }
         } catch (error) {
-            debugDiv.innerHTML += `<br>❌ Ошибка: ${error.message}`;
-            resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+            if (debugDiv) debugDiv.innerHTML += `<br>❌ Ошибка: ${error.message}`;
+            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
         }
     }
     
     function cancelReceive() {
-        document.getElementById('receive-form').style.display = 'none';
-        document.getElementById('scanned-sku-display').style.display = 'none';
-        document.getElementById('receive-result').innerHTML = '';
-        document.getElementById('receive-debug').innerHTML = '';
-        document.getElementById('receive-debug').style.display = 'none';
-        document.getElementById('receive-model').value = '';
-        document.getElementById('receive-serial').value = '';
-        document.getElementById('receive-price').value = '';
-        document.getElementById('receive-description').value = '';
+        const receiveForm = document.getElementById('receive-form');
+        const scannedDisplay = document.getElementById('scanned-sku-display');
+        const receiveResult = document.getElementById('receive-result');
+        const receiveDebug = document.getElementById('receive-debug');
+        const receiveModel = document.getElementById('receive-model');
+        const receiveSerial = document.getElementById('receive-serial');
+        const receivePrice = document.getElementById('receive-price');
+        const receiveDescription = document.getElementById('receive-description');
+        
+        if (receiveForm) receiveForm.style.display = 'none';
+        if (scannedDisplay) scannedDisplay.style.display = 'none';
+        if (receiveResult) receiveResult.innerHTML = '';
+        if (receiveDebug) {
+            receiveDebug.innerHTML = '';
+            receiveDebug.style.display = 'none';
+        }
+        if (receiveModel) receiveModel.value = '';
+        if (receiveSerial) receiveSerial.value = '';
+        if (receivePrice) receivePrice.value = '';
+        if (receiveDescription) receiveDescription.value = '';
         pendingSku = null;
         if (receiveQrCode && isReceiveScanning) {
             receiveQrCode.stop().then(() => isReceiveScanning = false);
@@ -689,10 +720,10 @@
     
     // ========== ПРИЁМКА БЕЗ QR ==========
     async function submitNoQRProduct() {
-        const model = document.getElementById('receive-noqr-model').value;
-        const serialNumber = document.getElementById('receive-noqr-serial').value.trim();
-        const purchasePrice = document.getElementById('receive-noqr-price').value;
-        const description = document.getElementById('receive-noqr-description').value;
+        const model = document.getElementById('receive-noqr-model')?.value;
+        const serialNumber = document.getElementById('receive-noqr-serial')?.value.trim() || '';
+        const purchasePrice = document.getElementById('receive-noqr-price')?.value || '';
+        const description = document.getElementById('receive-noqr-description')?.value || '';
         
         if (!model) {
             alert('Выберите модель товара');
@@ -700,7 +731,7 @@
         }
         
         const resultDiv = document.getElementById('receive-noqr-result');
-        resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
         
         const url = `${GOOGLE_SCRIPT_URL}?action=addWithoutSku&model=${encodeURIComponent(model)}&serialNumber=${encodeURIComponent(serialNumber)}&purchasePrice=${encodeURIComponent(purchasePrice)}&description=${encodeURIComponent(description)}`;
         
@@ -709,44 +740,53 @@
             const data = await response.json();
             
             if (data.success) {
-                resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован: <a href="${data.qrCode}" target="_blank">Посмотреть QR</a></div>`;
-                document.getElementById('receive-noqr-model').value = '';
-                document.getElementById('receive-noqr-serial').value = '';
-                document.getElementById('receive-noqr-price').value = '';
-                document.getElementById('receive-noqr-description').value = '';
+                if (resultDiv) resultDiv.innerHTML = `<div class="success">${data.message}<br>🔢 Артикул: ${data.sku}<br>📱 QR-код сгенерирован: <a href="${data.qrCode}" target="_blank">Посмотреть QR</a></div>`;
+                const receiveNoqrModel = document.getElementById('receive-noqr-model');
+                const receiveNoqrSerial = document.getElementById('receive-noqr-serial');
+                const receiveNoqrPrice = document.getElementById('receive-noqr-price');
+                const receiveNoqrDescription = document.getElementById('receive-noqr-description');
+                if (receiveNoqrModel) receiveNoqrModel.value = '';
+                if (receiveNoqrSerial) receiveNoqrSerial.value = '';
+                if (receiveNoqrPrice) receiveNoqrPrice.value = '';
+                if (receiveNoqrDescription) receiveNoqrDescription.value = '';
                 catalogLoaded = false;
                 loadCatalog();
             } else {
-                resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
             }
         } catch (error) {
-            resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
         }
     }
     
     function clearNoQRForm() {
-        document.getElementById('receive-noqr-model').value = '';
-        document.getElementById('receive-noqr-serial').value = '';
-        document.getElementById('receive-noqr-price').value = '';
-        document.getElementById('receive-noqr-description').value = '';
-        document.getElementById('receive-noqr-result').innerHTML = '';
+        const receiveNoqrModel = document.getElementById('receive-noqr-model');
+        const receiveNoqrSerial = document.getElementById('receive-noqr-serial');
+        const receiveNoqrPrice = document.getElementById('receive-noqr-price');
+        const receiveNoqrDescription = document.getElementById('receive-noqr-description');
+        const receiveNoqrResult = document.getElementById('receive-noqr-result');
+        if (receiveNoqrModel) receiveNoqrModel.value = '';
+        if (receiveNoqrSerial) receiveNoqrSerial.value = '';
+        if (receiveNoqrPrice) receiveNoqrPrice.value = '';
+        if (receiveNoqrDescription) receiveNoqrDescription.value = '';
+        if (receiveNoqrResult) receiveNoqrResult.innerHTML = '';
     }
     
     // ========== ПОИСК ==========
     async function searchBySerial() {
-        const sku = document.getElementById('serial-input').value.trim();
+        const sku = document.getElementById('serial-input')?.value.trim();
         const resultDiv = document.getElementById('search-result');
         if (!sku) {
-            resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
             return;
         }
-        resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
         try {
             const product = await findProductBySKU(sku);
             currentProduct = product;
             displayProduct(product, 'search-result');
         } catch(e) {
-            resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
         }
     }
     
@@ -777,6 +817,7 @@
     
     function displayProduct(p, containerId) {
         const container = document.getElementById(containerId);
+        if (!container) return;
         
         let ценаЗакупка = p['Цена закупка'];
         if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) {
@@ -875,28 +916,8 @@
         if (!s) return '';
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
-
     
-    function filterByModel(model) {
-    // Создаём скрытый select для фильтра, если его нет
-    let modelSelect = document.getElementById('filter-model');
-    if (!modelSelect) {
-        modelSelect = document.createElement('select');
-        modelSelect.id = 'filter-model';
-        modelSelect.style.display = 'none';
-        document.body.appendChild(modelSelect);
-    }
-    modelSelect.value = model;
-    
-    // Переключаемся на каталог, если мы не в нём
-    if (document.getElementById('catalog-panel').style.display !== 'block') {
-        switchTab('catalog');
-    } else {
-        // Если уже в каталоге, просто применяем фильтр
-        applyFilters();
-    }
-}
-        function updateStats(products) {
+    function updateStats(products) {
         const stats = {};
         let total = 0;
         let sold = 0;
@@ -959,7 +980,7 @@
         
         const modelSelect = document.getElementById('filter-model');
         const modelFilter = modelSelect ? modelSelect.value : '';
-        const statusFilter = document.getElementById('filter-status').value;
+        const statusFilter = document.getElementById('filter-status')?.value || '';
         
         let filtered = allProducts.filter(product => {
             if (modelFilter && product['Название'] !== modelFilter) return false;
@@ -1000,9 +1021,16 @@
         applyFilters();
     }
     
-    // ========== КАТАЛОГ С КЭШИРОВАНИЕМ ==========
+    async function viewProductDetail(sku) {
+        switchTab('search');
+        const serialInput = document.getElementById('serial-input');
+        if (serialInput) serialInput.value = sku;
+        await searchBySerial();
+    }
+    
     async function loadCatalog(forceReload = false) {
         const container = document.getElementById('catalog-content');
+        if (!container) return;
         
         if (cachedProducts && !forceReload && catalogLoaded) {
             allProducts = cachedProducts;
@@ -1019,19 +1047,14 @@
             
             if (!products.length) {
                 container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-                document.getElementById('stats-content').innerHTML = 'Нет данных';
+                const statsContent = document.getElementById('stats-content');
+                if (statsContent) statsContent.innerHTML = 'Нет данных';
                 return;
             }
             applyFilters();
         } catch (error) {
             container.innerHTML = `<div class="error">❌ ${error.message}</div>`;
         }
-    }
-    
-    async function viewProductDetail(sku) {
-        switchTab('search');
-        document.getElementById('serial-input').value = sku;
-        await searchBySerial();
     }
     
     async function getAllProducts() {
@@ -1096,10 +1119,11 @@
     
     async function saveProductChanges(data) {
         const resultDiv = document.getElementById('scan-result');
-        if (document.getElementById('search-result').style.display !== 'none') {
-            document.getElementById('search-result').innerHTML = '<div class="loading">💾 Сохранение...</div>';
-        } else {
-            document.getElementById('scan-result').innerHTML = '<div class="loading">💾 Сохранение...</div>';
+        const searchResult = document.getElementById('search-result');
+        if (searchResult && searchResult.style.display !== 'none') {
+            searchResult.innerHTML = '<div class="loading">💾 Сохранение...</div>';
+        } else if (resultDiv) {
+            resultDiv.innerHTML = '<div class="loading">💾 Сохранение...</div>';
         }
         
         const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}`;
@@ -1112,9 +1136,9 @@
                 alert('✅ Товар обновлён');
                 const updatedProduct = await findProductBySKU(data.sku);
                 currentProduct = updatedProduct;
-                if (document.getElementById('search-result').style.display !== 'none') {
+                if (searchResult && searchResult.style.display !== 'none') {
                     displayProduct(updatedProduct, 'search-result');
-                } else {
+                } else if (resultDiv) {
                     displayProduct(updatedProduct, 'scan-result');
                 }
                 catalogLoaded = false;
@@ -1133,11 +1157,12 @@
         const confirmed = confirm(`⚠️ Вы уверены, что хотите удалить товар с артикулом ${sku}? Это действие нельзя отменить.`);
         if (!confirmed) return;
         
-        const resultDiv = document.getElementById('search-result');
-        if (document.getElementById('search-result').style.display !== 'none') {
+        const resultDiv = document.getElementById('scan-result');
+        const searchResult = document.getElementById('search-result');
+        if (searchResult && searchResult.style.display !== 'none') {
+            searchResult.innerHTML = '<div class="loading">🗑️ Удаление...</div>';
+        } else if (resultDiv) {
             resultDiv.innerHTML = '<div class="loading">🗑️ Удаление...</div>';
-        } else {
-            document.getElementById('scan-result').innerHTML = '<div class="loading">🗑️ Удаление...</div>';
         }
         
         try {
@@ -1146,10 +1171,10 @@
             
             if (result.success) {
                 alert(`✅ Товар ${sku} удалён`);
-                if (document.getElementById('search-result').style.display !== 'none') {
-                    document.getElementById('search-result').innerHTML = '';
-                } else {
-                    document.getElementById('scan-result').innerHTML = '<div class="success">✅ Товар удалён</div>';
+                if (searchResult && searchResult.style.display !== 'none') {
+                    searchResult.innerHTML = '';
+                } else if (resultDiv) {
+                    resultDiv.innerHTML = '<div class="success">✅ Товар удалён</div>';
                 }
                 catalogLoaded = false;
                 loadCatalog();
@@ -1166,7 +1191,8 @@
         const sku = urlParams.get('sku');
         if (sku) {
             switchTab('search');
-            document.getElementById('serial-input').value = sku;
+            const serialInput = document.getElementById('serial-input');
+            if (serialInput) serialInput.value = sku;
             searchBySerial();
         }
     }
@@ -1177,14 +1203,19 @@
     document.getElementById('cancel-receive-btn').onclick = cancelReceive;
     document.getElementById('submit-noqr-btn').onclick = submitNoQRProduct;
     document.getElementById('clear-noqr-btn').onclick = clearNoQRForm;
-    document.getElementById('refresh-catalog-btn').onclick = () => {
+    const refreshBtn = document.getElementById('refresh-catalog-btn');
+    if (refreshBtn) refreshBtn.onclick = () => {
         catalogLoaded = false;
         loadCatalog(true);
     };
-    document.getElementById('filter-status').addEventListener('change', applyFilters);
-    document.getElementById('reset-filters').addEventListener('click', resetFilters);
-    document.getElementById('back-btn').onclick = goBack;
-    document.getElementById('home-btn').onclick = goHome;
+    const filterStatus = document.getElementById('filter-status');
+    if (filterStatus) filterStatus.addEventListener('change', applyFilters);
+    const resetBtn = document.getElementById('reset-filters');
+    if (resetBtn) resetBtn.addEventListener('click', resetFilters);
+    const backBtn = document.getElementById('back-btn');
+    if (backBtn) backBtn.onclick = goBack;
+    const homeBtn = document.getElementById('home-btn');
+    if (homeBtn) homeBtn.onclick = goHome;
     
     window.onload = function() {
         loadCatalog();
