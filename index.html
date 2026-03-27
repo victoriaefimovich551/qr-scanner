@@ -118,9 +118,10 @@
                 </select>
             </div>
             <div class="filter-row">
-                <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
-                <button id="refresh-catalog-btn" style="background: #3b82f6; width: auto; padding: 10px 20px; margin: 0;">🔄 Обновить</button>
-            </div>
+    <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
+    <button id="refresh-catalog-btn" style="background: #3b82f6;">🔄 Обновить</button>
+    <button id="clear-model-filter" style="background: #64748b;">❌ Снять фильтр</button>
+</div>
         </div>
         <div id="catalog-content" class="loading">⏳ Загрузка...</div>
     </div>
@@ -948,7 +949,7 @@
         
         statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
 for (const [model, count] of Object.entries(stats).sort()) {
-    statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="alert('Нажали на: ${escapeHtml(model)}')">
+    statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
         ${escapeHtml(model)}: <strong>${count}</strong>
     </span>`;
 }
@@ -1199,6 +1200,29 @@ statsHtml += `</div>`;
             searchBySerial();
         }
     }
+
+    function filterCatalogDirectly(model) {
+    console.log('Прямая фильтрация по модели:', model);
+    
+    // Фильтруем товары
+    let filtered = allProducts.filter(product => {
+        return product['Название'] === model;
+    });
+    
+    console.log('Найдено товаров:', filtered.length);
+    
+    // Обновляем отображение каталога
+    renderCatalog(filtered);
+    
+    // Обновляем статистику (показываем только отфильтрованные)
+    updateStats(filtered);
+    
+    // Меняем заголовок или показываем, что фильтр активен
+    const statsHeader = document.querySelector('#catalog-stats strong');
+    if (statsHeader) {
+        statsHeader.innerHTML = `📊 Статистика по комплектациям (фильтр: ${model}):`;
+    }
+}
     
     document.getElementById('start-scan-btn').onclick = startScanner;
     document.getElementById('start-receive-scan').onclick = startReceiveScanner;
@@ -1210,6 +1234,14 @@ statsHtml += `</div>`;
     if (refreshBtn) refreshBtn.onclick = () => {
         catalogLoaded = false;
         loadCatalog(true);
+        document.getElementById('clear-model-filter').onclick = function() {
+    renderCatalog(allProducts);
+    updateStats(allProducts);
+    const statsHeader = document.querySelector('#catalog-stats strong');
+    if (statsHeader) {
+        statsHeader.innerHTML = '📊 Статистика по комплектациям:';
+    }
+};
     };
     const filterStatus = document.getElementById('filter-status');
     if (filterStatus) filterStatus.addEventListener('change', applyFilters);
