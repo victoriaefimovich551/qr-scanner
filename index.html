@@ -954,45 +954,52 @@
     }
     
     function updateStats(products) {
-        const stats = {};
-        let total = 0;
-        let sold = 0;
-        let reserved = 0;
-        let delivery = 0;
-        let unsold = 0;
-        
-        products.forEach(product => {
-            total++;
-            const model = product['Название'] || 'Без названия';
-            stats[model] = (stats[model] || 0) + 1;
-            
-            switch(product['Статус']) {
-                case 'Продан': sold++; break;
-                case 'Зарезервирован': reserved++; break;
-                case 'В доставке': delivery++; break;
-                default: unsold++;
-            }
-        });
-        
-        let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
-            <span>📦 Всего: <strong>${total}</strong></span>
-            <span style="color: #16a34a;">✅ Продан: <strong>${sold}</strong></span>
-            <span style="color: #eab308;">🔒 Зарезервирован: <strong>${reserved}</strong></span>
-            <span style="color: #3b82f6;">🚚 В доставке: <strong>${delivery}</strong></span>
-            <span style="color: #64748b;">📦 Не продан: <strong>${unsold}</strong></span>
-        </div>`;
-        
-        statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
-        for (const [model, count] of Object.entries(stats).sort()) {
-            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
-                ${escapeHtml(model)}: <strong>${count}</strong>
-            </span>`;
-        }
-        statsHtml += `</div>`;
-        
+    // Проверяем, что products существует и является массивом
+    if (!products || !Array.isArray(products) || products.length === 0) {
         const statsContainer = document.getElementById('stats-content');
-        if (statsContainer) statsContainer.innerHTML = statsHtml;
+        if (statsContainer) statsContainer.innerHTML = 'Нет данных для отображения';
+        return;
     }
+    
+    const stats = {};
+    let total = 0;
+    let sold = 0;
+    let reserved = 0;
+    let delivery = 0;
+    let unsold = 0;
+    
+    products.forEach(product => {
+        total++;
+        const model = product['Название'] || 'Без названия';
+        stats[model] = (stats[model] || 0) + 1;
+        
+        switch(product['Статус']) {
+            case 'Продан': sold++; break;
+            case 'Зарезервирован': reserved++; break;
+            case 'В доставке': delivery++; break;
+            default: unsold++;
+        }
+    });
+    
+    let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
+        <span>📦 Всего: <strong>${total}</strong></span>
+        <span style="color: #16a34a;">✅ Продан: <strong>${sold}</strong></span>
+        <span style="color: #eab308;">🔒 Зарезервирован: <strong>${reserved}</strong></span>
+        <span style="color: #3b82f6;">🚚 В доставке: <strong>${delivery}</strong></span>
+        <span style="color: #64748b;">📦 Не продан: <strong>${unsold}</strong></span>
+    </div>`;
+    
+    statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
+    for (const [model, count] of Object.entries(stats).sort()) {
+        statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
+            ${escapeHtml(model)}: <strong>${count}</strong>
+        </span>`;
+    }
+    statsHtml += `</div>`;
+    
+    const statsContainer = document.getElementById('stats-content');
+    if (statsContainer) statsContainer.innerHTML = statsHtml;
+}
     
     function filterCatalogDirectly(model) {
         let filtered = allProducts.filter(product => {
@@ -1009,18 +1016,21 @@
     }
     
     function applyFilters() {
-        if (!allProducts.length) return;
-        
-        const statusFilter = document.getElementById('filter-status')?.value || '';
-        
-        let filtered = allProducts.filter(product => {
-            if (statusFilter && product['Статус'] !== statusFilter) return false;
-            return true;
-        });
-        
-        renderCatalog(filtered);
-        updateStats(filtered);
+    if (!allProducts || !allProducts.length) {
+        console.log('Нет данных для фильтрации');
+        return;
     }
+    
+    const statusFilter = document.getElementById('filter-status')?.value || '';
+    
+    let filtered = allProducts.filter(product => {
+        if (statusFilter && product['Статус'] !== statusFilter) return false;
+        return true;
+    });
+    
+    renderCatalog(filtered);
+    updateStats(filtered);
+}
     
     function renderCatalog(products) {
         const container = document.getElementById('catalog-content');
@@ -1062,38 +1072,56 @@
     }
     
     async function loadCatalog(forceReload = false) {
-        const container = document.getElementById('catalog-content');
-        if (!container) return;
-        
-        if (cachedProducts && !forceReload && catalogLoaded) {
-            allProducts = cachedProducts;
+    const container = document.getElementById('catalog-content');
+    if (!container) return;
+    
+    // Если есть кэш и не требуется перезагрузка
+    if (cachedProducts && !forceReload && catalogLoaded) {
+        allProducts = cachedProducts;
+        if (allProducts && allProducts.length) {
             applyFilters();
+        } else {
+            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+        }
+        return;
+    }
+    
+    container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+    try {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        console.log('Ответ от сервера:', data); // для отладки
+        
+        // Проверяем структуру ответа
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Если данные пришли в формате { products: [...] }
+        const products = data.products || data;
+        
+        if (!products || !Array.isArray(products)) {
+            throw new Error('Неверный формат данных от сервера');
+        }
+        
+        cachedProducts = products;
+        allProducts = products;
+        catalogLoaded = true;
+        
+        if (!allProducts || allProducts.length === 0) {
+            container.innerHTML = `<div class="error">📭 Товары в категории "${currentCategory}" не найдены.</div>`;
+            const statsContent = document.getElementById('stats-content');
+            if (statsContent) statsContent.innerHTML = 'Нет данных';
             return;
         }
-        
-        container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
-        try {
-            const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data.error) throw new Error(data.error);
-            
-            cachedProducts = data.products;
-            allProducts = data.products;
-            catalogLoaded = true;
-            
-            if (!allProducts.length) {
-                container.innerHTML = `<div class="error">📭 Товары в категории "${currentCategory}" не найдены.</div>`;
-                const statsContent = document.getElementById('stats-content');
-                if (statsContent) statsContent.innerHTML = 'Нет данных';
-                return;
-            }
-            applyFilters();
-        } catch (error) {
-            container.innerHTML = `<div class="error">❌ ${error.message}</div>`;
-        }
+        applyFilters();
+    } catch (error) {
+        console.error('Ошибка загрузки:', error);
+        container.innerHTML = `<div class="error">❌ Ошибка загрузки: ${error.message}</div>`;
     }
+}
     
     async function getAllProducts() {
         const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
