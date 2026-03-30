@@ -541,33 +541,50 @@
     }
     
     // ========== ПЕРЕКЛЮЧЕНИЕ КАТЕГОРИЙ ==========
-    async function switchCategory(category) {
-        if (currentCategory === category) return;
-        
-        currentCategory = category;
-        
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        if (category === 'Дроны') {
-            document.getElementById('btn-drones').classList.add('active');
-        } else {
-            document.getElementById('btn-scooters').classList.add('active');
-        }
-        
-        catalogLoaded = false;
-        cachedProducts = null;
-        allProducts = [];
-        
-        const url = new URL(window.location.href);
-        url.searchParams.set('category', category);
-        window.history.pushState({}, '', url);
-        
-        await loadCatalog();
-        
-        const headerTitle = document.querySelector('#catalog-panel h2');
-        if (headerTitle) {
-            headerTitle.innerHTML = `📦 Каталог ${category}`;
-        }
+   async function switchCategory(category) {
+    if (currentCategory === category) return;
+    
+    currentCategory = category;
+    
+    // Обновляем активную кнопку
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+    if (category === 'Дроны') {
+        document.getElementById('btn-drones').classList.add('active');
+    } else {
+        document.getElementById('btn-scooters').classList.add('active');
     }
+    
+    // ========== ВАЖНО: ПОЛНОСТЬЮ СБРАСЫВАЕМ КЭШ ==========
+    catalogLoaded = false;
+    cachedProducts = null;
+    allProducts = [];
+    
+    // Обновляем URL параметр
+    const url = new URL(window.location.href);
+    url.searchParams.set('category', category);
+    window.history.pushState({}, '', url);
+    
+    // Очищаем отображение каталога
+    const catalogContainer = document.getElementById('catalog-content');
+    if (catalogContainer) {
+        catalogContainer.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+    }
+    
+    // Очищаем статистику
+    const statsContent = document.getElementById('stats-content');
+    if (statsContent) {
+        statsContent.innerHTML = 'Загрузка...';
+    }
+    
+    // Принудительно перезагружаем данные
+    await loadCatalog(true);  // forceReload = true
+    
+    // Обновляем заголовок
+    const headerTitle = document.querySelector('#catalog-panel h2');
+    if (headerTitle) {
+        headerTitle.innerHTML = `📦 Каталог ${category}`;
+    }
+}
     
     // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
     async function startScanner() {
