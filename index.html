@@ -1052,25 +1052,30 @@
 }
     
     function renderCatalog(products) {
-        const container = document.getElementById('catalog-content');
-        if (!container) return;
-        if (products.length === 0) {
-            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-            return;
-        }
-        let html = '<div class="products-grid">';
-        products.forEach(product => {
-            const statusClass = getStatusClass(product['Статус']);
-            const statusText = getStatusText(product['Статус']);
-            html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
-                <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
-                <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
-                <small class="${statusClass}">${statusText}</small>
-            </div>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
+    const container = document.getElementById('catalog-content');
+    if (!container) return;
+    
+    console.log('🎨 renderCatalog вызвана, товаров:', products ? products.length : 0);
+    console.log('Первый товар:', products && products[0] ? products[0]['Название'] : 'нет');
+    
+    if (!products || products.length === 0) {
+        container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+        return;
     }
+    
+    let html = '<div class="products-grid">';
+    products.forEach(product => {
+        const statusClass = getStatusClass(product['Статус']);
+        const statusText = getStatusText(product['Статус']);
+        html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
+            <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
+            <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
+            <small class="${statusClass}">${statusText}</small>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
     
     function resetFilters() {
         const statusSelect = document.getElementById('filter-status');
@@ -1101,7 +1106,9 @@
         console.log('📦 Используем кэш, товаров:', cachedProducts.length);
         allProducts = cachedProducts;
         if (allProducts && allProducts.length) {
-            applyFilters();
+            // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
+            renderCatalog(allProducts);
+            updateStats(allProducts);
         } else {
             container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
         }
@@ -1132,6 +1139,7 @@
         
         console.log(`📦 Получено товаров: ${products.length} для категории ${currentCategory}`);
         
+        // Сохраняем в кэш
         cachedProducts = products;
         allProducts = products;
         catalogLoaded = true;
@@ -1142,18 +1150,16 @@
             if (statsContent) statsContent.innerHTML = 'Нет данных';
             return;
         }
-        applyFilters();
+        
+        // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
+        renderCatalog(allProducts);
+        updateStats(allProducts);
+        
     } catch (error) {
         console.error('❌ Ошибка загрузки:', error);
         container.innerHTML = `<div class="error">❌ Ошибка загрузки: ${error.message}</div>`;
     }
 }
-    
-    async function getAllProducts() {
-        const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
-        const res = await fetch(url);
-        return await res.json();
-    }
     
     // ========== РЕДАКТИРОВАНИЕ ТОВАРА ==========
     function editProduct(sku) {
