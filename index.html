@@ -1294,39 +1294,47 @@ function updateModelsForCategory(category) {
     }
     
     async function saveProductChanges(data) {
-        const resultDiv = document.getElementById('scan-result');
-        const searchResult = document.getElementById('search-result');
-        if (searchResult && searchResult.style.display !== 'none') {
-            searchResult.innerHTML = '<div class="loading">💾 Сохранение...</div>';
-        } else if (resultDiv) {
-            resultDiv.innerHTML = '<div class="loading">💾 Сохранение...</div>';
-        }
-        
-        const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}&category=${encodeURIComponent(currentCategory)}`;
-        
-        try {
-            const response = await fetch(url);
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('✅ Товар обновлён');
-                const updatedProduct = await findProductBySKU(data.sku);
-                currentProduct = updatedProduct;
-                if (searchResult && searchResult.style.display !== 'none') {
-                    displayProduct(updatedProduct, 'search-result');
-                } else if (resultDiv) {
-                    displayProduct(updatedProduct, 'scan-result');
-                }
-                catalogLoaded = false;
-                loadCatalog();
-            } else {
-                alert('❌ Ошибка: ' + result.message);
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('❌ Ошибка: ' + error.message);
-        }
+    const resultDiv = document.getElementById('scan-result');
+    const searchResult = document.getElementById('search-result');
+    
+    if (searchResult && searchResult.style.display !== 'none') {
+        searchResult.innerHTML = '<div class="loading">💾 Сохранение...</div>';
+    } else if (resultDiv) {
+        resultDiv.innerHTML = '<div class="loading">💾 Сохранение...</div>';
     }
+    
+    // Используем GET запрос (как в autoAdd и addWithoutSku)
+    const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}&category=${encodeURIComponent(currentCategory)}`;
+    
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ Товар обновлён');
+            
+            // Обновляем данные в памяти
+            const updatedProduct = await findProductBySKU(data.sku);
+            currentProduct = updatedProduct;
+            
+            // Обновляем отображение
+            if (searchResult && searchResult.style.display !== 'none') {
+                displayProduct(updatedProduct, 'search-result');
+            } else if (resultDiv) {
+                displayProduct(updatedProduct, 'scan-result');
+            }
+            
+            // Обновляем кэш каталога
+            catalogLoaded = false;
+            loadCatalog();
+        } else {
+            alert('❌ Ошибка: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка: ' + error.message);
+    }
+}
     
     // ========== УДАЛЕНИЕ ТОВАРА ==========
     async function deleteProduct(sku) {
