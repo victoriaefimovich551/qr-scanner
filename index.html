@@ -731,28 +731,99 @@ function updateModelsForCategory(category) {
     
     // ========== ПОИСК ==========
     async function searchBySerial() {
-        const sku = document.getElementById('serial-input')?.value.trim();
-        const resultDiv = document.getElementById('search-result');
-        if (!sku) {
-            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
+    const sku = document.getElementById('serial-input')?.value.trim();
+    const resultDiv = document.getElementById('search-result');
+    
+    if (!sku) {
+        if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
+        return;
+    }
+    
+    if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
+    
+    // ========== СНАЧАЛА ИЩЕМ В ЛОКАЛЬНЫХ ДАННЫХ (ОФЛАЙН) ==========
+    if (allProducts && allProducts.length) {
+        const localProduct = allProducts.find(p => p['Артикул'] === sku);
+        if (localProduct) {
+            console.log('✅ Найдено в локальном кэше:', localProduct['Артикул']);
+            currentProduct = localProduct;
+            displayProduct(localProduct, 'search-result');
             return;
-        }
-        if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
-        try {
-            const product = await findProductBySKU(sku);
-            currentProduct = product;
-            displayProduct(product, 'search-result');
-        } catch(e) {
-            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ ${e.message}</div>`;
         }
     }
     
+    // ========== ПРОВЕРЯЕМ OFFLINE-КЭШ В LOCALSTORAGE ==========
+    const offlineData = loadProductsFromLocalStorage();
+    if (offlineData && offlineData.products) {
+        const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
+        if (offlineProduct) {
+            console.log('✅ Найдено в офлайн-кэше localStorage:', offlineProduct['Артикул']);
+            currentProduct = offlineProduct;
+            displayProduct(offlineProduct, 'search-result');
+            return;
+        }
+    }
+    
+    // ========== ЕСЛИ НЕТ В КЭШЕ — ПЫТАЕМСЯ ЗАГРУЗИТЬ С СЕРВЕРА ==========
+    try {
+        const url = `${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.error) throw new Error(data.error);
+        
+        currentProduct = data;
+        displayProduct(data, 'search-result');
+        
+    } catch (error) {
+        console.error('Ошибка поиска:', error);
+        
+        // ========== ПОСЛЕДНЯЯ ПОПЫТКА — ИЩЕМ ВО ВСЕХ СОХРАНЁННЫХ ДАННЫХ ==========
+        const allOfflineData = getAllOfflineProducts();
+        const finalAttempt = allOfflineData.find(p => p['Артикул'] === sku);
+        if (finalAttempt) {
+            currentProduct = finalAttempt;
+            displayProduct(finalAttempt, 'search-result');
+            if (resultDiv) resultDiv.innerHTML = '<div class="loading">⚠️ Офлайн-режим (данные могут быть неактуальны)</div>';
+            setTimeout(() => {
+                if (resultDiv && resultDiv.innerHTML.includes('Офлайн-режим')) {
+                    displayProduct(finalAttempt, 'search-result');
+                }
+            }, 1500);
+        } else {
+            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${sku}" не найден (офлайн)</div>`;
+        }
+    }
+}
+    
     async function findProductBySKU(sku) {
+    // Сначала ищем в памяти
+    if (allProducts && allProducts.length) {
+        const localProduct = allProducts.find(p => p['Артикул'] === sku);
+        if (localProduct) return localProduct;
+    }
+    
+    // Потом в офлайн-кэше
+    const offlineData = loadProductsFromLocalStorage();
+    if (offlineData && offlineData.products) {
+        const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
+        if (offlineProduct) return offlineProduct;
+    }
+    
+    // Потом на сервере
+    try {
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         return data;
+    } catch (error) {
+        // Если сервер не доступен, ищем во всех категориях
+        const allOffline = getAllOfflineProducts();
+        const found = allOffline.find(p => p['Артикул'] === sku);
+        if (found) return found;
+        throw new Error(`Товар с артикулом "${sku}" не найден`);
     }
+}
     
     function getStatusClass(status) {
         switch(status) {
@@ -1134,6 +1205,22 @@ function updateModelsForCategory(category) {
             container.innerHTML = `<div class="error">❌ Нет интернета и нет сохранённых данных</div>`;
         }
     }
+}
+
+    function getAllOfflineProducts() {
+    const allProducts = [];
+    const categories = ['Дроны', 'Самокаты'];
+    
+    for (let cat of categories) {
+        const cached = localStorage.getItem('cachedProducts_' + cat);
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (data.products && data.products.length) {
+                allProducts.push(...data.products);
+            }
+        }
+    }
+    return allProducts;
 }
     
     // ========== РЕДАКТИРОВАНИЕ ТОВАРА ==========
