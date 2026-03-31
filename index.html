@@ -58,6 +58,8 @@
         .sku-display { background: #eef2ff; padding: 12px; border-radius: 12px; margin: 15px 0; text-align: center; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e3c72; }
         .receive-scan-area { text-align: center; margin-bottom: 20px; }
         .debug-info { background: #fff3cd; border: 1px solid #ffc107; padding: 8px; border-radius: 8px; font-size: 12px; margin-top: 10px; display: none; }
+        .state-list ul { margin: 5px 0 0 20px; padding-left: 0; list-style-type: disc; }
+        .state-list li { margin: 4px 0; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -806,7 +808,12 @@ function updateModelsForCategory(category) {
             <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
             <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Артикул'] || '—')}</div>
             <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
-            <div class="product-detail"><strong>📝 Состояние:</strong> ${escapeHtml(p['Состояние'] || '—')}</div>
+           <div class="product-detail">
+    <strong>📝 Состояние:</strong>
+    <div class="state-list">
+        ${formatStateText(p['Состояние'] || '—')}
+    </div>
+</div>
             <div class="product-detail"><strong>💰 Цена закупки:</strong> ${ценаЗакупка || '—'}</div>
             <div class="product-detail"><strong>💰 Цена продажи:</strong> ${ценаПродажа || '—'}</div>`;
         
@@ -871,6 +878,27 @@ function updateModelsForCategory(category) {
         if (!s) return '';
         return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
+
+    function formatStateText(text) {
+    if (!text || text === '—') return '—';
+    
+    // Проверяем, есть ли маркеры в тексте
+    if (text.includes('*')) {
+        // Разбиваем текст по маркерам
+        const items = text.split('*').filter(item => item.trim().length > 0);
+        if (items.length > 0) {
+            let html = '<ul style="margin: 5px 0 0 20px; padding-left: 0;">';
+            items.forEach(item => {
+                html += `<li style="margin: 3px 0;">${escapeHtml(item.trim())}</li>`;
+            });
+            html += '</ul>';
+            return html;
+        }
+    }
+    
+    // Если маркеров нет, просто экранируем текст и заменяем переносы строк
+    return escapeHtml(text).replace(/\n/g, '<br>');
+}
     
     function updateStats(products) {
     // Проверяем, что products существует и является массивом
