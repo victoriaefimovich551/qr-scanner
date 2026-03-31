@@ -741,33 +741,26 @@ function updateModelsForCategory(category) {
     
     if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
     
-    // ========== СНАЧАЛА ИЩЕМ В ЛОКАЛЬНЫХ ДАННЫХ (ОФЛАЙН) ==========
+    // ========== 1. СНАЧАЛА ИЩЕМ В ПАМЯТИ (БЫСТРО) ==========
     if (allProducts && allProducts.length) {
         const localProduct = allProducts.find(p => p['Артикул'] === sku);
         if (localProduct) {
-            console.log('✅ Найдено в локальном кэше:', localProduct['Артикул']);
+            console.log('✅ Найдено в памяти:', localProduct['Артикул']);
             currentProduct = localProduct;
             displayProduct(localProduct, 'search-result');
             return;
         }
     }
     
-    // ========== ПРОВЕРЯЕМ OFFLINE-КЭШ В LOCALSTORAGE ==========
-    const offlineData = loadProductsFromLocalStorage();
-    if (offlineData && offlineData.products) {
-        const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
-        if (offlineProduct) {
-            console.log('✅ Найдено в офлайн-кэше localStorage:', offlineProduct['Артикул']);
-            currentProduct = offlineProduct;
-            displayProduct(offlineProduct, 'search-result');
-            return;
-        }
-    }
-    
-    // ========== ЕСЛИ НЕТ В КЭШЕ — ПЫТАЕМСЯ ЗАГРУЗИТЬ С СЕРВЕРА ==========
+    // ========== 2. ПЫТАЕМСЯ ЗАГРУЗИТЬ С СЕРВЕРА ==========
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
+        
         const url = `${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`;
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
         
         if (data.error) throw new Error(data.error);
@@ -775,52 +768,74 @@ function updateModelsForCategory(category) {
         currentProduct = data;
         displayProduct(data, 'search-result');
         
+        // Обновляем кэш памяти
+        if (allProducts && !allProducts.find(p => p['Артикул'] === sku)) {
+            allProducts.push(data);
+            cachedProducts = allProducts;
+            saveProductsToLocalStorage(allProducts);
+        }
+        
     } catch (error) {
         console.error('Ошибка поиска:', error);
         
-        // ========== ПОСЛЕДНЯЯ ПОПЫТКА — ИЩЕМ ВО ВСЕХ СОХРАНЁННЫХ ДАННЫХ ==========
-        const allOfflineData = getAllOfflineProducts();
-        const finalAttempt = allOfflineData.find(p => p['Артикул'] === sku);
-        if (finalAttempt) {
-            currentProduct = finalAttempt;
-            displayProduct(finalAttempt, 'search-result');
-            if (resultDiv) resultDiv.innerHTML = '<div class="loading">⚠️ Офлайн-режим (данные могут быть неактуальны)</div>';
-            setTimeout(() => {
-                if (resultDiv && resultDiv.innerHTML.includes('Офлайн-режим')) {
-                    displayProduct(finalAttempt, 'search-result');
+        // ========== 3. ЕСЛИ СЕРВЕР НЕ ДОСТУПЕН — ИЩЕМ В LOCALSTORAGE ==========
+        const offlineData = loadProductsFromLocalStorage();
+        if (offlineData && offlineData.products) {
+            const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
+            if (offlineProduct) {
+                console.log('✅ Найдено в офлайн-кэше:', offlineProduct['Артикул']);
+                currentProduct = offlineProduct;
+                displayProduct(offlineProduct, 'search-result');
+                if (resultDiv) {
+                    const warning = document.createElement('div');
+                    warning.className = 'loading';
+                    warning.style.marginTop = '10px';
+                    warning.style.fontSize = '12px';
+                    warning.textContent = '⚠️ Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')';
+                    resultDiv.appendChild(warning);
+                    setTimeout(() => warning.remove(), 3000);
                 }
-            }, 1500);
-        } else {
-            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${sku}" не найден (офлайн)</div>`;
+                return;
+            }
         }
+        
+        // ========== 4. НИЧЕГО НЕ НАШЛИ ==========
+        if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${sku}" не найден</div>`;
     }
 }
     
     async function findProductBySKU(sku) {
-    // Сначала ищем в памяти
+    // Быстрый поиск в памяти
     if (allProducts && allProducts.length) {
-        const localProduct = allProducts.find(p => p['Артикул'] === sku);
-        if (localProduct) return localProduct;
+        const found = allProducts.find(p => p['Артикул'] === sku);
+        if (found) return found;
     }
     
-    // Потом в офлайн-кэше
-    const offlineData = loadProductsFromLocalStorage();
-    if (offlineData && offlineData.products) {
-        const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
-        if (offlineProduct) return offlineProduct;
-    }
-    
-    // Потом на сервере
+    // Поиск на сервере
     try {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         const data = await res.json();
         if (data.error) throw new Error(data.error);
+        
+        // Обновляем кэш памяти
+        if (allProducts && !allProducts.find(p => p['Артикул'] === sku)) {
+            allProducts.push(data);
+            cachedProducts = allProducts;
+        }
+        
         return data;
     } catch (error) {
-        // Если сервер не доступен, ищем во всех категориях
-        const allOffline = getAllOfflineProducts();
-        const found = allOffline.find(p => p['Артикул'] === sku);
-        if (found) return found;
+        // Если сервер недоступен, ищем в офлайн-кэше
+        const offlineData = loadProductsFromLocalStorage();
+        if (offlineData && offlineData.products) {
+            const found = offlineData.products.find(p => p['Артикул'] === sku);
+            if (found) return found;
+        }
         throw new Error(`Товар с артикулом "${sku}" не найден`);
     }
 }
