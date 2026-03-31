@@ -1029,12 +1029,11 @@ function updateModelsForCategory(category) {
     
     console.log('📦 loadCatalog вызвана, категория:', currentCategory, 'forceReload:', forceReload);
     
-    // Если есть кэш и не требуется перезагрузка — используем кэш
+    // Если есть кэш в памяти и не требуется перезагрузка — используем его
     if (cachedProducts && !forceReload && catalogLoaded) {
-        console.log('📦 Используем кэш, товаров:', cachedProducts.length);
+        console.log('📦 Используем кэш памяти, товаров:', cachedProducts.length);
         allProducts = cachedProducts;
         if (allProducts && allProducts.length) {
-            // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
             renderCatalog(allProducts);
             updateStats(allProducts);
         } else {
@@ -1043,6 +1042,32 @@ function updateModelsForCategory(category) {
         return;
     }
     
+    // ========== НОВОЕ: ПРОВЕРЯЕМ LOCALSTORAGE (ОФЛАЙН-КЭШ) ==========
+    const offlineData = loadProductsFromLocalStorage();
+    if (offlineData && !forceReload) {
+        console.log('📦 Используем офлайн-кэш (localStorage), товаров:', offlineData.products.length);
+        cachedProducts = offlineData.products;
+        allProducts = offlineData.products;
+        catalogLoaded = true;
+        
+        if (allProducts && allProducts.length) {
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+            container.innerHTML = '<div class="loading">📦 Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')</div>';
+            // Через 2 секунды убираем сообщение
+            setTimeout(() => {
+                if (container.innerHTML.includes('Офлайн-режим')) {
+                    container.innerHTML = '';
+                    renderCatalog(allProducts);
+                }
+            }, 2000);
+        } else {
+            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+        }
+        return;
+    }
+    
+    // ========== ЗАГРУЗКА С СЕРВЕРА ==========
     console.log('📦 Загружаем данные с сервера для категории:', currentCategory);
     container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
     
@@ -1067,10 +1092,13 @@ function updateModelsForCategory(category) {
         
         console.log(`📦 Получено товаров: ${products.length} для категории ${currentCategory}`);
         
-        // Сохраняем в кэш
+        // Сохраняем в кэш памяти
         cachedProducts = products;
         allProducts = products;
         catalogLoaded = true;
+        
+        // ========== НОВОЕ: СОХРАНЯЕМ В LOCALSTORAGE ДЛЯ ОФЛАЙНА ==========
+        saveProductsToLocalStorage(products);
         
         if (!allProducts || allProducts.length === 0) {
             container.innerHTML = `<div class="error">📭 Товары в категории "${currentCategory}" не найдены.</div>`;
@@ -1079,13 +1107,32 @@ function updateModelsForCategory(category) {
             return;
         }
         
-        // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
+        // Обновляем отображение
         renderCatalog(allProducts);
         updateStats(allProducts);
         
     } catch (error) {
         console.error('❌ Ошибка загрузки:', error);
-        container.innerHTML = `<div class="error">❌ Ошибка загрузки: ${error.message}</div>`;
+        
+        // ========== НОВОЕ: ПРИ ОШИБКЕ ПЫТАЕМСЯ ВЗЯТЬ ДАННЫЕ ИЗ LOCALSTORAGE ==========
+        const fallbackData = loadProductsFromLocalStorage();
+        if (fallbackData) {
+            console.log('📦 Используем резервный офлайн-кэш');
+            cachedProducts = fallbackData.products;
+            allProducts = fallbackData.products;
+            catalogLoaded = true;
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+            container.innerHTML = '<div class="loading">⚠️ Офлайн-режим (данные от ' + new Date(fallbackData.timestamp).toLocaleString() + ')</div>';
+            setTimeout(() => {
+                if (container.innerHTML.includes('Офлайн-режим')) {
+                    container.innerHTML = '';
+                    renderCatalog(allProducts);
+                }
+            }, 3000);
+        } else {
+            container.innerHTML = `<div class="error">❌ Нет интернета и нет сохранённых данных</div>`;
+        }
     }
 }
     
@@ -1212,6 +1259,27 @@ function updateModelsForCategory(category) {
             alert('❌ Ошибка: ' + error.message);
         }
     }
+
+    // Сохранение товаров в localStorage для офлайн-доступа
+function saveProductsToLocalStorage(products) {
+    localStorage.setItem('cachedProducts', JSON.stringify({
+        products: products,
+        timestamp: Date.now(),
+        category: currentCategory
+    }));
+}
+
+function loadProductsFromLocalStorage() {
+    const cached = localStorage.getItem('cachedProducts');
+    if (cached) {
+        const data = JSON.parse(cached);
+        // Проверяем, что кэш не старше 7 дней
+        if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) {
+            return data.products;
+        }
+    }
+    return null;
+}
     
     function handleUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1279,6 +1347,18 @@ function updateModelsForCategory(category) {
     updateModelsForCategory(currentCategory); // ← добавить
     loadCatalog();
 };
+</script>
+    <script>
+    // Регистрация Service Worker для офлайн-режима
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('✅ Service Worker зарегистрирован:', registration.scope);
+            })
+            .catch(error => {
+                console.log('❌ Ошибка регистрации Service Worker:', error);
+            });
+    }
 </script>
 </body>
 </html>
