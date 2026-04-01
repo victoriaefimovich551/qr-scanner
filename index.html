@@ -229,145 +229,115 @@
     let catalogLoaded = false;
 
     // ========== МОДЕЛИ ДЛЯ КАТЕГОРИЙ ==========
-const MODELS_BY_CATEGORY = {
-    'Дроны': [
-        // Mavic 3 Серия
-        'DJI Mavic 3', 'DJI Mavic 3 Only Drone', 'DJI Mavic 3 Fly More Combo',
-        'DJI Mavic 3 Cine', 'DJI Mavic 3 Cine Only Drone', 'DJI Mavic 3 Cine Premium Combo',
-        'DJI Mavic 3 Classic', 'DJI Mavic 3 Classic Only Drone', 'DJI Mavic 3 Classic Fly More Combo',
-        'DJI Mavic 3 Pro', 'DJI Mavic 3 Pro Only Drone', 'DJI Mavic 3 Pro Fly More Combo',
-        'DJI Mavic 3 Pro Cine', 'DJI Mavic 3 Pro Cine Only Drone', 'DJI Mavic 3 Pro Cine Premium Combo',
-        'DJI Mavic 3 Enterprise (M3E)', 'DJI Mavic 3 Enterprise Only Drone', 'DJI Mavic 3 Enterprise Fly More Combo',
-        'DJI Mavic 3E', 'DJI Mavic 3E Only Drone', 'DJI Mavic 3E Fly More Combo',
-        'DJI Mavic 3T', 'DJI Mavic 3T Only Drone', 'DJI Mavic 3T Fly More Combo',
-        'DJI Mavic 3M', 'DJI Mavic 3M Only Drone', 'DJI Mavic 3M Fly More Combo',
-        // Mavic 2 Серия
-        'DJI Mavic 2 Pro', 'DJI Mavic 2 Pro Only Drone', 'DJI Mavic 2 Pro Fly More Combo',
-        'DJI Mavic 2 Zoom', 'DJI Mavic 2 Zoom Only Drone', 'DJI Mavic 2 Zoom Fly More Combo',
-        'DJI Mavic Pro', 'DJI Mavic Pro Only Drone',
-        // Air Серия
-        'DJI Air 3S', 'DJI Air 3S Only Drone', 'DJI Air 3S Fly More Combo',
-        'DJI Air 3', 'DJI Air 3 Only Drone', 'DJI Air 3 Fly More Combo',
-        'DJI Air 2S', 'DJI Air 2S Only Drone', 'DJI Air 2S Fly More Combo',
-        'DJI Air 2', 'DJI Air 2 Only Drone', 'DJI Air 2 Fly More Combo',
-        // Mini Серия
-        'DJI Mini 5 Pro', 'DJI Mini 5 Pro Only Drone', 'DJI Mini 5 Pro Fly More Combo',
-        'DJI Mini 4 Pro', 'DJI Mini 4 Pro Only Drone', 'DJI Mini 4 Pro Fly More Combo',
-        'DJI Mini 4K', 'DJI Mini 4K Only Drone', 'DJI Mini 4K Fly More Combo',
-        'DJI Mini 3 Pro', 'DJI Mini 3 Pro Only Drone', 'DJI Mini 3 Pro Fly More Combo',
-        'DJI Mini 3', 'DJI Mini 3 Only Drone', 'DJI Mini 3 Fly More Combo',
-        'DJI Mini 2 SE', 'DJI Mini 2 SE Only Drone', 'DJI Mini 2 SE Fly More Combo',
-        'DJI Mini 2', 'DJI Mini 2 Only Drone', 'DJI Mini 2 Fly More Combo',
-        'DJI Mini SE', 'DJI Mini SE Only Drone',
-        // Neo / Flip / Avata
-        'DJI Neo 2', 'DJI Neo 2 Only Drone', 'DJI Neo 2 Fly More Combo',
-        'DJI Neo', 'DJI Neo Only Drone', 'DJI Neo Fly More Combo', 'DJI Neo Motion Fly More Combo',
-        'DJI Flip', 'DJI Flip Only Drone', 'DJI Flip Fly More Combo',
-        'DJI Avata 2', 'DJI Avata 2 Only Drone', 'DJI Avata 2 Fly More Combo',
-        'DJI Avata', 'DJI Avata Only Drone', 'DJI Avata Fly More Combo',
-        // Inspire
-        'DJI Inspire 3', 'DJI Inspire 3 Only Drone', 'DJI Inspire 3 Premium Combo',
-        'DJI Inspire 2', 'DJI Inspire 2 Only Drone', 'DJI Inspire 2 Fly More Combo',
-        // Matrice
-        'DJI Matrice 350 RTK', 'DJI Matrice 350 RTK Only Drone', 'DJI Matrice 350 RTK Combo',
-        'DJI Matrice 30', 'DJI Matrice 30 Only Drone', 'DJI Matrice 30 Combo',
-        'DJI Matrice 30T', 'DJI Matrice 30T Only Drone', 'DJI Matrice 30T Combo',
-        'DJI Matrice 300 RTK', 'DJI Matrice 300 RTK Only Drone', 'DJI Matrice 300 RTK Combo'
-    ],
-    'Самокаты': [
-        // Xiaomi
-        'Xiaomi M365', 'Xiaomi M365 Pro', 'Xiaomi Mi Electric Scooter 1S',
-        'Xiaomi Mi Electric Scooter Essential', 'Xiaomi Mi Electric Scooter Pro 2',
-        'Xiaomi Mi Electric Scooter 3', 'Xiaomi Mi Electric Scooter 3 Lite',
-        'Xiaomi Electric Scooter 4', 'Xiaomi Electric Scooter 4 Lite',
-        'Xiaomi Electric Scooter 4 Pro', 'Xiaomi Electric Scooter 4 Ultra',
-        'Xiaomi Electric Scooter 5', 'Xiaomi Electric Scooter 5 Pro',
-        'Xiaomi Electric Scooter 5 Max', 'Xiaomi Electric Scooter 6 Ultra',
-        // Ninebot
-        'Ninebot ES1', 'Ninebot ES2', 'Ninebot ES4',
-        'Ninebot Max G30', 'Ninebot Max G30LP', 'Ninebot Max G2', 'Ninebot Max G3',
-        'Ninebot F20', 'Ninebot F25', 'Ninebot F30', 'Ninebot F40',
-        'Ninebot F2', 'Ninebot F2 Pro', 'Ninebot F3', 'Ninebot F4',
-        'Ninebot E22', 'Ninebot E25', 'Ninebot E45',
-        // Segway
-        'Segway D18E', 'Segway D28E', 'Segway D38E',
-        'Segway P65E', 'Segway P100SE',
-        'Segway GT1', 'Segway GT2', 'Segway GT3', 'Segway ZT3 Pro', 'Segway Air T15E',
-        // NIU
-        'NIU KQi1 Sport', 'NIU KQi2 Pro', 'NIU KQi3 Sport', 'NIU KQi3 Pro', 'NIU KQi3 Max',
-        'NIU KQi 100P', 'NIU KQi 300X',
-        // Navee
-        'Navee N20', 'Navee N40', 'Navee N65', 'Navee S65', 'Navee V40', 'Navee UT5', 'Navee UT5 Ultra',
-        // Hiboy
-        'Hiboy S2', 'Hiboy S2 Pro', 'Hiboy KS4', 'Hiboy MAX3', 'Hiboy Titan',
-        // Razor
-        'Razor E90', 'Razor E100', 'Razor E200', 'Razor E300', 'Razor Power Core E90', 'Razor EcoSmart',
-        // Pure
-        'Pure Air', 'Pure Air Pro', 'Pure Advance',
-        // TurboAnt
-        'TurboAnt X7', 'TurboAnt X7 Pro', 'TurboAnt X7 Max',
-        // Levy
-        'Levy Electric Scooter', 'Levy Plus',
-        // Apollo
-        'Apollo Air', 'Apollo Air Pro', 'Apollo City', 'Apollo Explore', 'Apollo Ghost', 'Apollo Phantom', 'Apollo Go',
-        // Kaabo
-        'Kaabo Skywalker 8', 'Kaabo Skywalker 10S', 'Kaabo Mantis 8', 'Kaabo Mantis 10',
-        'Kaabo Mantis Pro', 'Kaabo Mantis King GT',
-        'Kaabo Wolf Warrior', 'Kaabo Wolf King', 'Kaabo Wolf King GT', 'Kaabo Wolf King GTR',
-        // Dualtron
-        'Dualtron Mini', 'Dualtron Compact', 'Dualtron Spider', 'Dualtron Eagle', 'Dualtron Raptor',
-        'Dualtron Victor', 'Dualtron Victor Limited', 'Dualtron Thunder', 'Dualtron Thunder 2', 'Dualtron Thunder 3',
-        'Dualtron Storm', 'Dualtron Storm Limited', 'Dualtron Ultra', 'Dualtron X', 'Dualtron X2',
-        'Dualtron Alien', 'Dualtron Dolphin', 'Dualtron Sonic',
-        'Dualtron TOGO', 'Dualtron TOGO Plus', 'Dualtron TOGO Pro', 'Dualtron TOGO Max', 'Dualtron TOGO Limited',
-        // VSETT
-        'VSETT 8', 'VSETT 8+', 'VSETT 9', 'VSETT 9+', 'VSETT 10+', 'VSETT 11+',
-        // INOKIM
-        'INOKIM Light', 'INOKIM Quick', 'INOKIM OX', 'INOKIM OXO',
-        // EMOVE
-        'EMOVE Touring', 'EMOVE Cruiser',
-        // Zero
-        'Zero 8', 'Zero 9', 'Zero 10', 'Zero 10X', 'Zero 11X',
-        // Kugoo / KuKirin
-        'Kugoo S1', 'Kugoo S3', 'Kugoo G2 Pro', 'KuKirin G3', 'KuKirin G3 Pro',
-        // GOTRAX
-        'GOTRAX GXL', 'GOTRAX G3', 'GOTRAX G4', 'GOTRAX GX1',
-        // Другие
-        'NanRobot D4+', 'NanRobot LS7', 'InMotion S1', 'InMotion L9',
-        'E-TWOW Booster S', 'E-TWOW GT', 'Glion Dolly', 'Unagi Model One', 'Unagi Model One Voyager',
-        'Swagtron Swagger', 'Mercane WideWheel', 'Splach Twin', 'Yume X11',
-        'RION RE90', 'WEPED FS', 'NAMI Burn-E', 'NAMI Burn-E 2', 'NAMI Burn-E 2 Max'
-    ]
-};
+    const MODELS_BY_CATEGORY = {
+        'Дроны': [
+            'DJI Mavic 3', 'DJI Mavic 3 Only Drone', 'DJI Mavic 3 Fly More Combo',
+            'DJI Mavic 3 Cine', 'DJI Mavic 3 Cine Only Drone', 'DJI Mavic 3 Cine Premium Combo',
+            'DJI Mavic 3 Classic', 'DJI Mavic 3 Classic Only Drone', 'DJI Mavic 3 Classic Fly More Combo',
+            'DJI Mavic 3 Pro', 'DJI Mavic 3 Pro Only Drone', 'DJI Mavic 3 Pro Fly More Combo',
+            'DJI Mavic 3 Pro Cine', 'DJI Mavic 3 Pro Cine Only Drone', 'DJI Mavic 3 Pro Cine Premium Combo',
+            'DJI Mavic 3 Enterprise (M3E)', 'DJI Mavic 3 Enterprise Only Drone', 'DJI Mavic 3 Enterprise Fly More Combo',
+            'DJI Mavic 3E', 'DJI Mavic 3E Only Drone', 'DJI Mavic 3E Fly More Combo',
+            'DJI Mavic 3T', 'DJI Mavic 3T Only Drone', 'DJI Mavic 3T Fly More Combo',
+            'DJI Mavic 3M', 'DJI Mavic 3M Only Drone', 'DJI Mavic 3M Fly More Combo',
+            'DJI Mavic 2 Pro', 'DJI Mavic 2 Pro Only Drone', 'DJI Mavic 2 Pro Fly More Combo',
+            'DJI Mavic 2 Zoom', 'DJI Mavic 2 Zoom Only Drone', 'DJI Mavic 2 Zoom Fly More Combo',
+            'DJI Mavic Pro', 'DJI Mavic Pro Only Drone',
+            'DJI Air 3S', 'DJI Air 3S Only Drone', 'DJI Air 3S Fly More Combo',
+            'DJI Air 3', 'DJI Air 3 Only Drone', 'DJI Air 3 Fly More Combo',
+            'DJI Air 2S', 'DJI Air 2S Only Drone', 'DJI Air 2S Fly More Combo',
+            'DJI Air 2', 'DJI Air 2 Only Drone', 'DJI Air 2 Fly More Combo',
+            'DJI Mini 5 Pro', 'DJI Mini 5 Pro Only Drone', 'DJI Mini 5 Pro Fly More Combo',
+            'DJI Mini 4 Pro', 'DJI Mini 4 Pro Only Drone', 'DJI Mini 4 Pro Fly More Combo',
+            'DJI Mini 4K', 'DJI Mini 4K Only Drone', 'DJI Mini 4K Fly More Combo',
+            'DJI Mini 3 Pro', 'DJI Mini 3 Pro Only Drone', 'DJI Mini 3 Pro Fly More Combo',
+            'DJI Mini 3', 'DJI Mini 3 Only Drone', 'DJI Mini 3 Fly More Combo',
+            'DJI Mini 2 SE', 'DJI Mini 2 SE Only Drone', 'DJI Mini 2 SE Fly More Combo',
+            'DJI Mini 2', 'DJI Mini 2 Only Drone', 'DJI Mini 2 Fly More Combo',
+            'DJI Mini SE', 'DJI Mini SE Only Drone',
+            'DJI Neo 2', 'DJI Neo 2 Only Drone', 'DJI Neo 2 Fly More Combo',
+            'DJI Neo', 'DJI Neo Only Drone', 'DJI Neo Fly More Combo', 'DJI Neo Motion Fly More Combo',
+            'DJI Flip', 'DJI Flip Only Drone', 'DJI Flip Fly More Combo',
+            'DJI Avata 2', 'DJI Avata 2 Only Drone', 'DJI Avata 2 Fly More Combo',
+            'DJI Avata', 'DJI Avata Only Drone', 'DJI Avata Fly More Combo',
+            'DJI Inspire 3', 'DJI Inspire 3 Only Drone', 'DJI Inspire 3 Premium Combo',
+            'DJI Inspire 2', 'DJI Inspire 2 Only Drone', 'DJI Inspire 2 Fly More Combo',
+            'DJI Matrice 350 RTK', 'DJI Matrice 350 RTK Only Drone', 'DJI Matrice 350 RTK Combo',
+            'DJI Matrice 30', 'DJI Matrice 30 Only Drone', 'DJI Matrice 30 Combo',
+            'DJI Matrice 30T', 'DJI Matrice 30T Only Drone', 'DJI Matrice 30T Combo',
+            'DJI Matrice 300 RTK', 'DJI Matrice 300 RTK Only Drone', 'DJI Matrice 300 RTK Combo'
+        ],
+        'Самокаты': [
+            'Xiaomi M365', 'Xiaomi M365 Pro', 'Xiaomi Mi Electric Scooter 1S',
+            'Xiaomi Mi Electric Scooter Essential', 'Xiaomi Mi Electric Scooter Pro 2',
+            'Xiaomi Mi Electric Scooter 3', 'Xiaomi Mi Electric Scooter 3 Lite',
+            'Xiaomi Electric Scooter 4', 'Xiaomi Electric Scooter 4 Lite',
+            'Xiaomi Electric Scooter 4 Pro', 'Xiaomi Electric Scooter 4 Ultra',
+            'Xiaomi Electric Scooter 5', 'Xiaomi Electric Scooter 5 Pro',
+            'Xiaomi Electric Scooter 5 Max', 'Xiaomi Electric Scooter 6 Ultra',
+            'Ninebot ES1', 'Ninebot ES2', 'Ninebot ES4',
+            'Ninebot Max G30', 'Ninebot Max G30LP', 'Ninebot Max G2', 'Ninebot Max G3',
+            'Ninebot F20', 'Ninebot F25', 'Ninebot F30', 'Ninebot F40',
+            'Ninebot F2', 'Ninebot F2 Pro', 'Ninebot F3', 'Ninebot F4',
+            'Ninebot E22', 'Ninebot E25', 'Ninebot E45',
+            'Segway D18E', 'Segway D28E', 'Segway D38E',
+            'Segway P65E', 'Segway P100SE',
+            'Segway GT1', 'Segway GT2', 'Segway GT3', 'Segway ZT3 Pro', 'Segway Air T15E',
+            'NIU KQi1 Sport', 'NIU KQi2 Pro', 'NIU KQi3 Sport', 'NIU KQi3 Pro', 'NIU KQi3 Max',
+            'NIU KQi 100P', 'NIU KQi 300X',
+            'Navee N20', 'Navee N40', 'Navee N65', 'Navee S65', 'Navee V40', 'Navee UT5', 'Navee UT5 Ultra',
+            'Hiboy S2', 'Hiboy S2 Pro', 'Hiboy KS4', 'Hiboy MAX3', 'Hiboy Titan',
+            'Razor E90', 'Razor E100', 'Razor E200', 'Razor E300', 'Razor Power Core E90', 'Razor EcoSmart',
+            'Pure Air', 'Pure Air Pro', 'Pure Advance',
+            'TurboAnt X7', 'TurboAnt X7 Pro', 'TurboAnt X7 Max',
+            'Levy Electric Scooter', 'Levy Plus',
+            'Apollo Air', 'Apollo Air Pro', 'Apollo City', 'Apollo Explore', 'Apollo Ghost', 'Apollo Phantom', 'Apollo Go',
+            'Kaabo Skywalker 8', 'Kaabo Skywalker 10S', 'Kaabo Mantis 8', 'Kaabo Mantis 10',
+            'Kaabo Mantis Pro', 'Kaabo Mantis King GT',
+            'Kaabo Wolf Warrior', 'Kaabo Wolf King', 'Kaabo Wolf King GT', 'Kaabo Wolf King GTR',
+            'Dualtron Mini', 'Dualtron Compact', 'Dualtron Spider', 'Dualtron Eagle', 'Dualtron Raptor',
+            'Dualtron Victor', 'Dualtron Victor Limited', 'Dualtron Thunder', 'Dualtron Thunder 2', 'Dualtron Thunder 3',
+            'Dualtron Storm', 'Dualtron Storm Limited', 'Dualtron Ultra', 'Dualtron X', 'Dualtron X2',
+            'Dualtron Alien', 'Dualtron Dolphin', 'Dualtron Sonic',
+            'Dualtron TOGO', 'Dualtron TOGO Plus', 'Dualtron TOGO Pro', 'Dualtron TOGO Max', 'Dualtron TOGO Limited',
+            'VSETT 8', 'VSETT 8+', 'VSETT 9', 'VSETT 9+', 'VSETT 10+', 'VSETT 11+',
+            'INOKIM Light', 'INOKIM Quick', 'INOKIM OX', 'INOKIM OXO',
+            'EMOVE Touring', 'EMOVE Cruiser',
+            'Zero 8', 'Zero 9', 'Zero 10', 'Zero 10X', 'Zero 11X',
+            'Kugoo S1', 'Kugoo S3', 'Kugoo G2 Pro', 'KuKirin G3', 'KuKirin G3 Pro',
+            'GOTRAX GXL', 'GOTRAX G3', 'GOTRAX G4', 'GOTRAX GX1',
+            'NanRobot D4+', 'NanRobot LS7', 'InMotion S1', 'InMotion L9',
+            'E-TWOW Booster S', 'E-TWOW GT', 'Glion Dolly', 'Unagi Model One', 'Unagi Model One Voyager',
+            'Swagtron Swagger', 'Mercane WideWheel', 'Splach Twin', 'Yume X11',
+            'RION RE90', 'WEPED FS', 'NAMI Burn-E', 'NAMI Burn-E 2', 'NAMI Burn-E 2 Max'
+        ]
+    };
 
-// Функция обновления моделей в формах
-function updateModelsForCategory(category) {
-    const models = MODELS_BY_CATEGORY[category] || [];
-    
-    // Обновляем select в приёмке с QR
-    const receiveModelSelect = document.getElementById('receive-model');
-    if (receiveModelSelect) {
-        receiveModelSelect.innerHTML = '<option value="">Выберите модель</option>';
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            receiveModelSelect.appendChild(option);
-        });
+    function updateModelsForCategory(category) {
+        const models = MODELS_BY_CATEGORY[category] || [];
+        
+        const receiveModelSelect = document.getElementById('receive-model');
+        if (receiveModelSelect) {
+            receiveModelSelect.innerHTML = '<option value="">Выберите модель</option>';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                receiveModelSelect.appendChild(option);
+            });
+        }
+        
+        const receiveNoqrModelSelect = document.getElementById('receive-noqr-model');
+        if (receiveNoqrModelSelect) {
+            receiveNoqrModelSelect.innerHTML = '<option value="">Выберите модель</option>';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                receiveNoqrModelSelect.appendChild(option);
+            });
+        }
     }
-    
-    // Обновляем select в приёмке без QR
-    const receiveNoqrModelSelect = document.getElementById('receive-noqr-model');
-    if (receiveNoqrModelSelect) {
-        receiveNoqrModelSelect.innerHTML = '<option value="">Выберите модель</option>';
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            receiveNoqrModelSelect.appendChild(option);
-        });
-    }
-}
     
     // PWA
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -439,146 +409,7 @@ function updateModelsForCategory(category) {
         }
     }
     
-    // ========== ПЕРЕКЛЮЧЕНИЕ КАТЕГОРИЙ ==========
-  async function switchCategory(category) {
-    if (currentCategory === category) return;
-    
-    console.log('🔄 Переключение на категорию:', category);
-    
-    currentCategory = category;
-    
-    // Обновляем активную кнопку
-    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-    if (category === 'Дроны') {
-        document.getElementById('btn-drones').classList.add('active');
-    } else {
-        document.getElementById('btn-scooters').classList.add('active');
-    }
-    
-    // Обновляем заголовок
-    const headerTitle = document.querySelector('#catalog-panel h2');
-    if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
-    
-    // ========== ПРОВЕРЯЕМ, ЕСТЬ ЛИ ДАННЫЕ В КЭШЕ ПАМЯТИ ==========
-    const cacheKey = `cachedProducts_${category}`;
-    if (window[cacheKey] && window[cacheKey].length > 0) {
-        console.log('📦 Используем кэш памяти для', category);
-        allProducts = window[cacheKey];
-        cachedProducts = allProducts;
-        catalogLoaded = true;
-        renderCatalog(allProducts);
-        updateStats(allProducts);
-        return;
-    }
-    
-    // ========== ПРОВЕРЯЕМ LOCALSTORAGE ==========
-    const offlineData = loadProductsFromLocalStorageForCategory(category);
-    if (offlineData && offlineData.products && offlineData.products.length) {
-        console.log('📦 Используем офлайн-кэш для', category);
-        allProducts = offlineData.products;
-        cachedProducts = allProducts;
-        catalogLoaded = true;
-        window[cacheKey] = allProducts;
-        renderCatalog(allProducts);
-        updateStats(allProducts);
-        
-        // Фоновое обновление
-        updateCategoryInBackground(category);
-        return;
-    }
-    
-    // ========== ЗАГРУЖАЕМ С СЕРВЕРА ==========
-    const container = document.getElementById('catalog-content');
-    if (container) container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
-    
-    await loadCatalog(true);
-}
-    
-    // ========== ПЫТАЕМСЯ ЗАГРУЗИТЬ ДАННЫЕ ИЗ ПАМЯТИ ИЛИ LOCALSTORAGE ==========
-    
-    // 1. Проверяем, есть ли данные в кэше памяти для этой категории
-    const categoryCacheKey = `cachedProducts_${category}`;
-    if (window[categoryCacheKey]) {
-        console.log('📦 Используем кэш памяти для', category);
-        allProducts = window[categoryCacheKey];
-        cachedProducts = allProducts;
-        catalogLoaded = true;
-        renderCatalog(allProducts);
-        updateStats(allProducts);
-        
-        // Обновляем заголовок
-        const headerTitle = document.querySelector('#catalog-panel h2');
-        if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
-        return;
-    }
-    
-    // 2. Проверяем localStorage
-    const offlineData = loadProductsFromLocalStorageForCategory(category);
-    if (offlineData && offlineData.products && offlineData.products.length) {
-        console.log('📦 Используем офлайн-кэш для', category);
-        allProducts = offlineData.products;
-        cachedProducts = allProducts;
-        catalogLoaded = true;
-        window[categoryCacheKey] = allProducts;
-        renderCatalog(allProducts);
-        updateStats(allProducts);
-        
-        const headerTitle = document.querySelector('#catalog-panel h2');
-        if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category} (офлайн)`;
-        
-        // Фоново обновляем данные с сервера
-        updateCategoryInBackground(category);
-        return;
-    }
-    
-    // 3. Если данных нет — загружаем с сервера
-    console.log('📦 Загружаем с сервера для', category);
-    const container = document.getElementById('catalog-content');
-    if (container) container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
-    
-    // Обновляем заголовок
-    const headerTitle = document.querySelector('#catalog-panel h2');
-    if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
-    
-    await loadCatalog(true);
-}
-    
-    // ========== ОБНОВЛЯЕМ МОДЕЛИ В ФОРМАХ ==========
-    updateModelsForCategory(category);
-    
-    // ========== ПРИНУДИТЕЛЬНО СБРАСЫВАЕМ КЭШ ==========
-    catalogLoaded = false;
-    cachedProducts = null;
-    allProducts = [];
-    
-    // Очищаем отображение каталога
-    const catalogContainer = document.getElementById('catalog-content');
-    if (catalogContainer) {
-        catalogContainer.innerHTML = '<div class="loading">📦 Загрузка каталога...</div>';
-    }
-    
-    // Очищаем статистику
-    const statsContainer = document.getElementById('stats-content');
-    if (statsContainer) {
-        statsContainer.innerHTML = 'Загрузка...';
-    }
-    
-    // Обновляем URL параметр
-    const url = new URL(window.location.href);
-    url.searchParams.set('category', category);
-    window.history.pushState({}, '', url);
-    
-    // Обновляем заголовок
-    const headerTitle = document.querySelector('#catalog-panel h2');
-    if (headerTitle) {
-        headerTitle.innerHTML = `📦 Каталог ${category}`;
-    }
-    
-    // ПРИНУДИТЕЛЬНО ЗАГРУЖАЕМ ДАННЫЕ С СЕРВЕРА
-    await loadCatalog(true);
-}
-    
-    // ========== ОСНОВНОЙ СКАНЕР (ПОИСК) ==========
+    // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
     async function startScanner() {
         const resultDiv = document.getElementById('scan-result');
         if (!resultDiv) return;
@@ -616,7 +447,6 @@ function updateModelsForCategory(category) {
         }
     }
     
-    // ========== СКАНЕР ДЛЯ ПРИЁМКИ ==========
     async function startReceiveScanner() {
         const resultDiv = document.getElementById('receive-result');
         const debugDiv = document.getElementById('receive-debug');
@@ -681,7 +511,6 @@ function updateModelsForCategory(category) {
         }
     }
     
-    // ========== СОХРАНЕНИЕ НОВОГО ТОВАРА (С QR) ==========
     async function submitNewProduct() {
         if (!pendingSku) {
             alert('Сначала отсканируйте QR-код');
@@ -763,7 +592,6 @@ function updateModelsForCategory(category) {
         }
     }
     
-    // ========== ПРИЁМКА БЕЗ QR ==========
     async function submitNoQRProduct() {
         const model = document.getElementById('receive-noqr-model')?.value;
         const serialNumber = document.getElementById('receive-noqr-serial')?.value.trim() || '';
@@ -819,115 +647,82 @@ function updateModelsForCategory(category) {
     
     // ========== ПОИСК ==========
     async function searchBySerial() {
-    const sku = document.getElementById('serial-input')?.value.trim();
-    const resultDiv = document.getElementById('search-result');
-    
-    if (!sku) {
-        if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
-        return;
-    }
-    
-    if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
-    
-    // ========== 1. СНАЧАЛА ИЩЕМ В ПАМЯТИ (БЫСТРО) ==========
-    if (allProducts && allProducts.length) {
-        const localProduct = allProducts.find(p => p['Артикул'] === sku);
-        if (localProduct) {
-            console.log('✅ Найдено в памяти:', localProduct['Артикул']);
-            currentProduct = localProduct;
-            displayProduct(localProduct, 'search-result');
+        const sku = document.getElementById('serial-input')?.value.trim();
+        const resultDiv = document.getElementById('search-result');
+        
+        if (!sku) {
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
             return;
         }
-    }
-    
-    // ========== 2. ПЫТАЕМСЯ ЗАГРУЗИТЬ С СЕРВЕРА ==========
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
         
-        const url = `${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`;
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
         
-        const data = await response.json();
-        
-        if (data.error) throw new Error(data.error);
-        
-        currentProduct = data;
-        displayProduct(data, 'search-result');
-        
-        // Обновляем кэш памяти
-        if (allProducts && !allProducts.find(p => p['Артикул'] === sku)) {
-            allProducts.push(data);
-            cachedProducts = allProducts;
-            saveProductsToLocalStorage(allProducts);
-        }
-        
-    } catch (error) {
-        console.error('Ошибка поиска:', error);
-        
-        // ========== 3. ЕСЛИ СЕРВЕР НЕ ДОСТУПЕН — ИЩЕМ В LOCALSTORAGE ==========
-        const offlineData = loadProductsFromLocalStorage();
-        if (offlineData && offlineData.products) {
-            const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
-            if (offlineProduct) {
-                console.log('✅ Найдено в офлайн-кэше:', offlineProduct['Артикул']);
-                currentProduct = offlineProduct;
-                displayProduct(offlineProduct, 'search-result');
-                if (resultDiv) {
-                    const warning = document.createElement('div');
-                    warning.className = 'loading';
-                    warning.style.marginTop = '10px';
-                    warning.style.fontSize = '12px';
-                    warning.textContent = '⚠️ Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')';
-                    resultDiv.appendChild(warning);
-                    setTimeout(() => warning.remove(), 3000);
-                }
+        if (allProducts && allProducts.length) {
+            const localProduct = allProducts.find(p => p['Артикул'] === sku);
+            if (localProduct) {
+                currentProduct = localProduct;
+                displayProduct(localProduct, 'search-result');
                 return;
             }
         }
         
-        // ========== 4. НИЧЕГО НЕ НАШЛИ ==========
-        if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${sku}" не найден</div>`;
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const url = `${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`;
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            currentProduct = data;
+            displayProduct(data, 'search-result');
+        } catch (error) {
+            const offlineData = loadProductsFromLocalStorageForCategory(currentCategory);
+            if (offlineData && offlineData.products) {
+                const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
+                if (offlineProduct) {
+                    currentProduct = offlineProduct;
+                    displayProduct(offlineProduct, 'search-result');
+                    if (resultDiv) {
+                        const warning = document.createElement('div');
+                        warning.className = 'loading';
+                        warning.style.marginTop = '10px';
+                        warning.style.fontSize = '12px';
+                        warning.textContent = '⚠️ Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')';
+                        resultDiv.appendChild(warning);
+                        setTimeout(() => warning.remove(), 3000);
+                    }
+                    return;
+                }
+            }
+            if (resultDiv) resultDiv.innerHTML = `<div class="error">❌ Товар с артикулом "${sku}" не найден</div>`;
+        }
     }
-}
     
     async function findProductBySKU(sku) {
-    // Быстрый поиск в памяти
-    if (allProducts && allProducts.length) {
-        const found = allProducts.find(p => p['Артикул'] === sku);
-        if (found) return found;
-    }
-    
-    // Поиск на сервере
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        
-        // Обновляем кэш памяти
-        if (allProducts && !allProducts.find(p => p['Артикул'] === sku)) {
-            allProducts.push(data);
-            cachedProducts = allProducts;
-        }
-        
-        return data;
-    } catch (error) {
-        // Если сервер недоступен, ищем в офлайн-кэше
-        const offlineData = loadProductsFromLocalStorage();
-        if (offlineData && offlineData.products) {
-            const found = offlineData.products.find(p => p['Артикул'] === sku);
+        if (allProducts && allProducts.length) {
+            const found = allProducts.find(p => p['Артикул'] === sku);
             if (found) return found;
         }
-        throw new Error(`Товар с артикулом "${sku}" не найден`);
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?serial=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            return data;
+        } catch (error) {
+            const offlineData = loadProductsFromLocalStorageForCategory(currentCategory);
+            if (offlineData && offlineData.products) {
+                const found = offlineData.products.find(p => p['Артикул'] === sku);
+                if (found) return found;
+            }
+            throw new Error(`Товар с артикулом "${sku}" не найден`);
+        }
     }
-}
     
+    // ========== ОТОБРАЖЕНИЕ ==========
     function getStatusClass(status) {
         switch(status) {
             case 'Продан': return 'status-sold';
@@ -951,29 +746,15 @@ function updateModelsForCategory(category) {
         if (!container) return;
         
         let ценаЗакупка = p['Цена закупка'];
-        if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) {
-            ценаЗакупка = `${parseFloat(ценаЗакупка).toLocaleString('ru-RU')} ₽`;
-        }
-        
+        if (ценаЗакупка && !isNaN(parseFloat(ценаЗакупка))) ценаЗакупка = `${parseFloat(ценаЗакупка).toLocaleString('ru-RU')} ₽`;
         let ценаПродажа = p['Цена продажа'];
-        if (ценаПродажа && !isNaN(parseFloat(ценаПродажа))) {
-            ценаПродажа = `${parseFloat(ценаПродажа).toLocaleString('ru-RU')} ₽`;
-        }
-        
+        if (ценаПродажа && !isNaN(parseFloat(ценаПродажа))) ценаПродажа = `${parseFloat(ценаПродажа).toLocaleString('ru-RU')} ₽`;
         let прибыль = p['Прибыль'];
-        if (прибыль && !isNaN(parseFloat(прибыль))) {
-            прибыль = `${parseFloat(прибыль).toLocaleString('ru-RU')} ₽`;
-        }
-        
+        if (прибыль && !isNaN(parseFloat(прибыль))) прибыль = `${parseFloat(прибыль).toLocaleString('ru-RU')} ₽`;
         let затратыРемонт = p['Затраты ремонт'];
-        if (затратыРемонт && !isNaN(parseFloat(затратыРемонт))) {
-            затратыРемонт = `${parseFloat(затратыРемонт).toLocaleString('ru-RU')} ₽`;
-        }
-        
+        if (затратыРемонт && !isNaN(parseFloat(затратыРемонт))) затратыРемонт = `${parseFloat(затратыРемонт).toLocaleString('ru-RU')} ₽`;
         let затратыДоставка = p['Затраты доставка'];
-        if (затратыДоставка && !isNaN(parseFloat(затратыДоставка))) {
-            затратыДоставка = `${parseFloat(затратыДоставка).toLocaleString('ru-RU')} ₽`;
-        }
+        if (затратыДоставка && !isNaN(parseFloat(затратыДоставка))) затратыДоставка = `${parseFloat(затратыДоставка).toLocaleString('ru-RU')} ₽`;
         
         const statusClass = getStatusClass(p['Статус']);
         const statusText = getStatusText(p['Статус']);
@@ -982,38 +763,22 @@ function updateModelsForCategory(category) {
             <h3>🚁 ${escapeHtml(p['Название'] || 'Без названия')}</h3>
             <div class="product-detail"><strong>🔢 Артикул:</strong> ${escapeHtml(p['Артикул'] || '—')}</div>
             <div class="product-detail"><strong>📇 Серийный номер:</strong> ${escapeHtml(p['Серийный номер'] || '—')}</div>
-           <div class="product-detail">
-    <strong>📝 Состояние:</strong>
-    <div class="state-list">
-        ${formatStateText(p['Состояние'] || '—')}
-    </div>
-</div>
+            <div class="product-detail">
+                <strong>📝 Состояние:</strong>
+                <div class="state-list">${formatStateText(p['Состояние'] || '—')}</div>
+            </div>
             <div class="product-detail"><strong>💰 Цена закупки:</strong> ${ценаЗакупка || '—'}</div>
             <div class="product-detail"><strong>💰 Цена продажи:</strong> ${ценаПродажа || '—'}</div>`;
         
-        if (затратыРемонт) {
-            html += `<div class="product-detail"><strong>🔧 Затраты (ремонт):</strong> ${затратыРемонт}</div>`;
-        }
-        if (затратыДоставка) {
-            html += `<div class="product-detail"><strong>📦 Затраты (доставка):</strong> ${затратыДоставка}</div>`;
-        }
-        if (прибыль) {
-            html += `<div class="product-detail"><strong>💰 Прибыль:</strong> ${прибыль}</div>`;
-        }
+        if (затратыРемонт) html += `<div class="product-detail"><strong>🔧 Затраты (ремонт):</strong> ${затратыРемонт}</div>`;
+        if (затратыДоставка) html += `<div class="product-detail"><strong>📦 Затраты (доставка):</strong> ${затратыДоставка}</div>`;
+        if (прибыль) html += `<div class="product-detail"><strong>💰 Прибыль:</strong> ${прибыль}</div>`;
         
         html += `<div class="product-detail"><strong>📌 Статус:</strong> <span class="${statusClass}">${statusText}</span></div>`;
         
-        if (p['Ссылка на Авито']) {
-            html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на Авито'])}" target="_blank">Открыть →</a></div>`;
-        }
-        
-        if (p['Фото'] && p['Фото'] !== 'IMAGE') {
-            html += `<div class="product-detail"><strong>📷 Фото:</strong> <a href="${escapeHtml(p['Фото'])}" target="_blank">Посмотреть</a></div>`;
-        }
-        
-        if (p['QR_Code']) {
-            html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
-        }
+        if (p['Ссылка на Авито']) html += `<div class="product-detail"><strong>🔗 Авито:</strong> <a href="${escapeHtml(p['Ссылка на Авито'])}" target="_blank">Открыть →</a></div>`;
+        if (p['Фото'] && p['Фото'] !== 'IMAGE') html += `<div class="product-detail"><strong>📷 Фото:</strong> <a href="${escapeHtml(p['Фото'])}" target="_blank">Посмотреть</a></div>`;
+        if (p['QR_Code']) html += `<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="${escapeHtml(p['QR_Code'])}" style="max-width:120px"></div>`;
         
         html += `<div class="action-buttons">
             <button class="action-btn" onclick="shareProduct('${escapeHtml(p['Артикул'])}')">📤 Поделиться</button>
@@ -1028,15 +793,8 @@ function updateModelsForCategory(category) {
     async function shareProduct(sku) {
         try {
             const product = await findProductBySKU(sku);
-            const shareText = `🚁 Товар: ${product['Название']}
-🔢 Артикул: ${product['Артикул']}
-📇 Серийный номер: ${product['Серийный номер'] || '—'}
-📝 Состояние: ${product['Состояние'] || '—'}
-💰 Цена закупки: ${product['Цена закупка'] || '—'} ₽
-📌 Статус: ${product['Статус'] || 'не продан'}`;
-            
+            const shareText = `🚁 Товар: ${product['Название']}\n🔢 Артикул: ${product['Артикул']}\n📇 Серийный номер: ${product['Серийный номер'] || '—'}\n📝 Состояние: ${product['Состояние'] || '—'}\n💰 Цена закупки: ${product['Цена закупка'] || '—'} ₽\n📌 Статус: ${product['Статус'] || 'не продан'}`;
             const productUrl = `${window.location.origin}${window.location.pathname}?sku=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`;
-            
             if (navigator.share) {
                 await navigator.share({ title: `Товар: ${product['Название']}`, text: shareText, url: productUrl });
             } else {
@@ -1054,140 +812,102 @@ function updateModelsForCategory(category) {
     }
 
     function formatStateText(text) {
-    if (!text || text === '—') return '—';
-    
-    // Проверяем, есть ли маркеры в тексте
-    if (text.includes('*')) {
-        // Разбиваем текст по маркерам
-        const items = text.split('*').filter(item => item.trim().length > 0);
-        if (items.length > 0) {
-            let html = '<ul style="margin: 5px 0 0 20px; padding-left: 0;">';
-            items.forEach(item => {
-                html += `<li style="margin: 3px 0;">${escapeHtml(item.trim())}</li>`;
-            });
-            html += '</ul>';
-            return html;
+        if (!text || text === '—') return '—';
+        if (text.includes('*')) {
+            const items = text.split('*').filter(item => item.trim().length > 0);
+            if (items.length > 0) {
+                let html = '<ul style="margin: 5px 0 0 20px; padding-left: 0;">';
+                items.forEach(item => { html += `<li style="margin: 3px 0;">${escapeHtml(item.trim())}</li>`; });
+                html += '</ul>';
+                return html;
+            }
         }
+        return escapeHtml(text).replace(/\n/g, '<br>');
     }
-    
-    // Если маркеров нет, просто экранируем текст и заменяем переносы строк
-    return escapeHtml(text).replace(/\n/g, '<br>');
-}
     
     function updateStats(products) {
-    // Проверяем, что products существует и является массивом
-    if (!products || !Array.isArray(products) || products.length === 0) {
-        const statsContainer = document.getElementById('stats-content');
-        if (statsContainer) statsContainer.innerHTML = 'Нет данных для отображения';
-        return;
-    }
-    
-    const stats = {};
-    let total = 0;
-    let sold = 0;
-    let reserved = 0;
-    let delivery = 0;
-    let unsold = 0;
-    
-    products.forEach(product => {
-        total++;
-        const model = product['Название'] || 'Без названия';
-        stats[model] = (stats[model] || 0) + 1;
-        
-        switch(product['Статус']) {
-            case 'Продан': sold++; break;
-            case 'Зарезервирован': reserved++; break;
-            case 'В доставке': delivery++; break;
-            default: unsold++;
+        if (!products || !Array.isArray(products) || products.length === 0) {
+            const statsContainer = document.getElementById('stats-content');
+            if (statsContainer) statsContainer.innerHTML = 'Нет данных для отображения';
+            return;
         }
-    });
-    
-    let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
-        <span>📦 Всего: <strong>${total}</strong></span>
-        <span style="color: #16a34a;">✅ Продан: <strong>${sold}</strong></span>
-        <span style="color: #eab308;">🔒 Зарезервирован: <strong>${reserved}</strong></span>
-        <span style="color: #3b82f6;">🚚 В доставке: <strong>${delivery}</strong></span>
-        <span style="color: #64748b;">📦 Не продан: <strong>${unsold}</strong></span>
-    </div>`;
-    
-    statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
-    for (const [model, count] of Object.entries(stats).sort()) {
-        statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
-            ${escapeHtml(model)}: <strong>${count}</strong>
-        </span>`;
+        const stats = {};
+        let total = 0, sold = 0, reserved = 0, delivery = 0, unsold = 0;
+        products.forEach(product => {
+            total++;
+            const model = product['Название'] || 'Без названия';
+            stats[model] = (stats[model] || 0) + 1;
+            switch(product['Статус']) {
+                case 'Продан': sold++; break;
+                case 'Зарезервирован': reserved++; break;
+                case 'В доставке': delivery++; break;
+                default: unsold++;
+            }
+        });
+        let statsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
+            <span>📦 Всего: <strong>${total}</strong></span>
+            <span style="color: #16a34a;">✅ Продан: <strong>${sold}</strong></span>
+            <span style="color: #eab308;">🔒 Зарезервирован: <strong>${reserved}</strong></span>
+            <span style="color: #3b82f6;">🚚 В доставке: <strong>${delivery}</strong></span>
+            <span style="color: #64748b;">📦 Не продан: <strong>${unsold}</strong></span>
+        </div>`;
+        statsHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
+        for (const [model, count] of Object.entries(stats).sort()) {
+            statsHtml += `<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly('${escapeHtml(model)}')">
+                ${escapeHtml(model)}: <strong>${count}</strong>
+            </span>`;
+        }
+        statsHtml += `</div>`;
+        const statsContainer = document.getElementById('stats-content');
+        if (statsContainer) statsContainer.innerHTML = statsHtml;
     }
-    statsHtml += `</div>`;
-    
-    const statsContainer = document.getElementById('stats-content');
-    if (statsContainer) statsContainer.innerHTML = statsHtml;
-}
     
     function filterCatalogDirectly(model) {
-        let filtered = allProducts.filter(product => {
-            return product['Название'] === model;
-        });
-        
+        let filtered = allProducts.filter(product => product['Название'] === model);
         renderCatalog(filtered);
         updateStats(filtered);
-        
         const statsHeader = document.querySelector('#catalog-stats strong');
-        if (statsHeader) {
-            statsHeader.innerHTML = `📊 Статистика по комплектациям (фильтр: ${model}):`;
-        }
+        if (statsHeader) statsHeader.innerHTML = `📊 Статистика по комплектациям (фильтр: ${model}):`;
     }
     
     function applyFilters() {
-    if (!allProducts || !allProducts.length) {
-        console.log('Нет данных для фильтрации');
-        return;
+        if (!allProducts || !allProducts.length) return;
+        const statusFilter = document.getElementById('filter-status')?.value || '';
+        let filtered = allProducts.filter(product => {
+            if (statusFilter && product['Статус'] !== statusFilter) return false;
+            return true;
+        });
+        renderCatalog(filtered);
+        updateStats(filtered);
     }
-    
-    const statusFilter = document.getElementById('filter-status')?.value || '';
-    
-    let filtered = allProducts.filter(product => {
-        if (statusFilter && product['Статус'] !== statusFilter) return false;
-        return true;
-    });
-    
-    renderCatalog(filtered);
-    updateStats(filtered);
-}
     
     function renderCatalog(products) {
-    const container = document.getElementById('catalog-content');
-    if (!container) return;
-    
-    console.log('🎨 renderCatalog вызвана, товаров:', products ? products.length : 0);
-    console.log('Первый товар:', products && products[0] ? products[0]['Название'] : 'нет');
-    
-    if (!products || products.length === 0) {
-        container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-        return;
+        const container = document.getElementById('catalog-content');
+        if (!container) return;
+        if (!products || products.length === 0) {
+            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            return;
+        }
+        let html = '<div class="products-grid">';
+        products.forEach(product => {
+            const statusClass = getStatusClass(product['Статус']);
+            const statusText = getStatusText(product['Статус']);
+            html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
+                <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
+                <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
+                <small class="${statusClass}">${statusText}</small>
+            </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
     }
-    
-    let html = '<div class="products-grid">';
-    products.forEach(product => {
-        const statusClass = getStatusClass(product['Статус']);
-        const statusText = getStatusText(product['Статус']);
-        html += `<div class="product-item" onclick="viewProductDetail('${escapeHtml(product['Артикул'])}')">
-            <strong>${escapeHtml(product['Название'] || 'Без названия')}</strong><br>
-            <small>🔢 ${escapeHtml(product['Артикул'] || '—')}</small><br>
-            <small class="${statusClass}">${statusText}</small>
-        </div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-}
     
     function resetFilters() {
         const statusSelect = document.getElementById('filter-status');
         if (statusSelect) statusSelect.value = '';
         applyFilters();
-        
         const statsHeader = document.querySelector('#catalog-stats strong');
-        if (statsHeader) {
-            statsHeader.innerHTML = '📊 Статистика по комплектациям:';
-        }
+        if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям:';
     }
     
     async function viewProductDetail(sku) {
@@ -1197,154 +917,209 @@ function updateModelsForCategory(category) {
         await searchBySerial();
     }
     
-    async function loadCatalog(forceReload = false) {
-    const container = document.getElementById('catalog-content');
-    if (!container) return;
-    
-    console.log('📦 loadCatalog вызвана, категория:', currentCategory, 'forceReload:', forceReload);
-    
-    // Если есть кэш в памяти и не требуется перезагрузка — используем его
-    if (cachedProducts && !forceReload && catalogLoaded) {
-        console.log('📦 Используем кэш памяти, товаров:', cachedProducts.length);
-        allProducts = cachedProducts;
-        if (allProducts && allProducts.length) {
-            renderCatalog(allProducts);
-            updateStats(allProducts);
-        } else {
-            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-        }
-        return;
+    // ========== КАТАЛОГ С КЭШИРОВАНИЕМ ==========
+    function saveProductsToLocalStorage(products) {
+        try {
+            localStorage.setItem('cachedProducts_' + currentCategory, JSON.stringify({
+                products: products,
+                timestamp: Date.now(),
+                category: currentCategory
+            }));
+            const cacheKey = `cachedProducts_${currentCategory}`;
+            window[cacheKey] = products;
+        } catch (e) { console.error('Ошибка сохранения:', e); }
     }
-    
-    // ========== НОВОЕ: ПРОВЕРЯЕМ LOCALSTORAGE (ОФЛАЙН-КЭШ) ==========
-    const offlineData = loadProductsFromLocalStorage();
-    if (offlineData && !forceReload) {
-        console.log('📦 Используем офлайн-кэш (localStorage), товаров:', offlineData.products.length);
-        cachedProducts = offlineData.products;
-        allProducts = offlineData.products;
-        catalogLoaded = true;
-        
-        if (allProducts && allProducts.length) {
-            renderCatalog(allProducts);
-            updateStats(allProducts);
-            container.innerHTML = '<div class="loading">📦 Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')</div>';
-            // Через 2 секунды убираем сообщение
-            setTimeout(() => {
-                if (container.innerHTML.includes('Офлайн-режим')) {
-                    container.innerHTML = '';
-                    renderCatalog(allProducts);
-                }
-            }, 2000);
-        } else {
-            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
-        }
-        return;
-    }
-    
-    // ========== ЗАГРУЗКА С СЕРВЕРА ==========
-    console.log('📦 Загружаем данные с сервера для категории:', currentCategory);
-    container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
-    
-    try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
-        console.log('📡 Запрос:', url);
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        console.log('📡 Ответ от сервера:', data);
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        const products = data.products || data;
-        
-        if (!products || !Array.isArray(products)) {
-            throw new Error('Неверный формат данных от сервера');
-        }
-        
-        console.log(`📦 Получено товаров: ${products.length} для категории ${currentCategory}`);
-        
-        // Сохраняем в кэш памяти
-        cachedProducts = products;
-        allProducts = products;
-        catalogLoaded = true;
 
-        // Сохраняем в категорийный кэш для быстрого переключения
-const cacheKey = `cachedProducts_${currentCategory}`;
-window[cacheKey] = products;
+    function loadProductsFromLocalStorageForCategory(category) {
+        try {
+            const cached = localStorage.getItem('cachedProducts_' + category);
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) return data;
+            }
+        } catch (e) { console.error('Ошибка загрузки:', e); }
+        return null;
+    }
+    
+    function loadProductsFromLocalStorage() {
+        return loadProductsFromLocalStorageForCategory(currentCategory);
+    }
+    
+    async function updateCategoryInBackground(category) {
+        try {
+            const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(category)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            const products = data.products || data;
+            if (products && products.length) {
+                const cacheKey = `cachedProducts_${category}`;
+                window[cacheKey] = products;
+                localStorage.setItem('cachedProducts_' + category, JSON.stringify({
+                    products: products,
+                    timestamp: Date.now(),
+                    category: category
+                }));
+                if (currentCategory === category) {
+                    allProducts = products;
+                    cachedProducts = products;
+                    catalogLoaded = true;
+                    renderCatalog(products);
+                    updateStats(products);
+                    const headerTitle = document.querySelector('#catalog-panel h2');
+                    if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
+                }
+            }
+        } catch (error) { console.log('Фоновое обновление не удалось:', error); }
+    }
+    
+    async function switchCategory(category) {
+        if (currentCategory === category) return;
+        currentCategory = category;
         
-        // ========== НОВОЕ: СОХРАНЯЕМ В LOCALSTORAGE ДЛЯ ОФЛАЙНА ==========
-        saveProductsToLocalStorage(products);
-        
-        if (!allProducts || allProducts.length === 0) {
-            container.innerHTML = `<div class="error">📭 Товары в категории "${currentCategory}" не найдены.</div>`;
-            const statsContent = document.getElementById('stats-content');
-            if (statsContent) statsContent.innerHTML = 'Нет данных';
-            return;
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        if (category === 'Дроны') {
+            document.getElementById('btn-drones').classList.add('active');
+        } else {
+            document.getElementById('btn-scooters').classList.add('active');
         }
         
-        // Обновляем отображение
-        renderCatalog(allProducts);
-        updateStats(allProducts);
+        updateModelsForCategory(category);
         
-    } catch (error) {
-        console.error('❌ Ошибка загрузки:', error);
+        const headerTitle = document.querySelector('#catalog-panel h2');
+        if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
         
-        // ========== НОВОЕ: ПРИ ОШИБКЕ ПЫТАЕМСЯ ВЗЯТЬ ДАННЫЕ ИЗ LOCALSTORAGE ==========
-        const fallbackData = loadProductsFromLocalStorage();
-        if (fallbackData) {
-            console.log('📦 Используем резервный офлайн-кэш');
-            cachedProducts = fallbackData.products;
-            allProducts = fallbackData.products;
+        const cacheKey = `cachedProducts_${category}`;
+        if (window[cacheKey] && window[cacheKey].length > 0) {
+            allProducts = window[cacheKey];
+            cachedProducts = allProducts;
             catalogLoaded = true;
             renderCatalog(allProducts);
             updateStats(allProducts);
-            container.innerHTML = '<div class="loading">⚠️ Офлайн-режим (данные от ' + new Date(fallbackData.timestamp).toLocaleString() + ')</div>';
-            setTimeout(() => {
-                if (container.innerHTML.includes('Офлайн-режим')) {
-                    container.innerHTML = '';
-                    renderCatalog(allProducts);
-                }
-            }, 3000);
-        } else {
-            container.innerHTML = `<div class="error">❌ Нет интернета и нет сохранённых данных</div>`;
+            return;
         }
+        
+        const offlineData = loadProductsFromLocalStorageForCategory(category);
+        if (offlineData && offlineData.products && offlineData.products.length) {
+            allProducts = offlineData.products;
+            cachedProducts = allProducts;
+            catalogLoaded = true;
+            window[cacheKey] = allProducts;
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+            updateCategoryInBackground(category);
+            return;
+        }
+        
+        const container = document.getElementById('catalog-content');
+        if (container) container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+        await loadCatalog(true);
     }
-}
-
-    function getAllOfflineProducts() {
-    const allProducts = [];
-    const categories = ['Дроны', 'Самокаты'];
     
-    for (let cat of categories) {
-        const cached = localStorage.getItem('cachedProducts_' + cat);
-        if (cached) {
-            const data = JSON.parse(cached);
-            if (data.products && data.products.length) {
-                allProducts.push(...data.products);
+    async function loadCatalog(forceReload = false) {
+        const container = document.getElementById('catalog-content');
+        if (!container) return;
+        
+        if (cachedProducts && !forceReload && catalogLoaded) {
+            allProducts = cachedProducts;
+            if (allProducts && allProducts.length) {
+                renderCatalog(allProducts);
+                updateStats(allProducts);
+            } else {
+                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            }
+            return;
+        }
+        
+        const offlineData = loadProductsFromLocalStorage();
+        if (offlineData && !forceReload) {
+            cachedProducts = offlineData.products;
+            allProducts = offlineData.products;
+            catalogLoaded = true;
+            if (allProducts && allProducts.length) {
+                renderCatalog(allProducts);
+                updateStats(allProducts);
+                container.innerHTML = '<div class="loading">📦 Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')</div>';
+                setTimeout(() => {
+                    if (container.innerHTML.includes('Офлайн-режим')) {
+                        container.innerHTML = '';
+                        renderCatalog(allProducts);
+                    }
+                }, 2000);
+            } else {
+                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            }
+            return;
+        }
+        
+        container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+        try {
+            const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(currentCategory)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            const products = data.products || data;
+            if (!products || !Array.isArray(products)) throw new Error('Неверный формат данных');
+            
+            cachedProducts = products;
+            allProducts = products;
+            catalogLoaded = true;
+            
+            const cacheKey = `cachedProducts_${currentCategory}`;
+            window[cacheKey] = products;
+            saveProductsToLocalStorage(products);
+            
+            if (!allProducts || allProducts.length === 0) {
+                container.innerHTML = `<div class="error">📭 Товары в категории "${currentCategory}" не найдены.</div>`;
+                const statsContent = document.getElementById('stats-content');
+                if (statsContent) statsContent.innerHTML = 'Нет данных';
+                return;
+            }
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+        } catch (error) {
+            const fallbackData = loadProductsFromLocalStorage();
+            if (fallbackData) {
+                cachedProducts = fallbackData.products;
+                allProducts = fallbackData.products;
+                catalogLoaded = true;
+                renderCatalog(allProducts);
+                updateStats(allProducts);
+                container.innerHTML = '<div class="loading">⚠️ Офлайн-режим (данные от ' + new Date(fallbackData.timestamp).toLocaleString() + ')</div>';
+                setTimeout(() => {
+                    if (container.innerHTML.includes('Офлайн-режим')) container.innerHTML = '';
+                }, 3000);
+            } else {
+                container.innerHTML = `<div class="error">❌ Нет интернета и нет сохранённых данных</div>`;
             }
         }
     }
-    return allProducts;
-}
     
-    // ========== РЕДАКТИРОВАНИЕ ТОВАРА ==========
+    function getAllOfflineProducts() {
+        const all = [];
+        for (let cat of ['Дроны', 'Самокаты']) {
+            const cached = localStorage.getItem('cachedProducts_' + cat);
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (data.products && data.products.length) all.push(...data.products);
+            }
+        }
+        return all;
+    }
+    
+    // ========== РЕДАКТИРОВАНИЕ ==========
     function editProduct(sku) {
         currentProduct = allProducts.find(p => p['Артикул'] === sku);
         if (!currentProduct) return;
         
         const modal = document.createElement('div');
-        modal.id = 'edit-modal';
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
-        
+        modal.style.cssText = 'position: fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;';
         modal.innerHTML = `
-            <div style="background: white; border-radius: 20px; padding: 20px; max-width: 500px; width: 90%; max-height: 80%; overflow-y: auto;">
-                <h3 style="color: #1e3c72; margin-bottom: 15px;">✏️ Редактирование: ${escapeHtml(currentProduct['Артикул'])}</h3>
-                <div class="form-group"><label>🚁 Название / Комплектация</label><input type="text" id="edit-name" value="${escapeHtml(currentProduct['Название'])}"></div>
+            <div style="background:white; border-radius:20px; padding:20px; max-width:500px; width:90%; max-height:80%; overflow-y:auto;">
+                <h3 style="color:#1e3c72;">✏️ Редактирование: ${escapeHtml(currentProduct['Артикул'])}</h3>
+                <div class="form-group"><label>🚁 Название</label><input type="text" id="edit-name" value="${escapeHtml(currentProduct['Название'])}"></div>
                 <div class="form-group"><label>📇 Серийный номер</label><input type="text" id="edit-serial" value="${escapeHtml(currentProduct['Серийный номер'])}"></div>
-                <div class="form-group"><label>📝 Состояние / Описание</label><textarea id="edit-description" rows="3">${escapeHtml(currentProduct['Состояние'])}</textarea></div>
+                <div class="form-group"><label>📝 Состояние</label><textarea id="edit-description" rows="3">${escapeHtml(currentProduct['Состояние'])}</textarea></div>
                 <div class="form-group"><label>💰 Цена закупки</label><input type="number" id="edit-purchase-price" value="${currentProduct['Цена закупка']}"></div>
                 <div class="form-group"><label>💰 Цена продажи</label><input type="number" id="edit-sale-price" value="${currentProduct['Цена продажа']}"></div>
                 <div class="form-group"><label>📌 Статус</label>
@@ -1355,17 +1130,13 @@ window[cacheKey] = products;
                         <option value="В доставке" ${currentProduct['Статус'] === 'В доставке' ? 'selected' : ''}>В доставке</option>
                     </select>
                 </div>
-                <div class="form-group"><label>🔗 Ссылка на Авито</label><input type="url" id="edit-avito" value="${escapeHtml(currentProduct['Ссылка на Авито'])}"></div>
+                <div class="form-group"><label>🔗 Авито</label><input type="url" id="edit-avito" value="${escapeHtml(currentProduct['Ссылка на Авито'])}"></div>
                 <div class="form-group"><label>🔧 Затраты (ремонт)</label><input type="number" id="edit-repair-cost" value="${currentProduct['Затраты ремонт']}"></div>
                 <div class="form-group"><label>📦 Затраты (доставка)</label><input type="number" id="edit-delivery-cost" value="${currentProduct['Затраты доставка']}"></div>
-                <div class="action-buttons" style="margin-top: 20px;">
-                    <button id="save-edit-btn" style="background: #16a34a;">💾 Сохранить</button>
-                    <button id="cancel-edit-btn" style="background: #64748b;">❌ Отмена</button>
-                </div>
+                <div class="action-buttons"><button id="save-edit-btn" style="background:#16a34a;">💾 Сохранить</button><button id="cancel-edit-btn" style="background:#64748b;">❌ Отмена</button></div>
             </div>
         `;
         document.body.appendChild(modal);
-        
         document.getElementById('save-edit-btn').onclick = async () => {
             const updatedData = {
                 sku: currentProduct['Артикул'],
@@ -1386,53 +1157,38 @@ window[cacheKey] = products;
     }
     
     async function saveProductChanges(data) {
-    const resultDiv = document.getElementById('scan-result');
-    const searchResult = document.getElementById('search-result');
-    
-    if (searchResult && searchResult.style.display !== 'none') {
-        searchResult.innerHTML = '<div class="loading">💾 Сохранение...</div>';
-    } else if (resultDiv) {
-        resultDiv.innerHTML = '<div class="loading">💾 Сохранение...</div>';
-    }
-    
-    // Используем GET запрос (как в autoAdd и addWithoutSku)
-    const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}&category=${encodeURIComponent(currentCategory)}`;
-    
-    try {
-        const response = await fetch(url);
-        const result = await response.json();
-        
-        if (result.success) {
-            alert('✅ Товар обновлён');
-            
-            // Обновляем данные в памяти
-            const updatedProduct = await findProductBySKU(data.sku);
-            currentProduct = updatedProduct;
-            
-            // Обновляем отображение
-            if (searchResult && searchResult.style.display !== 'none') {
-                displayProduct(updatedProduct, 'search-result');
-            } else if (resultDiv) {
-                displayProduct(updatedProduct, 'scan-result');
-            }
-            
-            // Обновляем кэш каталога
-            catalogLoaded = false;
-            loadCatalog();
-        } else {
-            alert('❌ Ошибка: ' + result.message);
+        const resultDiv = document.getElementById('scan-result');
+        const searchResult = document.getElementById('search-result');
+        if (searchResult && searchResult.style.display !== 'none') {
+            searchResult.innerHTML = '<div class="loading">💾 Сохранение...</div>';
+        } else if (resultDiv) {
+            resultDiv.innerHTML = '<div class="loading">💾 Сохранение...</div>';
         }
-    } catch (error) {
-        console.error('Ошибка:', error);
-        alert('❌ Ошибка: ' + error.message);
+        const url = `${GOOGLE_SCRIPT_URL}?action=updateProduct&sku=${encodeURIComponent(data.sku)}&name=${encodeURIComponent(data.name)}&serialNumber=${encodeURIComponent(data.serialNumber)}&description=${encodeURIComponent(data.description)}&purchasePrice=${encodeURIComponent(data.purchasePrice)}&salePrice=${encodeURIComponent(data.salePrice)}&status=${encodeURIComponent(data.status)}&avitoLink=${encodeURIComponent(data.avitoLink)}&repairCost=${encodeURIComponent(data.repairCost)}&deliveryCost=${encodeURIComponent(data.deliveryCost)}&category=${encodeURIComponent(currentCategory)}`;
+        try {
+            const response = await fetch(url);
+            const result = await response.json();
+            if (result.success) {
+                alert('✅ Товар обновлён');
+                const updatedProduct = await findProductBySKU(data.sku);
+                currentProduct = updatedProduct;
+                if (searchResult && searchResult.style.display !== 'none') {
+                    displayProduct(updatedProduct, 'search-result');
+                } else if (resultDiv) {
+                    displayProduct(updatedProduct, 'scan-result');
+                }
+                catalogLoaded = false;
+                loadCatalog();
+            } else {
+                alert('❌ Ошибка: ' + result.message);
+            }
+        } catch (error) {
+            alert('❌ Ошибка: ' + error.message);
+        }
     }
-}
     
-    // ========== УДАЛЕНИЕ ТОВАРА ==========
     async function deleteProduct(sku) {
-        const confirmed = confirm(`⚠️ Вы уверены, что хотите удалить товар с артикулом ${sku}? Это действие нельзя отменить.`);
-        if (!confirmed) return;
-        
+        if (!confirm(`⚠️ Удалить товар ${sku}?`)) return;
         const resultDiv = document.getElementById('scan-result');
         const searchResult = document.getElementById('search-result');
         if (searchResult && searchResult.style.display !== 'none') {
@@ -1440,11 +1196,9 @@ window[cacheKey] = products;
         } else if (resultDiv) {
             resultDiv.innerHTML = '<div class="loading">🗑️ Удаление...</div>';
         }
-        
         try {
             const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=deleteProduct&sku=${encodeURIComponent(sku)}&category=${encodeURIComponent(currentCategory)}`);
             const result = await response.json();
-            
             if (result.success) {
                 alert(`✅ Товар ${sku} удалён`);
                 if (searchResult && searchResult.style.display !== 'none') {
@@ -1461,117 +1215,34 @@ window[cacheKey] = products;
             alert('❌ Ошибка: ' + error.message);
         }
     }
-
-    // Сохранение товаров в localStorage для офлайн-доступа
-function saveProductsToLocalStorage(products) {
-    try {
-        localStorage.setItem('cachedProducts_' + currentCategory, JSON.stringify({
-            products: products,
-            timestamp: Date.now(),
-            category: currentCategory
-        }));
-        
-        // Также сохраняем в память
-        const cacheKey = `cachedProducts_${currentCategory}`;
-        window[cacheKey] = products;
-        
-        console.log('💾 Данные сохранены для категории', currentCategory);
-    } catch (e) {
-        console.error('Ошибка сохранения в localStorage:', e);
-    }
-}
-
-    // Загрузка из localStorage для конкретной категории
-function loadProductsFromLocalStorageForCategory(category) {
-    try {
-        const cached = localStorage.getItem('cachedProducts_' + category);
-        if (cached) {
-            const data = JSON.parse(cached);
-            if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) {
-                return data;
-            }
-        }
-    } catch (e) {
-        console.error('Ошибка загрузки из localStorage:', e);
-    }
-    return null;
-}
-
-// Фоновая загрузка данных с сервера
-async function updateCategoryInBackground(category) {
-    try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(category)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.error) throw new Error(data.error);
-        
-        const products = data.products || data;
-        if (products && products.length) {
-            // Сохраняем в кэш памяти
-            const cacheKey = `cachedProducts_${category}`;
-            window[cacheKey] = products;
-            
-            // Сохраняем в localStorage
-            localStorage.setItem('cachedProducts_' + category, JSON.stringify({
-                products: products,
-                timestamp: Date.now(),
-                category: category
-            }));
-            
-            // Если текущая категория совпадает — обновляем отображение
-            if (currentCategory === category) {
-                allProducts = products;
-                cachedProducts = products;
-                catalogLoaded = true;
-                renderCatalog(products);
-                updateStats(products);
-                
-                const headerTitle = document.querySelector('#catalog-panel h2');
-                if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
-            }
-            
-            console.log('🔄 Фоновое обновление для', category, 'завершено');
-        }
-    } catch (error) {
-        console.log('Фоновое обновление не удалось:', error);
-    }
-}
     
     function handleUrlParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    const category = urlParams.get('category');
-    console.log('🔍 URL параметр category:', category);
-    
-    if (category && (category === 'Дроны' || category === 'Самокаты')) {
-        // Устанавливаем категорию без перезагрузки
-        currentCategory = category;
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        if (category === 'Дроны') {
-            document.getElementById('btn-drones').classList.add('active');
-        } else {
-            document.getElementById('btn-scooters').classList.add('active');
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        if (category && (category === 'Дроны' || category === 'Самокаты')) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            if (category === 'Дроны') {
+                document.getElementById('btn-drones').classList.add('active');
+            } else {
+                document.getElementById('btn-scooters').classList.add('active');
+            }
+            const headerTitle = document.querySelector('#catalog-panel h2');
+            if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
+            catalogLoaded = false;
+            cachedProducts = null;
+            loadCatalog(true);
         }
-        const headerTitle = document.querySelector('#catalog-panel h2');
-        if (headerTitle) {
-            headerTitle.innerHTML = `📦 Каталог ${category}`;
+        const sku = urlParams.get('sku');
+        if (sku) {
+            switchTab('search');
+            const serialInput = document.getElementById('serial-input');
+            if (serialInput) serialInput.value = sku;
+            searchBySerial();
         }
-        // Принудительно загружаем данные
-        catalogLoaded = false;
-        cachedProducts = null;
-        loadCatalog(true);
     }
     
-    const sku = urlParams.get('sku');
-    if (sku) {
-        switchTab('search');
-        const serialInput = document.getElementById('serial-input');
-        if (serialInput) serialInput.value = sku;
-        searchBySerial();
-    }
-}
-    
+    // ========== ОБРАБОТЧИКИ ==========
     document.getElementById('start-scan-btn').onclick = startScanner;
     document.getElementById('start-receive-scan').onclick = startReceiveScanner;
     document.getElementById('submit-receive-btn').onclick = submitNewProduct;
@@ -1580,12 +1251,7 @@ async function updateCategoryInBackground(category) {
     document.getElementById('clear-noqr-btn').onclick = clearNoQRForm;
     
     const refreshBtn = document.getElementById('refresh-catalog-btn');
-    if (refreshBtn) {
-        refreshBtn.onclick = () => {
-            catalogLoaded = false;
-            loadCatalog(true);
-        };
-    }
+    if (refreshBtn) refreshBtn.onclick = () => { catalogLoaded = false; loadCatalog(true); };
     
     const filterStatus = document.getElementById('filter-status');
     if (filterStatus) filterStatus.addEventListener('change', applyFilters);
@@ -1600,21 +1266,16 @@ async function updateCategoryInBackground(category) {
     if (homeBtn) homeBtn.onclick = goHome;
     
     window.onload = function() {
-    handleUrlParams();
-    updateModelsForCategory(currentCategory); // ← добавить
-    loadCatalog();
-};
+        handleUrlParams();
+        updateModelsForCategory(currentCategory);
+        loadCatalog();
+    };
 </script>
-    <script>
-    // Регистрация Service Worker для офлайн-режима
+<script>
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker зарегистрирован:', registration.scope);
-            })
-            .catch(error => {
-                console.log('❌ Ошибка регистрации Service Worker:', error);
-            });
+            .then(reg => console.log('✅ Service Worker зарегистрирован:', reg.scope))
+            .catch(err => console.log('❌ SW ошибка:', err));
     }
 </script>
 </body>
