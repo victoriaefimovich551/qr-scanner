@@ -455,6 +455,45 @@ function updateModelsForCategory(category) {
         document.getElementById('btn-scooters').classList.add('active');
     }
     
+    // Обновляем заголовок
+    const headerTitle = document.querySelector('#catalog-panel h2');
+    if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
+    
+    // ========== ПРОВЕРЯЕМ, ЕСТЬ ЛИ ДАННЫЕ В КЭШЕ ПАМЯТИ ==========
+    const cacheKey = `cachedProducts_${category}`;
+    if (window[cacheKey] && window[cacheKey].length > 0) {
+        console.log('📦 Используем кэш памяти для', category);
+        allProducts = window[cacheKey];
+        cachedProducts = allProducts;
+        catalogLoaded = true;
+        renderCatalog(allProducts);
+        updateStats(allProducts);
+        return;
+    }
+    
+    // ========== ПРОВЕРЯЕМ LOCALSTORAGE ==========
+    const offlineData = loadProductsFromLocalStorageForCategory(category);
+    if (offlineData && offlineData.products && offlineData.products.length) {
+        console.log('📦 Используем офлайн-кэш для', category);
+        allProducts = offlineData.products;
+        cachedProducts = allProducts;
+        catalogLoaded = true;
+        window[cacheKey] = allProducts;
+        renderCatalog(allProducts);
+        updateStats(allProducts);
+        
+        // Фоновое обновление
+        updateCategoryInBackground(category);
+        return;
+    }
+    
+    // ========== ЗАГРУЖАЕМ С СЕРВЕРА ==========
+    const container = document.getElementById('catalog-content');
+    if (container) container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+    
+    await loadCatalog(true);
+}
+    
     // ========== ПЫТАЕМСЯ ЗАГРУЗИТЬ ДАННЫЕ ИЗ ПАМЯТИ ИЛИ LOCALSTORAGE ==========
     
     // 1. Проверяем, есть ли данные в кэше памяти для этой категории
