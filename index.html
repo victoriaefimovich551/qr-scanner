@@ -440,7 +440,7 @@ function updateModelsForCategory(category) {
     }
     
     // ========== ПЕРЕКЛЮЧЕНИЕ КАТЕГОРИЙ ==========
-   async function switchCategory(category) {
+  async function switchCategory(category) {
     if (currentCategory === category) return;
     
     console.log('🔄 Переключение на категорию:', category);
@@ -454,6 +454,55 @@ function updateModelsForCategory(category) {
     } else {
         document.getElementById('btn-scooters').classList.add('active');
     }
+    
+    // ========== ПЫТАЕМСЯ ЗАГРУЗИТЬ ДАННЫЕ ИЗ ПАМЯТИ ИЛИ LOCALSTORAGE ==========
+    
+    // 1. Проверяем, есть ли данные в кэше памяти для этой категории
+    const categoryCacheKey = `cachedProducts_${category}`;
+    if (window[categoryCacheKey]) {
+        console.log('📦 Используем кэш памяти для', category);
+        allProducts = window[categoryCacheKey];
+        cachedProducts = allProducts;
+        catalogLoaded = true;
+        renderCatalog(allProducts);
+        updateStats(allProducts);
+        
+        // Обновляем заголовок
+        const headerTitle = document.querySelector('#catalog-panel h2');
+        if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
+        return;
+    }
+    
+    // 2. Проверяем localStorage
+    const offlineData = loadProductsFromLocalStorageForCategory(category);
+    if (offlineData && offlineData.products && offlineData.products.length) {
+        console.log('📦 Используем офлайн-кэш для', category);
+        allProducts = offlineData.products;
+        cachedProducts = allProducts;
+        catalogLoaded = true;
+        window[categoryCacheKey] = allProducts;
+        renderCatalog(allProducts);
+        updateStats(allProducts);
+        
+        const headerTitle = document.querySelector('#catalog-panel h2');
+        if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category} (офлайн)`;
+        
+        // Фоново обновляем данные с сервера
+        updateCategoryInBackground(category);
+        return;
+    }
+    
+    // 3. Если данных нет — загружаем с сервера
+    console.log('📦 Загружаем с сервера для', category);
+    const container = document.getElementById('catalog-content');
+    if (container) container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+    
+    // Обновляем заголовок
+    const headerTitle = document.querySelector('#catalog-panel h2');
+    if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
+    
+    await loadCatalog(true);
+}
     
     // ========== ОБНОВЛЯЕМ МОДЕЛИ В ФОРМАХ ==========
     updateModelsForCategory(category);
@@ -1182,6 +1231,10 @@ function updateModelsForCategory(category) {
         cachedProducts = products;
         allProducts = products;
         catalogLoaded = true;
+
+        // Сохраняем в категорийный кэш для быстрого переключения
+const cacheKey = `cachedProducts_${currentCategory}`;
+window[cacheKey] = products;
         
         // ========== НОВОЕ: СОХРАНЯЕМ В LOCALSTORAGE ДЛЯ ОФЛАЙНА ==========
         saveProductsToLocalStorage(products);
@@ -1372,23 +1425,78 @@ function updateModelsForCategory(category) {
 
     // Сохранение товаров в localStorage для офлайн-доступа
 function saveProductsToLocalStorage(products) {
-    localStorage.setItem('cachedProducts', JSON.stringify({
-        products: products,
-        timestamp: Date.now(),
-        category: currentCategory
-    }));
+    try {
+        localStorage.setItem('cachedProducts_' + currentCategory, JSON.stringify({
+            products: products,
+            timestamp: Date.now(),
+            category: currentCategory
+        }));
+        
+        // Также сохраняем в память
+        const cacheKey = `cachedProducts_${currentCategory}`;
+        window[cacheKey] = products;
+        
+        console.log('💾 Данные сохранены для категории', currentCategory);
+    } catch (e) {
+        console.error('Ошибка сохранения в localStorage:', e);
+    }
 }
 
-function loadProductsFromLocalStorage() {
-    const cached = localStorage.getItem('cachedProducts');
-    if (cached) {
-        const data = JSON.parse(cached);
-        // Проверяем, что кэш не старше 7 дней
-        if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) {
-            return data.products;
+    // Загрузка из localStorage для конкретной категории
+function loadProductsFromLocalStorageForCategory(category) {
+    try {
+        const cached = localStorage.getItem('cachedProducts_' + category);
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) {
+                return data;
+            }
         }
+    } catch (e) {
+        console.error('Ошибка загрузки из localStorage:', e);
     }
     return null;
+}
+
+// Фоновая загрузка данных с сервера
+async function updateCategoryInBackground(category) {
+    try {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getAll&category=${encodeURIComponent(category)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.error) throw new Error(data.error);
+        
+        const products = data.products || data;
+        if (products && products.length) {
+            // Сохраняем в кэш памяти
+            const cacheKey = `cachedProducts_${category}`;
+            window[cacheKey] = products;
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('cachedProducts_' + category, JSON.stringify({
+                products: products,
+                timestamp: Date.now(),
+                category: category
+            }));
+            
+            // Если текущая категория совпадает — обновляем отображение
+            if (currentCategory === category) {
+                allProducts = products;
+                cachedProducts = products;
+                catalogLoaded = true;
+                renderCatalog(products);
+                updateStats(products);
+                
+                const headerTitle = document.querySelector('#catalog-panel h2');
+                if (headerTitle) headerTitle.innerHTML = `📦 Каталог ${category}`;
+            }
+            
+            console.log('🔄 Фоновое обновление для', category, 'завершено');
+        }
+    } catch (error) {
+        console.log('Фоновое обновление не удалось:', error);
+    }
 }
     
     function handleUrlParams() {
