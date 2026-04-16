@@ -293,7 +293,7 @@
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRdKz11G8tKYBMViGbceUsVxHFzSFJtRAzC33ilJTZD8PD04eNEbtkW9oDVJdbY3k2tQ/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVqaeLCtlYfL9o0hDZtugjFyxGaWMqXgp1MJmZLM1uf7ecNy-SJX4RnNvIJOOLjxQ9g/exec';
 
     let html5QrCode = null;
     let receiveQrCode = null;
@@ -706,22 +706,17 @@
         const debugDiv = document.getElementById('receive-debug');
         if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
 
-        if (debugDiv) debugDiv.textContent = '📤 POST запрос...';
+        if (debugDiv) debugDiv.textContent = '📤 GET запрос...';
 
         try {
-            const response = await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'autoAdd',
-                    sku: pendingSku,
-                    model: model,
-                    serialNumber: serialNumber,
-                    purchasePrice: purchasePrice,
-                    description: description,
-                    category: currentCategory
-                })
-            });
+            const url = GOOGLE_SCRIPT_URL + '?action=autoAdd'
+                + '&sku='           + encodeURIComponent(pendingSku)
+                + '&model='         + encodeURIComponent(model)
+                + '&serialNumber='  + encodeURIComponent(serialNumber)
+                + '&purchasePrice=' + encodeURIComponent(purchasePrice)
+                + '&description='   + encodeURIComponent(description)
+                + '&category='      + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
             const data = await response.json();
             if (debugDiv) debugDiv.textContent += ' | 📡 Ответ: ' + JSON.stringify(data);
 
@@ -821,18 +816,13 @@
         if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
 
         try {
-            const response = await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'addWithoutSku',
-                    model: model,
-                    serialNumber: serialNumber,
-                    purchasePrice: purchasePrice,
-                    description: description,
-                    category: currentCategory
-                })
-            });
+            const url = GOOGLE_SCRIPT_URL + '?action=addWithoutSku'
+                + '&model='         + encodeURIComponent(model)
+                + '&serialNumber='  + encodeURIComponent(serialNumber)
+                + '&purchasePrice=' + encodeURIComponent(purchasePrice)
+                + '&description='   + encodeURIComponent(description)
+                + '&category='      + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
             const data = await response.json();
 
             if (data.success) {
@@ -1397,24 +1387,19 @@
         if (resultContainer) resultContainer.innerHTML = '<div class="loading">💾 Сохранение...</div>';
 
         try {
-            const response = await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'updateProduct',
-                    sku: data.sku,
-                    name: data.name,
-                    serialNumber: data.serialNumber,
-                    description: data.description,
-                    purchasePrice: data.purchasePrice,
-                    salePrice: data.salePrice,
-                    status: data.status,
-                    avitoLink: data.avitoLink,
-                    repairCost: data.repairCost,
-                    deliveryCost: data.deliveryCost,
-                    category: currentCategory
-                })
-            });
+            const url = GOOGLE_SCRIPT_URL + '?action=updateProduct'
+                + '&sku='           + encodeURIComponent(data.sku)
+                + '&name='          + encodeURIComponent(data.name)
+                + '&serialNumber='  + encodeURIComponent(data.serialNumber)
+                + '&description='   + encodeURIComponent(data.description)
+                + '&purchasePrice=' + encodeURIComponent(data.purchasePrice)
+                + '&salePrice='     + encodeURIComponent(data.salePrice)
+                + '&status='        + encodeURIComponent(data.status)
+                + '&avitoLink='     + encodeURIComponent(data.avitoLink || '')
+                + '&repairCost='    + encodeURIComponent(data.repairCost || '')
+                + '&deliveryCost='  + encodeURIComponent(data.deliveryCost || '')
+                + '&category='      + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
             const result = await response.json();
             if (result.success) {
                 showToast('✅ Товар обновлён');
