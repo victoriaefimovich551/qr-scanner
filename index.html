@@ -183,9 +183,9 @@
     </div>
 
     <div id="search-panel" class="panel">
-        <h2>🔍 Поиск по артикулу</h2>
+        <h2>🔍 Поиск</h2>
         <div class="search-box">
-            <input type="text" id="serial-input" placeholder="Введите артикул (MN2-001)">
+            <input type="text" id="serial-input" placeholder="Артикул, название или серийный номер..." oninput="searchLive(this.value)">
             <button onclick="searchBySerial()">Найти</button>
         </div>
         <div id="search-result"></div>
@@ -734,6 +734,18 @@
             return;
         }
 
+        // Проверка дубликата серийного номера
+        if (serialNumber && allProducts && allProducts.length) {
+            const duplicate = allProducts.find(p => p['Серийный номер'] && p['Серийный номер'].trim() === serialNumber);
+            if (duplicate) {
+                const confirmed = await showConfirmDialog(
+                    '⚠️ Товар с таким серийным номером уже существует:\n' +
+                    duplicate['Название'] + ' (арт. ' + duplicate['Артикул'] + ')\nДобавить всё равно?'
+                );
+                if (!confirmed) return;
+            }
+        }
+
         const submitBtn = document.getElementById('submit-receive-btn');
         if (submitBtn && submitBtn.disabled) return;
 
@@ -761,6 +773,20 @@
             const data = await response.json();
             if (debugDiv) debugDiv.textContent += ' | 📡 Ответ: ' + JSON.stringify(data);
 
+            if (data.duplicateSerial) {
+                // Дубликат серийного номера на сервере
+                const confirmed = await showConfirmDialog('⚠️ ' + data.message + '\nДобавить всё равно?');
+                if (!confirmed) return;
+                // Повторно запрашиваем с флагом force=true
+                const forceUrl = (url.includes('?') ? url : url) + '&forceSerial=true';
+                const forceResponse = await fetch(forceUrl);
+                const forceData = await forceResponse.json();
+                if (!forceData.success) {
+                    if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ ' + escapeHtml(forceData.message) + '</div>';
+                    return;
+                }
+                Object.assign(data, forceData);
+            }
             if (data.success) {
                 if (resultDiv) resultDiv.innerHTML = '<div class="success">' + escapeHtml(data.message) + '<br>🔢 Артикул: ' + escapeHtml(data.sku) + '</div>';
                 const receiveForm = document.getElementById('receive-form');
@@ -850,6 +876,18 @@
             return;
         }
 
+        // Проверка дубликата серийного номера
+        if (serialNumber && allProducts && allProducts.length) {
+            const duplicate = allProducts.find(p => p['Серийный номер'] && p['Серийный номер'].trim() === serialNumber);
+            if (duplicate) {
+                const confirmed = await showConfirmDialog(
+                    '⚠️ Товар с таким серийным номером уже существует:\n' +
+                    duplicate['Название'] + ' (арт. ' + duplicate['Артикул'] + ')\nДобавить всё равно?'
+                );
+                if (!confirmed) return;
+            }
+        }
+
         const submitBtn = document.getElementById('submit-noqr-btn');
         if (submitBtn && submitBtn.disabled) return;
 
@@ -917,23 +955,82 @@
         switchModelMode('noqr', 'list');
     }
 
-    // ========== ПОИСК (GET оставлен — это безопасно для чтения) ==========
+    // ========== ПОИСК ==========
+
+    // Живой поиск по мере набора — только по локальному кэшу
+    function searchLive(query) {
+        const q = query.trim().toLowerCase();
+        const resultDiv = document.getElementById('search-result');
+        if (!resultDiv) return;
+        if (!q || q.length < 2) { resultDiv.innerHTML = ''; return; }
+        if (!allProducts || !allProducts.length) return;
+
+        const matches = allProducts.filter(p =>
+            (p['Артикул'] || '').toLowerCase().includes(q) ||
+            (p['Название'] || '').toLowerCase().includes(q) ||
+            (p['Серийный номер'] || '').toLowerCase().includes(q)
+        );
+
+        if (!matches.length) {
+            resultDiv.innerHTML = '<div class="error">💭 Ничего не найдено</div>';
+            return;
+        }
+        if (matches.length === 1) {
+            currentProduct = matches[0];
+            displayProduct(matches[0], 'search-result');
+            return;
+        }
+        // Несколько результатов — показываем список для выбора
+        let html = '<div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">';
+        matches.slice(0, 10).forEach(p => {
+            const statusClass = getStatusClass(p['Статус']);
+            const statusText  = getStatusText(p['Статус']);
+            html += '<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; cursor:pointer;" '
+                + 'onclick="selectSearchResult(\'' + escapeHtml(p['Артикул']) + '\')">'
+                + '<strong>' + escapeHtml(p['Название'] || 'Без названия') + '</strong><br>'
+                + '<small>🔢 ' + escapeHtml(p['Артикул'] || '—') + '</small> &nbsp; '
+                + '<small class="' + statusClass + '">' + statusText + '</small>'
+                + '</div>';
+        });
+        if (matches.length > 10) html += '<div style="color:#64748b; font-size:13px; text-align:center;">... и ещё ' + (matches.length - 10) + '</div>';
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    }
+
+    function selectSearchResult(sku) {
+        const product = allProducts.find(p => p['Артикул'] === sku);
+        if (product) {
+            currentProduct = product;
+            displayProduct(product, 'search-result');
+        }
+    }
+
     async function searchBySerial() {
         const sku = document.getElementById('serial-input')?.value.trim();
         const resultDiv = document.getElementById('search-result');
 
         if (!sku) {
-            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул</div>';
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул или название</div>';
             return;
         }
 
         if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
 
+        // Сначала ищем локально
         if (allProducts && allProducts.length) {
-            const localProduct = allProducts.find(p => p['Артикул'] === sku);
-            if (localProduct) {
-                currentProduct = localProduct;
-                displayProduct(localProduct, 'search-result');
+            const q = sku.toLowerCase();
+            const matches = allProducts.filter(p =>
+                (p['Артикул'] || '').toLowerCase().includes(q) ||
+                (p['Название'] || '').toLowerCase().includes(q) ||
+                (p['Серийный номер'] || '').toLowerCase().includes(q)
+            );
+            if (matches.length === 1) {
+                currentProduct = matches[0];
+                displayProduct(matches[0], 'search-result');
+                return;
+            }
+            if (matches.length > 1) {
+                searchLive(sku);
                 return;
             }
         }
@@ -1108,7 +1205,7 @@
         let total = 0, sold = 0, reserved = 0, delivery = 0, unsold = 0;
         source.forEach(product => {
             total++;
-            const model = product['Название'] || 'Без названия';
+            const model = (product['Название'] || 'Без названия').trim();
             stats[model] = (stats[model] || 0) + 1;
             switch(product['Статус']) {
                 case 'Продан': sold++; break;
