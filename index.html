@@ -1196,8 +1196,8 @@
         if (p['Фото'] && p['Фото'] !== 'IMAGE') html += '<div class="product-detail"><strong>📷 Фото:</strong> <a href="' + escapeHtml(p['Фото']) + '" target="_blank">Посмотреть</a></div>';
         if (p['QR_Code']) html += '<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="' + escapeHtml(p['QR_Code']) + '" style="max-width:120px"></div>';
 
-        // FIX #4: Безопасные onclick с экранированием кавычек
         html += '<div class="action-buttons">'
+            + '<button class="action-btn" onclick="goBack()" style="background: #475569;">⬅️ Назад</button>'
             + '<button class="action-btn" onclick="shareProduct(\'' + escapedSku + '\')">📤 Поделиться</button>'
             + '<button class="action-btn" onclick="editProduct(\'' + escapedSku + '\')" style="background: #eab308;">✏️ Редактировать</button>'
             + '<button class="action-btn" onclick="deleteProduct(\'' + escapedSku + '\')" style="background: #dc2626;">🗑️ Удалить</button>'
@@ -1252,7 +1252,7 @@
         let total = 0, sold = 0, reserved = 0, delivery = 0, unsold = 0;
         source.forEach(product => {
             total++;
-            const model = (product['Название'] || 'Без названия').trim();
+            const model = (product['Название'] || 'Без названия').trim().replace(/\s+/g, ' ');
             stats[model] = (stats[model] || 0) + 1;
             switch(product['Статус']) {
                 case 'Продан': sold++; break;
@@ -1299,12 +1299,21 @@
 
     function filterCatalogDirectly(model) {
         activeStatusFilter = null;
-        let filtered = allProducts.filter(product => product['Название'] === model);
+        let filtered = allProducts.filter(product => (product['Название'] || '').trim().replace(/\s+/g, ' ') === model);
         filtered = sortByStatus(filtered);
         renderCatalog(filtered);
         updateStats(allProducts);
         const statsHeader = document.querySelector('#catalog-stats strong');
-        if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям (фильтр: ' + escapeHtml(model) + '):';
+        if (statsHeader) statsHeader.innerHTML = '📊 Фильтр: ' + escapeHtml(model)
+            + ' &nbsp;<button onclick="resetCatalogFilter()" style="background:#475569;border:none;color:white;padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;">✕ Сбросить</button>';
+    }
+
+    function resetCatalogFilter() {
+        activeStatusFilter = null;
+        renderCatalog(sortByStatus(allProducts));
+        updateStats(allProducts);
+        const statsHeader = document.querySelector('#catalog-stats strong');
+        if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям:';
     }
 
     // Сортировка: Не продан → В доставке → Зарезервирован → Продан
