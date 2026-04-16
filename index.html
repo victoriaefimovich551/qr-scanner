@@ -199,17 +199,7 @@
         </div>
         <div class="filter-group">
             <div class="filter-row">
-                <select id="filter-status">
-                    <option value="">Все статусы</option>
-                    <option value="Продан">Продан</option>
-                    <option value="Не продан">Не продан</option>
-                    <option value="Зарезервирован">Зарезервирован</option>
-                    <option value="В доставке">В доставке</option>
-                </select>
-            </div>
-            <div class="filter-row">
-                <button id="reset-filters" class="btn-reset">🔄 Сбросить</button>
-                <button id="refresh-catalog-btn" class="btn-reset" style="background: #3b82f6;">🔄 Обновить</button>
+                <button id="refresh-catalog-btn" class="btn-reset" style="background: #3b82f6; flex:1;">🔄 Обновить данные</button>
             </div>
         </div>
         <div id="catalog-content" class="loading">⏳ Загрузка...</div>
@@ -1185,8 +1175,7 @@
 
     function applyFilters() {
         if (!allProducts || !allProducts.length) return;
-        const statusDropdown = document.getElementById('filter-status')?.value || '';
-        const statusFilter = activeStatusFilter || statusDropdown;
+        const statusFilter = activeStatusFilter || '';
         let filtered = allProducts.filter(product => {
             if (statusFilter && product['Статус'] !== statusFilter) return false;
             return true;
@@ -1223,8 +1212,6 @@
 
     function resetFilters() {
         activeStatusFilter = null;
-        const statusSelect = document.getElementById('filter-status');
-        if (statusSelect) statusSelect.value = '';
         applyFilters();
         updateStats(allProducts);
         const statsHeader = document.querySelector('#catalog-stats strong');
@@ -1595,11 +1582,7 @@
     const refreshBtn = document.getElementById('refresh-catalog-btn');
     if (refreshBtn) refreshBtn.onclick = () => { catalogLoaded = false; loadCatalog(true); };
 
-    const filterStatus = document.getElementById('filter-status');
-    if (filterStatus) filterStatus.addEventListener('change', applyFilters);
 
-    const resetBtn = document.getElementById('reset-filters');
-    if (resetBtn) resetBtn.addEventListener('click', resetFilters);
 
     const backBtn = document.getElementById('back-btn');
     if (backBtn) backBtn.onclick = goBack;
