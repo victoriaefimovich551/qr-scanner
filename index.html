@@ -8,17 +8,59 @@
     <title>QR Сканер</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 16px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 16px; padding-bottom: 84px; }
         .container { max-width: 600px; margin: 0 auto; }
         .header { text-align: center; color: white; margin-bottom: 20px; }
         .header h1 { font-size: 24px; margin-bottom: 5px; }
         .category-switch { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
         .category-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; flex: 1; max-width: 150px; }
         .category-btn.active { background: white; color: #1e3c72; }
-        /* FIX #9: Горизонтально скроллируемые табы */
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn { flex: 1; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.2); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .tab-btn.active { background: white; color: #1e3c72; }
+        /* НИЖНЯЯ НАВИГАЦИЯ */
+        .tabs { display: none; } /* скрыты — заменены нижней навигацией */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 68px;
+            background: #fff;
+            display: flex;
+            align-items: stretch;
+            box-shadow: 0 -2px 16px rgba(0,0,0,0.15);
+            z-index: 1000;
+            border-radius: 18px 18px 0 0;
+            overflow: hidden;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            padding: 8px 4px;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s;
+        }
+        .nav-item:active { background: #f0f4ff; }
+        .nav-item .nav-icon { font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
+        .nav-item .nav-label { font-size: 0.58rem; font-weight: 600; color: #aab0c0; letter-spacing: 0.2px; text-align: center; line-height: 1.2; transition: color 0.2s; }
+        .nav-item.active .nav-icon { transform: translateY(-2px); }
+        .nav-item.active .nav-label { color: #2a5298; }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 20%; right: 20%;
+            height: 3px;
+            background: #2a5298;
+            border-radius: 0 0 4px 4px;
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+        .nav-item.active::before { transform: scaleX(1); }
+        .tab-btn { display: none; } /* скрыты, нижняя навигация управляет табами */
         .panel { display: none; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .panel.active { display: block; }
         h2 { color: #1e3c72; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
@@ -156,24 +198,14 @@
         <button id="btn-scooters" class="category-btn" onclick="switchCategory('Самокаты')">🛴 Самокаты</button>
     </div>
 
-    <div id="nav-bar" style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
-        <button id="back-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 16px; margin: 0; font-size: 14px;">⬅️ Назад</button>
-        <button id="home-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 16px; margin: 0; font-size: 14px;">🏠 Главная</button>
-    </div>
+
 
     <div id="install-banner" class="install-banner">
         <div id="android-install" style="display: none;"><button id="install-btn">📲 Установить</button></div>
         <div id="ios-install" style="display: none;">📱 Поделиться → На экран «Домой»</div>
     </div>
 
-    <!-- FIX #1: передаём this в switchTab -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('scan', this)">📷 Сканер</button>
-        <button class="tab-btn" onclick="switchTab('search', this)">🔍 Поиск</button>
-        <button class="tab-btn" onclick="switchTab('catalog', this)">📦 Каталог</button>
-        <button class="tab-btn" onclick="switchTab('receive', this)">➕ Приёмка QR</button>
-        <button class="tab-btn" onclick="switchTab('receive-noqr', this)">📝 Приёмка без QR</button>
-    </div>
+    <!-- Нижняя навигация заменяет верхние табы -->
 
     <div id="scan-panel" class="panel active">
         <h2>📷 Поиск по QR-коду</h2>
@@ -300,6 +332,30 @@
         <button id="clear-noqr-btn" style="background: #64748b;">🗑️ Очистить</button>
     </div>
 </div>
+
+<!-- НИЖНЯЯ НАВИГАЦИЯ -->
+<nav class="bottom-nav">
+    <button class="nav-item active" id="nav-scan" onclick="switchTab('scan', null, this)">
+        <span class="nav-icon">📷</span>
+        <span class="nav-label">Сканер</span>
+    </button>
+    <button class="nav-item" id="nav-search" onclick="switchTab('search', null, this)">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Поиск</span>
+    </button>
+    <button class="nav-item" id="nav-catalog" onclick="switchTab('catalog', null, this)">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Каталог</span>
+    </button>
+    <button class="nav-item" id="nav-receive" onclick="switchTab('receive', null, this)">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Приёмка QR</span>
+    </button>
+    <button class="nav-item" id="nav-receive-noqr" onclick="switchTab('receive-noqr', null, this)">
+        <span class="nav-icon">✏️</span>
+        <span class="nav-label">Без QR</span>
+    </button>
+</nav>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
@@ -571,25 +627,16 @@
         switchTab('scan');
     }
 
-    // FIX #1: switchTab принимает el (элемент кнопки) вместо использования глобального event
-    function switchTab(tab, el) {
+    // switchTab: обновляет панели и нижнюю навигацию
+    function switchTab(tab, el, navEl) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         const panel = document.getElementById(tab + '-panel');
         if (panel) panel.classList.add('active');
 
-        // Если el передан (клик по кнопке) — активируем его
-        if (el && el.classList) {
-            el.classList.add('active');
-        } else {
-            // Программный вызов без el — находим нужную кнопку по табу
-            const tabNames = ['scan', 'search', 'catalog', 'receive', 'receive-noqr'];
-            const idx = tabNames.indexOf(tab);
-            if (idx >= 0) {
-                const btns = document.querySelectorAll('.tab-btn');
-                if (btns[idx]) btns[idx].classList.add('active');
-            }
-        }
+        // Обновляем нижнюю навигацию
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        const activeNavBtn = navEl || document.getElementById('nav-' + tab);
+        if (activeNavBtn) activeNavBtn.classList.add('active');
 
         if (navigationStack[navigationStack.length - 1] !== tab) {
             navigationStack.push(tab);
@@ -1681,11 +1728,7 @@
 
 
 
-    const backBtn = document.getElementById('back-btn');
-    if (backBtn) backBtn.onclick = goBack;
-
-    const homeBtn = document.getElementById('home-btn');
-    if (homeBtn) homeBtn.onclick = goHome;
+    // Кнопки Назад/Главная удалены — навигация через нижнюю панель
 
     window.onload = function() {
         handleUrlParams();
