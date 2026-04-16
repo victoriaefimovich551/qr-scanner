@@ -110,6 +110,24 @@
             margin-top: 5px;
         }
         select option { font-size: 12px; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast-error { background: #dc2626; }
+        .toast-success { background: #16a34a; }
+        .toast-warning { background: #eab308; color: #1e3c72; }
     </style>
 </head>
 <body>
@@ -117,18 +135,18 @@
     <div class="card">
         <h1>🖨️ Генератор QR-кодов для наклеек</h1>
         <p style="color: #64748b; margin-bottom: 20px;">Создайте уникальные QR-коды для ваших товаров</p>
-        
+
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('generate')">📱 Генерация QR</button>
-            <button class="tab-btn" onclick="switchTab('help')">❓ Инструкция</button>
+            <button class="tab-btn active" onclick="switchTab('generate', event)">📱 Генерация QR</button>
+            <button class="tab-btn" onclick="switchTab('help', event)">❓ Инструкция</button>
         </div>
-        
+
         <div id="generate-pane" class="tab-pane active">
             <div class="form-group">
                 <label>🚁 Модель товара</label>
                 <select id="model" size="10" style="height: auto;">
     <optgroup label="Mavic 3 Серия">
-        <option value="Mavic 3">Mavic 3 → M3-XXX</option>
+        <option value="Mavic 3" selected>Mavic 3 → M3-XXX</option>
     </optgroup>
     <optgroup label="Mavic 2 Серия">
         <option value="Mavic 2">Mavic 2 → M2-XXX</option>
@@ -166,7 +184,7 @@
     </optgroup>
 </select>
             </div>
-            
+
             <div class="row">
                 <div class="form-group">
                     <label>🔢 Количество наклеек</label>
@@ -178,14 +196,14 @@
                 </div>
             </div>
             <div class="help-text">💡 Например: если последний номер был 010, начните с 011</div>
-            
+
             <button id="generate-btn">🎲 Сгенерировать QR-коды</button>
             <button id="print-btn" class="print-btn" style="display: none;">🖨️ Печать наклеек</button>
-            
+
             <div id="qr-output" class="qr-grid"></div>
             <div id="info" class="info" style="display: none;"></div>
         </div>
-        
+
         <div id="help-pane" class="tab-pane">
             <h2>📖 Инструкция</h2>
             <div class="info">
@@ -200,12 +218,12 @@
                 • Avata → AVA2, AVA<br>
                 • Inspire → INS3, INS2<br>
                 • Matrice → MTR350, MTR30, MTR30T, MTR300<br><br>
-                
+
                 <strong>📌 Как продолжить нумерацию:</strong><br>
                 • Посмотрите последний использованный номер для вашей модели<br>
                 • В поле "Начать с номера" укажите следующий номер<br>
                 • Сгенерируйте и распечатайте новые наклейки<br><br>
-                
+
                 <strong>🖨️ Печать:</strong><br>
                 • Нажмите "Печать наклеек"<br>
                 • В диалоге печати выберите "Фактический размер"<br>
@@ -217,17 +235,58 @@
 
 <script>
     let currentQRCodes = [];
-    
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tab + '-pane').classList.add('active');
-        event.target.classList.add('active');
+
+    // ========== TOAST УВЕДОМЛЕНИЯ ==========
+    function showToast(message, type, duration) {
+        type = type || 'success';
+        duration = duration || 3000;
+        var toast = document.createElement('div');
+        toast.className = 'toast toast-' + type;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(function() { toast.style.opacity = '1'; });
+        setTimeout(function() {
+            toast.style.opacity = '0';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, duration);
     }
-    
-    // Функция получения префикса по названию модели
+
+    // ========== ПЕРЕКЛЮЧЕНИЕ ТАБОВ (FIX BUG-01: event передаётся как аргумент) ==========
+    function switchTab(tab, e) {
+        document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.getElementById(tab + '-pane').classList.add('active');
+        if (e && e.target) e.target.classList.add('active');
+    }
+
+    // ========== ПРЕФИКСЫ МОДЕЛЕЙ (FIX BUG-11: добавлены короткие ключи из select) ==========
     function getPrefix(model) {
-        const prefixes = {
+        var prefixes = {
+            // --- Короткие ключи (из select в generator.html) ---
+            'Mavic 3': 'M3',
+            'Mavic 2': 'M2',
+            'Air 3S': 'A3S',
+            'Air 3': 'A3',
+            'Air 2S': 'A2S',
+            'Air 2': 'A2',
+            'Mini 5 Pro': 'MN5P',
+            'Mini 4 Pro': 'MN4P',
+            'Mini 4K': 'MN4K',
+            'Mini 3 Pro': 'MN3P',
+            'Mini 3': 'MN3',
+            'Mini 2 SE': 'MN2S',
+            'Mini 2': 'MN2',
+            'Mini SE': 'MNSE',
+            'Neo': 'NEO',
+            'Flip': 'FLP',
+            'Avata': 'AVA',
+            'Inspire 3': 'INS3',
+            'Inspire 2': 'INS2',
+            'Matrice 350 RTK': 'MTR350',
+            'Matrice 30': 'MTR30',
+            'Matrice 30T': 'MTR30T',
+            'Matrice 300 RTK': 'MTR300',
+            // --- Полные ключи (из index.html — для совместимости) ---
             // Mavic 3 серия
             'DJI Mavic 3': 'M3',
             'DJI Mavic 3 Only Drone': 'M3',
@@ -342,153 +401,155 @@
         };
         return prefixes[model] || model.substring(0, 3).toUpperCase();
     }
-    
+
     function getQRUrl(text, size) {
-        return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
+        return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(text);
     }
-    
+
     function generateQRCodesList(model, quantity, startNumber) {
-        const prefix = getPrefix(model);
-        const codes = [];
-        for (let i = 0; i < quantity; i++) {
-            const number = startNumber + i;
-            codes.push(`${prefix}-${number.toString().padStart(3, '0')}`);
+        var prefix = getPrefix(model);
+        var codes = [];
+        for (var i = 0; i < quantity; i++) {
+            var number = startNumber + i;
+            codes.push(prefix + '-' + number.toString().padStart(3, '0'));
         }
         return codes;
     }
-    
+
     function displayPreview() {
-        const model = document.getElementById('model').value;
-        const quantity = parseInt(document.getElementById('quantity').value);
-        const startNumber = parseInt(document.getElementById('start-number').value);
-        
+        var modelSelect = document.getElementById('model');
+        var model = modelSelect.value;
+
+        // FIX BUG-09: если модель не выбрана, выбрать первую доступную
+        if (!model) {
+            var firstOption = modelSelect.querySelector('option');
+            if (firstOption) {
+                firstOption.selected = true;
+                model = firstOption.value;
+            }
+            if (!model) {
+                showToast('Выберите модель товара', 'error');
+                return;
+            }
+        }
+
+        var quantity = parseInt(document.getElementById('quantity').value);
+        var startNumber = parseInt(document.getElementById('start-number').value);
+
         if (isNaN(quantity) || quantity < 1) {
-            alert('Введите корректное количество');
+            showToast('Введите корректное количество', 'error');
             return;
         }
         if (isNaN(startNumber) || startNumber < 1) {
-            alert('Введите корректный начальный номер (от 1)');
+            showToast('Введите корректный начальный номер (от 1)', 'error');
             return;
         }
-        
-        const codes = generateQRCodesList(model, quantity, startNumber);
-        
-        const output = document.getElementById('qr-output');
-        const info = document.getElementById('info');
-        const printBtn = document.getElementById('print-btn');
-        
+
+        var codes = generateQRCodesList(model, quantity, startNumber);
+
+        var output = document.getElementById('qr-output');
+        var info = document.getElementById('info');
+        var printBtn = document.getElementById('print-btn');
+
         output.innerHTML = '';
-        
-        codes.forEach((code) => {
-            const div = document.createElement('div');
+
+        codes.forEach(function(code) {
+            var div = document.createElement('div');
             div.className = 'qr-item';
-            
-            const img = document.createElement('img');
+
+            var img = document.createElement('img');
             img.src = getQRUrl(code, 150);
             img.style.width = '100px';
             img.style.height = '100px';
-            
-            const codeSpan = document.createElement('div');
+
+            var codeSpan = document.createElement('div');
             codeSpan.className = 'code';
             codeSpan.textContent = code;
-            
+
             div.appendChild(img);
             div.appendChild(codeSpan);
             output.appendChild(div);
         });
-        
+
         currentQRCodes = codes;
-        
-        const lastNumber = startNumber + quantity - 1;
-        const prefix = getPrefix(model);
+
+        var lastNumber = startNumber + quantity - 1;
+        var prefix = getPrefix(model);
         info.style.display = 'block';
-        info.innerHTML = `
-            <strong>✅ Сгенерировано ${codes.length} QR-кодов для ${model}</strong><br>
-            📋 Диапазон: ${prefix}-${startNumber.toString().padStart(3, '0')} ... ${prefix}-${lastNumber.toString().padStart(3, '0')}<br>
-            🖨️ Нажмите "Печать наклеек"
-        `;
-        
+        info.innerHTML =
+            '<strong>✅ Сгенерировано ' + codes.length + ' QR-кодов для ' + model + '</strong><br>' +
+            '📋 Диапазон: ' + prefix + '-' + startNumber.toString().padStart(3, '0') + ' ... ' + prefix + '-' + lastNumber.toString().padStart(3, '0') + '<br>' +
+            '🖨️ Нажмите "Печать наклеек"';
+
         printBtn.style.display = 'block';
     }
-    
+
     function printQRCodes() {
         if (currentQRCodes.length === 0) {
-            alert('Сначала сгенерируйте QR-коды');
+            showToast('Сначала сгенерируйте QR-коды', 'warning');
             return;
         }
-        
-        const codes = currentQRCodes;
-        
-        let html = `<!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>QR-коды для печати</title>
-            <style>
-                @page {
-                    size: A4;
-                    margin: 10mm;
-                }
-                body {
-                    margin: 0;
-                    padding: 0;
-                    font-family: Arial, sans-serif;
-                }
-                .grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 12mm;
-                }
-                .item {
-                    text-align: center;
-                    page-break-inside: avoid;
-                }
-                .item img {
-                    width: 100%;
-                    max-width: 60mm;
-                    height: auto;
-                }
-                .code {
-                    font-family: monospace;
-                    margin-top: 5px;
-                    font-size: 10pt;
-                }
-            </style>
-        </head>
-        <body>`;
-        
-        const perPage = 9;
-        for (let page = 0; page < Math.ceil(codes.length / perPage); page++) {
-            const start = page * perPage;
-            const end = Math.min(start + perPage, codes.length);
-            
-            html += `<div class="grid">`;
-            for (let i = start; i < end; i++) {
-                html += `
-                    <div class="item">
-                        <img src="${getQRUrl(codes[i], 500)}" alt="QR">
-                        <div class="code">${codes[i]}</div>
-                    </div>
-                `;
+
+        var codes = currentQRCodes;
+
+        var html = '<!DOCTYPE html>' +
+        '<html>' +
+        '<head>' +
+            '<meta charset="UTF-8">' +
+            '<title>QR-коды для печати</title>' +
+            '<style>' +
+                '@page { size: A4; margin: 10mm; }' +
+                'body { margin: 0; padding: 0; font-family: Arial, sans-serif; }' +
+                '.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12mm; }' +
+                '.item { text-align: center; page-break-inside: avoid; }' +
+                '.item img { width: 100%; max-width: 60mm; height: auto; }' +
+                '.code { font-family: monospace; margin-top: 5px; font-size: 10pt; }' +
+            '</style>' +
+        '</head>' +
+        '<body>';
+
+        var perPage = 9;
+        for (var page = 0; page < Math.ceil(codes.length / perPage); page++) {
+            var start = page * perPage;
+            var end = Math.min(start + perPage, codes.length);
+
+            html += '<div class="grid">';
+            for (var i = start; i < end; i++) {
+                html +=
+                    '<div class="item">' +
+                        '<img src="' + getQRUrl(codes[i], 500) + '" alt="QR">' +
+                        '<div class="code">' + codes[i] + '</div>' +
+                    '</div>';
             }
-            html += `</div>`;
+            html += '</div>';
             if (page < Math.ceil(codes.length / perPage) - 1) {
-                html += `<div style="page-break-after: always;"></div>`;
+                html += '<div style="page-break-after: always;"></div>';
             }
         }
-        
-        html += `</body></html>`;
-        
-        const printWindow = window.open('', '_blank');
+
+        html += '</body></html>';
+
+        // FIX BUG-05: проверка на блокировщик всплывающих окон
+        var printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showToast('Разрешите всплывающие окна для печати QR-кодов', 'error', 5000);
+            return;
+        }
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.print();
     }
-    
+
     document.getElementById('generate-btn').onclick = displayPreview;
     document.getElementById('print-btn').onclick = printQRCodes;
-    
-    window.onload = displayPreview;
+
+    // FIX BUG-09: при загрузке выбираем первую модель и генерируем превью
+    window.onload = function() {
+        var modelSelect = document.getElementById('model');
+        var firstOption = modelSelect.querySelector('option');
+        if (firstOption) firstOption.selected = true;
+        displayPreview();
+    };
 </script>
 </body>
 </html>
