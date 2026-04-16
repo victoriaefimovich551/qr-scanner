@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -45,8 +44,13 @@
         .success { background: #dcfce7; color: #16a34a; padding: 12px; border-radius: 12px; margin-top: 15px; text-align: center; }
         .loading { text-align: center; padding: 30px; color: #64748b; }
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 15px; }
-        .product-item { background: #f8fafc; border-radius: 12px; padding: 15px; cursor: pointer; border: 1px solid #e2e8f0; }
+        .product-item { background: #f8fafc; border-radius: 12px; padding: 15px; cursor: pointer; border: 1px solid #e2e8f0; transition: opacity 0.2s; }
         .product-item:active { transform: scale(0.98); }
+        .product-item.is-sold { opacity: 0.45; background: #f1f5f9; border-color: #cbd5e1; }
+        .product-item.is-delivery { border-left: 3px solid #3b82f6; }
+        .product-item.is-reserved { border-left: 3px solid #eab308; }
+        .status-filter-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid transparent; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .status-filter-btn.active { border-color: currentColor; }
         .filter-group { margin-bottom: 15px; }
         .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
@@ -1099,15 +1103,20 @@
         return escapeHtml(text).replace(/\n/g, '<br>');
     }
 
+    // Активный фильтр статуса (null = все)
+    let activeStatusFilter = null;
+
     function updateStats(products) {
-        if (!products || !Array.isArray(products) || products.length === 0) {
+        // products здесь — всегда allProducts (все товары), чтобы счётчики не менялись при фильтрации
+        const source = allProducts || products;
+        if (!source || !Array.isArray(source) || source.length === 0) {
             const statsContainer = document.getElementById('stats-content');
             if (statsContainer) statsContainer.innerHTML = 'Нет данных для отображения';
             return;
         }
         const stats = {};
         let total = 0, sold = 0, reserved = 0, delivery = 0, unsold = 0;
-        products.forEach(product => {
+        source.forEach(product => {
             total++;
             const model = product['Название'] || 'Без названия';
             stats[model] = (stats[model] || 0) + 1;
@@ -1118,13 +1127,25 @@
                 default: unsold++;
             }
         });
-        let statsHtml = '<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">'
-            + '<span>📦 Всего: <strong>' + total + '</strong></span>'
-            + '<span style="color: #16a34a;">✅ Продан: <strong>' + sold + '</strong></span>'
-            + '<span style="color: #eab308;">🔒 Зарезервирован: <strong>' + reserved + '</strong></span>'
-            + '<span style="color: #3b82f6;">🚚 В доставке: <strong>' + delivery + '</strong></span>'
-            + '<span style="color: #64748b;">📦 Не продан: <strong>' + unsold + '</strong></span>'
+
+        // Кнопки фильтрации по статусу
+        const mkBtn = (label, value, color, count) => {
+            const isActive = activeStatusFilter === value;
+            return '<button class="status-filter-btn' + (isActive ? ' active' : '') + '" '
+                + 'style="background:' + (isActive ? color + '22' : 'white') + '; color:' + color + '; border-color:' + (isActive ? color : 'transparent') + ';" '
+                + 'onclick="filterByStatus(\'' + value + '\')">'
+                + label + ' <strong>' + count + '</strong></button>';
+        };
+
+        let statsHtml = '<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">'
+            + mkBtn('📦 Все', '', '#475569', total)
+            + mkBtn('🟢 В наличии', 'Не продан', '#16a34a', unsold)
+            + mkBtn('🚚 В доставке', 'В доставке', '#3b82f6', delivery)
+            + mkBtn('🔒 Зарезервирован', 'Зарезервирован', '#eab308', reserved)
+            + mkBtn('✅ Продан', 'Продан', '#94a3b8', sold)
             + '</div>';
+
+        // Кнопки моделей
         statsHtml += '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
         for (const [model, count] of Object.entries(stats).sort()) {
             statsHtml += '<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly(\'' + escapeHtml(model) + '\')">'
@@ -1136,23 +1157,42 @@
         if (statsContainer) statsContainer.innerHTML = statsHtml;
     }
 
+    function filterByStatus(status) {
+        activeStatusFilter = status || null;
+        applyFilters();
+        updateStats(allProducts);
+    }
+
     function filterCatalogDirectly(model) {
+        activeStatusFilter = null;
         let filtered = allProducts.filter(product => product['Название'] === model);
+        filtered = sortByStatus(filtered);
         renderCatalog(filtered);
-        updateStats(filtered);
+        updateStats(allProducts);
         const statsHeader = document.querySelector('#catalog-stats strong');
         if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям (фильтр: ' + escapeHtml(model) + '):';
     }
 
+    // Сортировка: Не продан → В доставке → Зарезервирован → Продан
+    function sortByStatus(products) {
+        const order = { 'Не продан': 0, 'В доставке': 1, 'Зарезервирован': 2, 'Продан': 3 };
+        return products.slice().sort((a, b) => {
+            const oa = order[a['Статус']] !== undefined ? order[a['Статус']] : 1;
+            const ob = order[b['Статус']] !== undefined ? order[b['Статус']] : 1;
+            return oa - ob;
+        });
+    }
+
     function applyFilters() {
         if (!allProducts || !allProducts.length) return;
-        const statusFilter = document.getElementById('filter-status')?.value || '';
+        const statusDropdown = document.getElementById('filter-status')?.value || '';
+        const statusFilter = activeStatusFilter || statusDropdown;
         let filtered = allProducts.filter(product => {
             if (statusFilter && product['Статус'] !== statusFilter) return false;
             return true;
         });
+        filtered = sortByStatus(filtered);
         renderCatalog(filtered);
-        updateStats(filtered);
     }
 
     function renderCatalog(products) {
@@ -1166,7 +1206,12 @@
         products.forEach(product => {
             const statusClass = getStatusClass(product['Статус']);
             const statusText = getStatusText(product['Статус']);
-            html += '<div class="product-item" onclick="viewProductDetail(\'' + escapeHtml(product['Артикул']) + '\')">'
+            const status = product['Статус'] || '';
+            let itemClass = 'product-item';
+            if (status === 'Продан') itemClass += ' is-sold';
+            else if (status === 'В доставке') itemClass += ' is-delivery';
+            else if (status === 'Зарезервирован') itemClass += ' is-reserved';
+            html += '<div class="' + itemClass + '" onclick="viewProductDetail(\'' + escapeHtml(product['Артикул']) + '\')">'
                 + '<strong>' + escapeHtml(product['Название'] || 'Без названия') + '</strong><br>'
                 + '<small>🔢 ' + escapeHtml(product['Артикул'] || '—') + '</small><br>'
                 + '<small class="' + statusClass + '">' + statusText + '</small>'
@@ -1177,9 +1222,11 @@
     }
 
     function resetFilters() {
+        activeStatusFilter = null;
         const statusSelect = document.getElementById('filter-status');
         if (statusSelect) statusSelect.value = '';
         applyFilters();
+        updateStats(allProducts);
         const statsHeader = document.querySelector('#catalog-stats strong');
         if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям:';
     }
