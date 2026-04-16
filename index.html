@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -16,9 +17,8 @@
         .category-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; flex: 1; max-width: 150px; }
         .category-btn.active { background: white; color: #1e3c72; }
         /* FIX #9: Горизонтально скроллируемые табы */
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap; padding-bottom: 4px; }
-        .tabs::-webkit-scrollbar { display: none; }
-        .tab-btn { flex-shrink: 0; white-space: nowrap; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.2); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 80px; padding: 12px 8px; background: rgba(255,255,255,0.2); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
         .tab-btn.active { background: white; color: #1e3c72; }
         .panel { display: none; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .panel.active { display: block; }
