@@ -227,11 +227,19 @@
         <div id="receive-form" style="display: none;">
             <div class="form-group">
                 <label>🚁 Модель *</label>
-                <!-- FIX #6: Поиск моделей -->
-                <input type="text" class="model-search-input" id="receive-model-search" placeholder="Поиск модели..." oninput="filterModels(this.value, 'receive-model')">
-                <select id="receive-model">
-                    <option value="">Выберите модель</option>
-                </select>
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <button type="button" id="receive-mode-list" onclick="switchModelMode('receive', 'list')" style="flex:1; padding:8px; margin:0; font-size:13px; background:#1e3c72;">📋 Из списка</button>
+                    <button type="button" id="receive-mode-manual" onclick="switchModelMode('receive', 'manual')" style="flex:1; padding:8px; margin:0; font-size:13px; background:rgba(30,60,114,0.3);">✏️ Ввести вручную</button>
+                </div>
+                <div id="receive-list-block">
+                    <input type="text" class="model-search-input" id="receive-model-search" placeholder="Поиск модели..." oninput="filterModels(this.value, 'receive-model')">
+                    <select id="receive-model">
+                        <option value="">Выберите модель</option>
+                    </select>
+                </div>
+                <div id="receive-manual-block" style="display:none;">
+                    <input type="text" id="receive-model-manual" placeholder="Введите название модели..." style="width:100%; padding:12px; border:2px solid #e0e4e8; border-radius:30px; font-size:14px;">
+                </div>
             </div>
 
             <div class="form-group">
@@ -263,11 +271,19 @@
 
         <div class="form-group">
             <label>🚁 Модель *</label>
-            <!-- FIX #6: Поиск моделей -->
-            <input type="text" class="model-search-input" id="receive-noqr-model-search" placeholder="Поиск модели..." oninput="filterModels(this.value, 'receive-noqr-model')">
-            <select id="receive-noqr-model">
-                <option value="">Выберите модель</option>
-            </select>
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <button type="button" id="noqr-mode-list" onclick="switchModelMode('noqr', 'list')" style="flex:1; padding:8px; margin:0; font-size:13px; background:#1e3c72;">📋 Из списка</button>
+                <button type="button" id="noqr-mode-manual" onclick="switchModelMode('noqr', 'manual')" style="flex:1; padding:8px; margin:0; font-size:13px; background:rgba(30,60,114,0.3);">✏️ Ввести вручную</button>
+            </div>
+            <div id="noqr-list-block">
+                <input type="text" class="model-search-input" id="receive-noqr-model-search" placeholder="Поиск модели..." oninput="filterModels(this.value, 'receive-noqr-model')">
+                <select id="receive-noqr-model">
+                    <option value="">Выберите модель</option>
+                </select>
+            </div>
+            <div id="noqr-manual-block" style="display:none;">
+                <input type="text" id="receive-noqr-model-manual" placeholder="Введите название модели..." style="width:100%; padding:12px; border:2px solid #e0e4e8; border-radius:30px; font-size:14px;">
+            </div>
         </div>
 
         <div class="form-group">
@@ -420,6 +436,37 @@
         // Очищаем поля поиска моделей
         const searchInputs = document.querySelectorAll('.model-search-input');
         searchInputs.forEach(input => { input.value = ''; });
+    }
+
+    // Переключение режима выбора модели: список / ручной ввод
+    function switchModelMode(form, mode) {
+        const isReceive = (form === 'receive');
+        const listBlock   = document.getElementById(isReceive ? 'receive-list-block'   : 'noqr-list-block');
+        const manualBlock = document.getElementById(isReceive ? 'receive-manual-block' : 'noqr-manual-block');
+        const btnList     = document.getElementById(isReceive ? 'receive-mode-list'    : 'noqr-mode-list');
+        const btnManual   = document.getElementById(isReceive ? 'receive-mode-manual'  : 'noqr-mode-manual');
+
+        if (mode === 'manual') {
+            listBlock.style.display   = 'none';
+            manualBlock.style.display = 'block';
+            btnManual.style.background = '#1e3c72';
+            btnList.style.background   = 'rgba(30,60,114,0.3)';
+        } else {
+            listBlock.style.display   = 'block';
+            manualBlock.style.display = 'none';
+            btnList.style.background   = '#1e3c72';
+            btnManual.style.background = 'rgba(30,60,114,0.3)';
+        }
+    }
+
+    // Получить выбранную модель с учётом режима
+    function getModelValue(form) {
+        const isReceive   = (form === 'receive');
+        const manualBlock = document.getElementById(isReceive ? 'receive-manual-block' : 'noqr-manual-block');
+        if (manualBlock && manualBlock.style.display !== 'none') {
+            return (document.getElementById(isReceive ? 'receive-model-manual' : 'receive-noqr-model-manual')?.value || '').trim();
+        }
+        return document.getElementById(isReceive ? 'receive-model' : 'receive-noqr-model')?.value || '';
     }
 
     // FIX #6: Фильтрация моделей в select
@@ -683,7 +730,7 @@
             return;
         }
 
-        const model = document.getElementById('receive-model')?.value;
+        const model = getModelValue('receive');
         const serialNumber = document.getElementById('receive-serial')?.value.trim() || '';
         const purchasePrice = document.getElementById('receive-price')?.value || '';
         const description = document.getElementById('receive-description')?.value || '';
@@ -734,6 +781,9 @@
                 if (receiveSerial) receiveSerial.value = '';
                 if (receivePrice) receivePrice.value = '';
                 if (receiveDescription) receiveDescription.value = '';
+                const receiveModelManualEl = document.getElementById('receive-model-manual');
+                if (receiveModelManualEl) receiveModelManualEl.value = '';
+                switchModelMode('receive', 'list');
                 pendingSku = null;
                 catalogLoaded = false;
                 loadCatalog();
@@ -785,6 +835,9 @@
         if (receiveSerial) receiveSerial.value = '';
         if (receivePrice) receivePrice.value = '';
         if (receiveDescription) receiveDescription.value = '';
+        const receiveModelManual = document.getElementById('receive-model-manual');
+        if (receiveModelManual) receiveModelManual.value = '';
+        switchModelMode('receive', 'list');
         pendingSku = null;
         if (receiveQrCode && isReceiveScanning) {
             receiveQrCode.stop().then(() => isReceiveScanning = false);
@@ -793,7 +846,7 @@
 
     // FIX #2 + #3 + #10: POST, блокировка кнопки, спиннер
     async function submitNoQRProduct() {
-        const model = document.getElementById('receive-noqr-model')?.value;
+        const model = getModelValue('noqr');
         const serialNumber = document.getElementById('receive-noqr-serial')?.value.trim() || '';
         const purchasePrice = document.getElementById('receive-noqr-price')?.value || '';
         const description = document.getElementById('receive-noqr-description')?.value || '';
@@ -835,6 +888,9 @@
                 if (receiveNoqrSerial) receiveNoqrSerial.value = '';
                 if (receiveNoqrPrice) receiveNoqrPrice.value = '';
                 if (receiveNoqrDescription) receiveNoqrDescription.value = '';
+                const receiveNoqrModelManualEl = document.getElementById('receive-noqr-model-manual');
+                if (receiveNoqrModelManualEl) receiveNoqrModelManualEl.value = '';
+                switchModelMode('noqr', 'list');
                 catalogLoaded = false;
                 loadCatalog();
                 showToast('Товар успешно добавлен!');
@@ -862,6 +918,9 @@
         if (receiveNoqrPrice) receiveNoqrPrice.value = '';
         if (receiveNoqrDescription) receiveNoqrDescription.value = '';
         if (receiveNoqrResult) receiveNoqrResult.innerHTML = '';
+        const receiveNoqrModelManual = document.getElementById('receive-noqr-model-manual');
+        if (receiveNoqrModelManual) receiveNoqrModelManual.value = '';
+        switchModelMode('noqr', 'list');
     }
 
     // ========== ПОИСК (GET оставлен — это безопасно для чтения) ==========
