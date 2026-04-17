@@ -267,6 +267,66 @@
     font-size: 0.85rem;
     margin-bottom: 14px;
   }
+
+  /* ── Тёмная тема ───────────────────────────────── */
+  body.dark-mode {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a2744 100%);
+  }
+  body.dark-mode .kpi-card {
+    background: #1e2a3a !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  body.dark-mode .kpi-card .kpi-label { color: #6b8ab0 !important; }
+  body.dark-mode .kpi-card .kpi-value { color: #93c5fd !important; }
+  body.dark-mode .kpi-card .kpi-sub   { color: #5a7090 !important; }
+  body.dark-mode .kpi-card.accent {
+    background: linear-gradient(135deg, #1a3260, #243d7a) !important;
+  }
+  body.dark-mode .kpi-card.accent .kpi-label { color: rgba(255,255,255,0.55) !important; }
+  body.dark-mode .kpi-card.accent .kpi-value { color: #fff !important; }
+  body.dark-mode .kpi-card.accent .kpi-sub   { color: rgba(255,255,255,0.45) !important; }
+  body.dark-mode .section {
+    background: #1e2a3a !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  body.dark-mode .section-title { color: #93c5fd !important; }
+  body.dark-mode .model-row { border-bottom-color: #2d3f55 !important; }
+  body.dark-mode .model-rank { background: #243447 !important; color: #93c5fd !important; }
+  body.dark-mode .model-rank.gold   { background: #2d2610 !important; color: #f0c040 !important; }
+  body.dark-mode .model-rank.silver { background: #2a2a2a !important; color: #aaa !important; }
+  body.dark-mode .model-rank.bronze { background: #2d1e14 !important; color: #cd7f32 !important; }
+  body.dark-mode .model-name  { color: #e2e8f0 !important; }
+  body.dark-mode .model-sold  { color: #5a7090 !important; }
+  body.dark-mode .model-profit { color: #4ade80 !important; }
+  body.dark-mode .model-margin { color: #5a7090 !important; }
+  body.dark-mode .stale-row { border-bottom-color: #2d3f55 !important; }
+  body.dark-mode .stale-name  { color: #e2e8f0 !important; }
+  body.dark-mode .stale-sku   { color: #5a7090 !important; }
+  body.dark-mode .stale-price { color: #93c5fd !important; }
+  body.dark-mode .stale-days     { background: #3a1a1a !important; color: #f87171 !important; }
+  body.dark-mode .stale-days.warn { background: #2d2410 !important; color: #fbbf24 !important; }
+  body.dark-mode .stale-days.ok   { background: #0f2a1a !important; color: #4ade80 !important; }
+  /* Статусы в тёмной теме — переопределяются через JS при render() */
+  body.dark-mode .status-item .status-name  { color: #94a3b8 !important; }
+  body.dark-mode .status-item .status-count { color: inherit !important; }
+  /* График */
+  body.dark-mode .error-banner { background: #2d1f1f !important; color: #fca5a5 !important; }
+
+  /* Кнопка темы */
+  .theme-toggle-an {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: background 0.2s;
+  }
+  .theme-toggle-an:hover { background: rgba(255,255,255,0.3); }
 </style>
 </head>
 <body>
@@ -278,6 +338,7 @@
     <h1>📊 Аналитика</h1>
     <p id="last-update">Загрузка данных...</p>
   </div>
+  <button class="theme-toggle-an" id="theme-toggle-an" onclick="toggleTheme()" title="Переключить тему">🌙</button>
 </div>
 
 <!-- Category toggle -->
@@ -609,6 +670,15 @@ function renderChart(data) {
 
   if (salesChart) salesChart.destroy();
 
+  const dark = document.body.classList.contains('dark-mode');
+  const tickColor = dark ? '#94a3b8' : '#666';
+  const gridColor = dark ? '#2d3f55' : '#f0f4ff';
+  const barColors = values.map(v =>
+    v >= 0
+      ? (dark ? 'rgba(147,197,253,0.65)' : 'rgba(42,82,152,0.75)')
+      : (dark ? 'rgba(248,113,113,0.65)' : 'rgba(192,57,43,0.65)')
+  );
+
   const ctx = document.getElementById('sales-chart').getContext('2d');
   salesChart = new Chart(ctx, {
     type: 'bar',
@@ -617,7 +687,7 @@ function renderChart(data) {
       datasets: [{
         label: 'Прибыль, ₽',
         data: values,
-        backgroundColor: values.map(v => v >= 0 ? 'rgba(42,82,152,0.75)' : 'rgba(192,57,43,0.65)'),
+        backgroundColor: barColors,
         borderRadius: 6,
         borderSkipped: false
       }]
@@ -634,11 +704,12 @@ function renderChart(data) {
         }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: tickColor } },
         y: {
-          grid: { color: '#f0f4ff' },
+          grid: { color: gridColor },
           ticks: {
             font: { size: 11 },
+            color: tickColor,
             callback: v => v.toLocaleString('ru-RU') + ' ₽'
           }
         }
@@ -648,6 +719,40 @@ function renderChart(data) {
 }
 
 init();
+
+// ── Тема ────────────────────────────────────────────
+(function applyTheme() {
+  const saved = localStorage.getItem('theme');
+  const btn = document.getElementById('theme-toggle-an');
+  if (saved === 'dark') {
+    document.body.classList.add('dark-mode');
+    if (btn) btn.textContent = '☀️';
+  } else {
+    document.body.classList.remove('dark-mode');
+    if (btn) btn.textContent = '🌙';
+  }
+})();
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('theme-toggle-an');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  // Перестроить график — цвета осей меняются
+  if (salesChart) {
+    const dark = isDark;
+    salesChart.options.scales.x.ticks.color = dark ? '#94a3b8' : '#666';
+    salesChart.options.scales.y.ticks.color = dark ? '#94a3b8' : '#666';
+    salesChart.options.scales.y.grid.color  = dark ? '#2d3f55' : '#f0f4ff';
+    salesChart.data.datasets[0].backgroundColor =
+      salesChart.data.datasets[0].data.map(v =>
+        v >= 0
+          ? (dark ? 'rgba(147,197,253,0.65)' : 'rgba(42,82,152,0.75)')
+          : (dark ? 'rgba(248,113,113,0.65)' : 'rgba(192,57,43,0.65)')
+      );
+    salesChart.update();
+  }
+}
 </script>
 </body>
 </html>
