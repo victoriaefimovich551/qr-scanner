@@ -401,11 +401,11 @@ async function init() {
 }
 
 async function fetchProducts(category) {
-  const url = SCRIPT_URL + '?action=getProducts&category=' + encodeURIComponent(category);
+  const url = SCRIPT_URL + '?action=getAll&category=' + encodeURIComponent(category);
   const r = await fetch(url);
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const data = await r.json();
-  if (!data.success) throw new Error(data.message || 'Ошибка сервера');
+  if (data.error) throw new Error(data.error);
   return data.products || [];
 }
 
