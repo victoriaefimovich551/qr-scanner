@@ -7,8 +7,28 @@
     <meta name="theme-color" content="#1e3c72">
     <link rel="manifest" href="manifest.json">
     <title>QR Сканер</title>
+    <script>
+        // Мгновенно применяем тему до рендера — без анимации
+        (function() {
+            var saved = localStorage.getItem('theme');
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) {
+                document.documentElement.classList.add('preload-dark');
+            }
+        })();
+    </script>
     <style>
+        /* Блокируем transition при первой загрузке */
+        html.preload-dark body { background: linear-gradient(135deg, #0d1b2a 0%, #1a2744 100%) !important; }
+        html.preload-dark .panel { background: #1e2a3a !important; color: #e2e8f0 !important; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ── ПЛАВНЫЙ ПЕРЕХОД ТЕМЫ ── */
+        body, .panel, .product-item, .bottom-nav, .desktop-sidebar,
+        .kpi-card, .section, input, select, textarea, .product-card,
+        .status-filter-btn, .model-filter-btn, .sku-display, .confirm-dialog {
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
 
         /* ── ТЁМНАЯ ТЕМА ── */
         body.dark-mode { background: linear-gradient(135deg, #0d1b2a 0%, #1a2744 100%); }
@@ -2017,13 +2037,29 @@
         updateModelsForCategory(currentCategory);
         loadCatalog();
         initTheme();
+        // Убираем preload-dark — теперь transitions работают
+        requestAnimationFrame(() => document.documentElement.classList.remove("preload-dark"));
         initPullToRefresh();
     };
 
     // ── ТЕМА ─────────────────────────────────────
     function initTheme() {
         const saved = localStorage.getItem('theme');
-        if (saved === 'dark') applyDark();
+        if (saved === 'dark') {
+            applyDark();
+        } else if (saved === 'light') {
+            applyLight();
+        } else {
+            // Пользователь не выбирал вручную — смотрим на настройки ОС
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                applyDark();
+            }
+            // Слушаем смену системной темы
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (localStorage.getItem('theme')) return; // есть явный выбор — не оверрайдим
+                e.matches ? applyDark() : applyLight();
+            });
+        }
     }
 
     function setSbNav(btn) {
