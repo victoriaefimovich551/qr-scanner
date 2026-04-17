@@ -67,6 +67,8 @@
         body.dark-mode .product-card h3 { color: #93c5fd !important; }
         body.dark-mode .product-detail { border-bottom-color: #2d3f55 !important; color: #e2e8f0 !important; }
         body.dark-mode .product-detail strong { color: #94a3b8 !important; }
+        body.dark-mode .qr-code img { background: #1e2a3a !important; }
+        body.dark-mode .model-filter-btn { background: #243447 !important; color: #93c5fd !important; border-color: #3a5272 !important; }
         /* Select в фильтрах */
         body.dark-mode .filter-row select { background: #243447 !important; color: #e2e8f0 !important; border-color: #3a4f66 !important; }
         /* Диалог подтверждения */
@@ -1302,7 +1304,11 @@
         matches.slice(0, 10).forEach(p => {
             const statusClass = getStatusClass(p['Статус']);
             const statusText  = getStatusText(p['Статус']);
-            html += '<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; cursor:pointer;" '
+            const isDark = document.body.classList.contains('dark-mode');
+            const cardBg = isDark ? '#243447' : '#f8fafc';
+            const cardBorder = isDark ? '#2d3f55' : '#e2e8f0';
+            const cardColor = isDark ? '#e2e8f0' : '';
+            html += '<div style="background:' + cardBg + '; border:1px solid ' + cardBorder + '; border-radius:12px; padding:12px; cursor:pointer;' + (cardColor ? ' color:' + cardColor + ';' : '') + '" '
                 + 'onclick="selectSearchResult(\'' + escapeHtml(p['Артикул']) + '\')">'
                 + '<strong>' + escapeHtml(p['Название'] || 'Без названия') + '</strong><br>'
                 + '<small>🔢 ' + escapeHtml(p['Артикул'] || '—') + '</small> &nbsp; '
@@ -1547,8 +1553,10 @@
         // Кнопки фильтрации по статусу
         const mkBtn = (label, value, color, count) => {
             const isActive = activeStatusFilter === value;
+            const darkMode = document.body.classList.contains('dark-mode');
+            const inactiveBg = darkMode ? '#243447' : 'white';
             return '<button class="status-filter-btn' + (isActive ? ' active' : '') + '" '
-                + 'style="background:' + (isActive ? color + '22' : 'white') + '; color:' + color + '; border-color:' + (isActive ? color : 'transparent') + ';" '
+                + 'style="background:' + (isActive ? color + '22' : inactiveBg) + '; color:' + color + '; border-color:' + (isActive ? color : 'transparent') + ';" '
                 + 'onclick="filterByStatus(\'' + value + '\')">'
                 + label + ' <strong>' + count + '</strong></button>';
         };
@@ -1868,8 +1876,11 @@
 
         const modal = document.createElement('div');
         modal.style.cssText = 'position: fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;';
-        modal.innerHTML = '<div style="background:white; border-radius:20px; padding:20px; max-width:500px; width:90%; max-height:80%; overflow-y:auto;">'
-            + '<h3 style="color:#1e3c72;">✏️ Редактирование: ' + escapeHtml(currentProduct['Артикул']) + '</h3>'
+        const isDarkModal = document.body.classList.contains('dark-mode');
+        const modalBg = isDarkModal ? '#1e2a3a' : 'white';
+        const modalH3Color = isDarkModal ? '#93c5fd' : '#1e3c72';
+        modal.innerHTML = '<div style="background:' + modalBg + '; border-radius:20px; padding:20px; max-width:500px; width:90%; max-height:80%; overflow-y:auto; color:' + (isDarkModal ? '#e2e8f0' : 'inherit') + ';">'
+            + '<h3 style="color:' + modalH3Color + ';">✏️ Редактирование: ' + escapeHtml(currentProduct['Артикул']) + '</h3>'
             + '<div class="form-group"><label>🚁 Название</label><input type="text" id="edit-name" value="' + escapeHtml(currentProduct['Название']) + '"></div>'
             + '<div class="form-group"><label>📇 Серийный номер</label><input type="text" id="edit-serial" value="' + escapeHtml(currentProduct['Серийный номер']) + '"></div>'
             + '<div class="form-group"><label>📝 Состояние</label><textarea id="edit-description" rows="3">' + escapeHtml(currentProduct['Состояние']) + '</textarea></div>'
