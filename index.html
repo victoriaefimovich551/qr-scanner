@@ -1,653 +1,1759 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Аналитика — Инвентарь</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#1e3c72">
+    <link rel="manifest" href="manifest.json">
+    <title>QR Сканер</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 16px; padding-bottom: 84px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .category-switch { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .category-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; flex: 1; max-width: 150px; }
+        .category-btn.active { background: white; color: #1e3c72; }
+        /* НИЖНЯЯ НАВИГАЦИЯ */
+        .tabs { display: none; } /* скрыты — заменены нижней навигацией */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 68px;
+            background: #fff;
+            display: flex;
+            align-items: stretch;
+            box-shadow: 0 -2px 16px rgba(0,0,0,0.15);
+            z-index: 1000;
+            border-radius: 18px 18px 0 0;
+            overflow: hidden;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            padding: 8px 4px;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s;
+        }
+        .nav-item:active { background: #f0f4ff; }
+        .nav-item .nav-icon { font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
+        .nav-item .nav-label { font-size: 0.58rem; font-weight: 600; color: #aab0c0; letter-spacing: 0.2px; text-align: center; line-height: 1.2; transition: color 0.2s; }
+        .nav-item.active .nav-icon { transform: translateY(-2px); }
+        .nav-item.active .nav-label { color: #2a5298; }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 20%; right: 20%;
+            height: 3px;
+            background: #2a5298;
+            border-radius: 0 0 4px 4px;
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+        .nav-item.active::before { transform: scaleX(1); }
+        .tab-btn { display: none; } /* скрыты, нижняя навигация управляет табами */
+        .panel { display: none; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .panel.active { display: block; }
+        h2 { color: #1e3c72; margin-bottom: 20px; font-size: 20px; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
+        #reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; }
+        #receive-reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 16px; overflow: hidden; }
+        button { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; padding: 14px 28px; border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer; margin: 10px 0; width: 100%; }
+        /* FIX #2: disabled кнопки */
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .search-box { display: flex; gap: 10px; margin: 15px 0; }
+        .search-box input { flex: 1; padding: 12px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 16px; }
+        .search-box button { width: auto; padding: 12px 20px; margin: 0; }
+        .product-card { background: #f8fafc; border-radius: 16px; padding: 20px; margin-top: 20px; border-left: 4px solid #2a5298; }
+        .product-card h3 { color: #1e3c72; margin-bottom: 15px; }
+        .product-detail { margin: 8px 0; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .product-detail strong { display: inline-block; min-width: 110px; color: #475569; }
+        .status-sold { color: #16a34a; font-weight: bold; }
+        .status-reserved { color: #eab308; font-weight: bold; }
+        .status-delivery { color: #3b82f6; font-weight: bold; }
+        .status-unsold { color: #64748b; font-weight: bold; }
+        .qr-code { text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
+        .qr-code img { max-width: 120px; border-radius: 12px; padding: 8px; background: white; }
+        .error { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 12px; margin-top: 15px; text-align: center; }
+        .success { background: #dcfce7; color: #16a34a; padding: 12px; border-radius: 12px; margin-top: 15px; text-align: center; }
+        .loading { text-align: center; padding: 30px; color: #64748b; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 15px; }
+        .product-item { background: #f8fafc; border-radius: 12px; padding: 15px; cursor: pointer; border: 1px solid #e2e8f0; transition: opacity 0.2s; }
+        .product-item:active { transform: scale(0.98); }
+        .product-item.is-sold { opacity: 0.45; background: #f1f5f9; border-color: #cbd5e1; }
+        .product-item.is-delivery { border-left: 3px solid #3b82f6; }
+        .product-item.is-reserved { border-left: 3px solid #eab308; }
+        .status-filter-btn { padding: 6px 14px; border-radius: 20px; border: 2px solid transparent; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .status-filter-btn.active { border-color: currentColor; }
+        .filter-group { margin-bottom: 15px; }
+        .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .filter-row select { flex: 1; padding: 10px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; background: white; }
+        .filter-row button { flex: 1; text-align: center; }
+        .btn-reset { background: #64748b; width: auto; padding: 10px 20px; margin: 0; }
+        .install-banner { background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 14px; display: none; }
+        .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .action-btn { flex: 1; background: #64748b; width: auto; padding: 10px; margin: 0; font-size: 14px; text-align: center; cursor: pointer; border: none; border-radius: 30px; color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #1e3c72; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e4e8; border-radius: 30px; font-size: 14px; }
+        .form-group textarea { border-radius: 20px; }
+        .sku-display { background: #eef2ff; padding: 12px; border-radius: 12px; margin: 15px 0; text-align: center; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e3c72; }
+        .receive-scan-area { text-align: center; margin-bottom: 20px; }
+        .debug-info { background: #fff3cd; border: 1px solid #ffc107; padding: 8px; border-radius: 8px; font-size: 12px; margin-top: 10px; display: none; }
+        .state-list ul { margin: 5px 0 0 20px; padding-left: 0; list-style-type: disc; }
+        .state-list li { margin: 4px 0; line-height: 1.4; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    min-height: 100vh;
-    padding: 16px 16px 32px;
-  }
+        /* FIX #5: Toast уведомления */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            max-width: 90%;
+            text-align: center;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast-success { background: #16a34a; }
+        .toast-error { background: #dc2626; }
+        .toast-info { background: #3b82f6; }
 
-  /* ── Header ── */
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
+        /* FIX #6: Поиск моделей */
+        .model-search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e4e8;
+            border-radius: 30px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
 
-  .back-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: #fff;
-    border-radius: 12px;
-    padding: 8px 14px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .back-btn:hover { background: rgba(255,255,255,0.3); }
-
-  .header-title { color: #fff; }
-  .header-title h1 { font-size: 1.3rem; font-weight: 700; }
-  .header-title p  { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-top: 2px; }
-
-  /* ── Period filter ── */
-  .period-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-  }
-
-  .period-btn {
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    color: #fff;
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s;
-  }
-
-  .period-btn.active {
-    background: #fff;
-    color: #2a5298;
-    border-color: #fff;
-  }
-
-  /* ── Category toggle ── */
-  .cat-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 18px;
-  }
-
-  .cat-btn {
-    flex: 1;
-    background: rgba(255,255,255,0.12);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    color: rgba(255,255,255,0.75);
-    border-radius: 20px;
-    padding: 7px 0;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s;
-    text-align: center;
-  }
-
-  .cat-btn.active {
-    background: #fff;
-    color: #2a5298;
-    border-color: #fff;
-  }
-
-  /* ── Cards ── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .kpi-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-
-  .kpi-card .kpi-icon { font-size: 1.4rem; margin-bottom: 6px; }
-  .kpi-card .kpi-label { font-size: 0.7rem; color: #7080a0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-  .kpi-card .kpi-value { font-size: 1.35rem; font-weight: 800; color: #1e3c72; margin-top: 2px; line-height: 1.2; }
-  .kpi-card .kpi-sub   { font-size: 0.72rem; color: #90a0b0; margin-top: 3px; }
-
-  .kpi-card.accent { background: linear-gradient(135deg, #1e3c72, #2a5298); }
-  .kpi-card.accent .kpi-label { color: rgba(255,255,255,0.65); }
-  .kpi-card.accent .kpi-value { color: #fff; }
-  .kpi-card.accent .kpi-sub   { color: rgba(255,255,255,0.55); }
-
-  /* ── Section ── */
-  .section {
-    background: #fff;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-
-  .section-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #1e3c72;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  /* ── Status badges ── */
-  .status-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .status-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: #f8faff;
-  }
-
-  .status-dot {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .status-item .status-name  { font-size: 0.78rem; color: #4a5568; font-weight: 500; }
-  .status-item .status-count { font-size: 1.1rem; font-weight: 800; color: #1e3c72; margin-top: 1px; }
-
-  /* ── Top models table ── */
-  .model-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f4ff;
-    gap: 10px;
-  }
-
-  .model-row:last-child { border-bottom: none; }
-
-  .model-rank {
-    width: 22px; height: 22px;
-    background: #f0f4ff;
-    border-radius: 50%;
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #2a5298;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .model-rank.gold   { background: #fff3cd; color: #b07d00; }
-  .model-rank.silver { background: #f0f0f0; color: #666; }
-  .model-rank.bronze { background: #fde8d8; color: #a0522d; }
-
-  .model-name { flex: 1; font-size: 0.83rem; font-weight: 600; color: #1e3c72; }
-  .model-sold { font-size: 0.75rem; color: #7080a0; }
-
-  .model-profit {
-    font-size: 0.88rem;
-    font-weight: 800;
-    color: #1a8c4a;
-    text-align: right;
-  }
-
-  .model-margin {
-    font-size: 0.7rem;
-    color: #90a0b0;
-    text-align: right;
-  }
-
-  /* ── Long-laying items ── */
-  .stale-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f4ff;
-    gap: 10px;
-  }
-
-  .stale-row:last-child { border-bottom: none; }
-
-  .stale-days {
-    background: #fdecea;
-    color: #c0392b;
-    border-radius: 8px;
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .stale-days.ok     { background: #e6f7ee; color: #1a8c4a; }
-  .stale-days.warn   { background: #fff8e1; color: #b07d00; }
-
-  .stale-name  { flex: 1; font-size: 0.83rem; font-weight: 600; color: #1e3c72; }
-  .stale-sku   { font-size: 0.72rem; color: #7080a0; }
-  .stale-price { font-size: 0.83rem; font-weight: 700; color: #2a5298; white-space: nowrap; }
-
-  /* ── Chart container ── */
-  .chart-wrap { position: relative; height: 200px; }
-
-  /* ── Loading / error ── */
-  .loading-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: rgba(255,255,255,0.7);
-    font-size: 0.95rem;
-  }
-
-  .loading-state .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 12px;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .error-banner {
-    background: #fdecea;
-    color: #c0392b;
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 0.85rem;
-    margin-bottom: 14px;
-  }
-</style>
+        /* FIX #11: Кастомный диалог подтверждения */
+        .confirm-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .confirm-dialog {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+        }
+        .confirm-dialog p {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 16px;
+        }
+        .confirm-dialog .confirm-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .confirm-dialog .confirm-buttons button {
+            flex: 1;
+            margin: 0;
+            padding: 12px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-
-<!-- Header -->
-<div class="header">
-  <a class="back-btn" href="index.html">⬅ Назад</a>
-  <div class="header-title">
-    <h1>📊 Аналитика</h1>
-    <p id="last-update">Загрузка данных...</p>
-  </div>
-</div>
-
-<!-- Category toggle -->
-<div class="cat-bar">
-  <button class="cat-btn active" onclick="switchCat('all', this)">🌐 Все</button>
-  <button class="cat-btn" onclick="switchCat('Дроны', this)">🚁 Дроны</button>
-  <button class="cat-btn" onclick="switchCat('Самокаты', this)">🛴 Самокаты</button>
-</div>
-
-<!-- Period filter -->
-<div class="period-bar">
-  <button class="period-btn active" onclick="setPeriod('month', this)">Этот месяц</button>
-  <button class="period-btn" onclick="setPeriod('quarter', this)">Квартал</button>
-  <button class="period-btn" onclick="setPeriod('year', this)">Год</button>
-  <button class="period-btn" onclick="setPeriod('all', this)">Всё время</button>
-</div>
-
-<!-- Loading -->
-<div id="loading" class="loading-state">
-  <div class="spinner"></div>
-  Загружаем данные...
-</div>
-
-<!-- Error -->
-<div id="error" class="error-banner" style="display:none;"></div>
-
-<!-- Dashboard -->
-<div id="dashboard" style="display:none;">
-
-  <!-- KPI cards -->
-  <div class="kpi-grid">
-    <div class="kpi-card accent">
-      <div class="kpi-icon">💰</div>
-      <div class="kpi-label">Прибыль за период</div>
-      <div class="kpi-value" id="kpi-profit">—</div>
-      <div class="kpi-sub" id="kpi-profit-sub"></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon">📦</div>
-      <div class="kpi-label">Стоимость склада</div>
-      <div class="kpi-value" id="kpi-stock">—</div>
-      <div class="kpi-sub" id="kpi-stock-sub"></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon">✅</div>
-      <div class="kpi-label">Продано за период</div>
-      <div class="kpi-value" id="kpi-sold">—</div>
-      <div class="kpi-sub" id="kpi-sold-sub"></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon">⏱</div>
-      <div class="kpi-label">Среднее время продажи</div>
-      <div class="kpi-value" id="kpi-avgdays">—</div>
-      <div class="kpi-sub">дней на складе</div>
-    </div>
-  </div>
-
-  <!-- Статусы -->
-  <div class="section">
-    <div class="section-title">📌 Статусы товаров</div>
-    <div class="status-grid" id="status-grid"></div>
-  </div>
-
-  <!-- Динамика продаж -->
-  <div class="section">
-    <div class="section-title">📈 Динамика продаж (прибыль по месяцам)</div>
-    <div class="chart-wrap">
-      <canvas id="sales-chart"></canvas>
-    </div>
-  </div>
-
-  <!-- Топ моделей -->
-  <div class="section">
-    <div class="section-title">🏆 Топ моделей по прибыли</div>
-    <div id="top-models"></div>
-  </div>
-
-  <!-- Долго лежащие -->
-  <div class="section">
-    <div class="section-title">⏳ Долго лежат на складе</div>
-    <div id="stale-items"></div>
-  </div>
-
-</div><!-- /dashboard -->
-
-<script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMI8Q18FlMSUfDFhgmuH6st-3NFn6Dpx8aUDu6SICf6QraBxlLNRs3UU15c-sJ0D-zdg/exec';
-
-let allData    = [];   // все товары (дроны + самокаты)
-let currentCat = 'all';
-let currentPeriod = 'month';
-let salesChart = null;
-
-// ── Init ──────────────────────────────────────────────────────
-async function init() {
-  try {
-    // Загружаем оба листа параллельно
-    const [drones, scooters] = await Promise.all([
-      fetchProducts('Дроны'),
-      fetchProducts('Самокаты')
-    ]);
-    allData = [
-      ...drones.map(p => ({ ...p, _cat: 'Дроны' })),
-      ...scooters.map(p => ({ ...p, _cat: 'Самокаты' }))
-    ];
-
-    document.getElementById('loading').style.display   = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-
-    const now = new Date();
-    document.getElementById('last-update').textContent =
-      'Обновлено: ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-
-    render();
-  } catch (e) {
-    document.getElementById('loading').style.display = 'none';
-    const err = document.getElementById('error');
-    err.style.display = 'block';
-    err.textContent = '❌ Ошибка загрузки: ' + e.message;
-  }
-}
-
-async function fetchProducts(category) {
-  const url = SCRIPT_URL + '?action=getAll&category=' + encodeURIComponent(category);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const data = await r.json();
-  if (data.error) throw new Error(data.error);
-  return data.products || [];
-}
-
-// ── Filters ───────────────────────────────────────────────────
-function switchCat(cat, btn) {
-  currentCat = cat;
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function setPeriod(period, btn) {
-  currentPeriod = period;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function getFilteredData() {
-  let data = currentCat === 'all' ? allData : allData.filter(p => p._cat === currentCat);
-  return data;
-}
-
-function getPeriodStart() {
-  const now = new Date();
-  if (currentPeriod === 'month')   return new Date(now.getFullYear(), now.getMonth(), 1);
-  if (currentPeriod === 'quarter') return new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
-  if (currentPeriod === 'year')    return new Date(now.getFullYear(), 0, 1);
-  return new Date(0); // all time
-}
-
-function parseDate(str) {
-  if (!str) return null;
-  // dd.MM.yyyy
-  const m = String(str).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
-  const d = new Date(str);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-function fmt(num) {
-  if (!num && num !== 0) return '—';
-  return Number(num).toLocaleString('ru-RU') + ' ₽';
-}
-
-// ── Main render ───────────────────────────────────────────────
-function render() {
-  const data      = getFilteredData();
-  const periodStart = getPeriodStart();
-
-  // Товары проданные за период
-  const soldInPeriod = data.filter(p => {
-    if (p['Статус'] !== 'Продан') return false;
-    const d = parseDate(p['Дата продажи']);
-    return d && d >= periodStart;
-  });
-
-  // Товары в наличии (склад)
-  const inStock = data.filter(p => p['Статус'] !== 'Продан');
-
-  // Прибыль за период
-  const totalProfit = soldInPeriod.reduce((s, p) => s + (parseFloat(p['Прибыль']) || 0), 0);
-
-  // Стоимость склада (сумма закупочных цен товаров не-продан)
-  const stockValue = inStock.reduce((s, p) => s + (parseFloat(p['Цена закупка']) || 0), 0);
-
-  // Среднее время продажи (дни)
-  const times = data
-    .filter(p => p['Статус'] === 'Продан' && parseDate(p['Дата закупки']) && parseDate(p['Дата продажи']))
-    .map(p => {
-      const buy  = parseDate(p['Дата закупки']);
-      const sell = parseDate(p['Дата продажи']);
-      return Math.round((sell - buy) / 86400000);
-    })
-    .filter(d => d >= 0);
-  const avgDays = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null;
-
-  // ── KPI ──
-  document.getElementById('kpi-profit').textContent     = fmt(totalProfit);
-  document.getElementById('kpi-profit-sub').textContent = soldInPeriod.length + ' продаж за период';
-  document.getElementById('kpi-stock').textContent      = fmt(stockValue);
-  document.getElementById('kpi-stock-sub').textContent  = inStock.length + ' товаров на складе';
-  document.getElementById('kpi-sold').textContent       = soldInPeriod.length + ' шт';
-  document.getElementById('kpi-sold-sub').textContent   = 'выручка: ' + fmt(soldInPeriod.reduce((s,p) => s + (parseFloat(p['Цена продажа']) || 0), 0));
-  document.getElementById('kpi-avgdays').textContent    = avgDays !== null ? avgDays + ' дн' : '—';
-
-  // ── Статусы ──
-  const statusMap = {
-    'В наличии':      { color: '#1a8c4a', bg: '#e6f7ee' },
-    'В доставке':     { color: '#2a5298', bg: '#e8f0ff' },
-    'Зарезервирован': { color: '#c05a00', bg: '#fff0e6' },
-    'Не продан':      { color: '#b09000', bg: '#fffbe6' },
-    'Продан':         { color: '#666e7a', bg: '#f0f1f3' }
-  };
-
-  const counts = {};
-  data.forEach(p => {
-    const s = p['Статус'] || 'Не продан';
-    counts[s] = (counts[s] || 0) + 1;
-  });
-
-  const sg = document.getElementById('status-grid');
-  sg.innerHTML = Object.entries(counts).map(([status, count]) => {
-    const style = statusMap[status] || { color: '#555', bg: '#f0f0f0' };
-    return `<div class="status-item" style="background:${style.bg}">
-      <div class="status-dot" style="background:${style.color}"></div>
-      <div>
-        <div class="status-name">${status}</div>
-        <div class="status-count" style="color:${style.color}">${count}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  // ── Динамика продаж ──
-  renderChart(data);
-
-  // ── Топ моделей ──
-  const modelStats = {};
-  data.filter(p => p['Статус'] === 'Продан').forEach(p => {
-    const name = (p['Название'] || 'Без названия').trim().replace(/\s+/g, ' ');
-    if (!modelStats[name]) modelStats[name] = { profit: 0, sold: 0, revenue: 0, cost: 0 };
-    modelStats[name].profit  += parseFloat(p['Прибыль'])     || 0;
-    modelStats[name].revenue += parseFloat(p['Цена продажа']) || 0;
-    modelStats[name].cost    += parseFloat(p['Цена закупка']) || 0;
-    modelStats[name].sold++;
-  });
-
-  const topModels = Object.entries(modelStats)
-    .sort((a, b) => b[1].profit - a[1].profit)
-    .slice(0, 7);
-
-  const rankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-
-  document.getElementById('top-models').innerHTML = topModels.length
-    ? topModels.map(([name, s], i) => {
-        const margin = s.revenue > 0 ? Math.round((s.profit / s.revenue) * 100) : 0;
-        return `<div class="model-row">
-          <div class="model-rank ${rankClass(i)}">${i + 1}</div>
-          <div>
-            <div class="model-name">${name}</div>
-            <div class="model-sold">${s.sold} продаж</div>
-          </div>
-          <div>
-            <div class="model-profit">${fmt(Math.round(s.profit))}</div>
-            <div class="model-margin">маржа ${margin}%</div>
-          </div>
-        </div>`;
-      }).join('')
-    : '<div style="color:#7080a0;font-size:0.85rem;text-align:center;padding:20px">Нет данных о продажах</div>';
-
-  // ── Долго лежащие ──
-  const today = new Date();
-  const stale = data
-    .filter(p => p['Статус'] !== 'Продан' && parseDate(p['Дата закупки']))
-    .map(p => {
-      const buy  = parseDate(p['Дата закупки']);
-      const days = Math.round((today - buy) / 86400000);
-      return { ...p, _days: days };
-    })
-    .sort((a, b) => b._days - a._days)
-    .slice(0, 5);
-
-  const dayClass = (d) => d > 60 ? '' : d > 30 ? 'warn' : 'ok';
-
-  document.getElementById('stale-items').innerHTML = stale.length
-    ? stale.map(p => `<div class="stale-row">
-        <div class="stale-days ${dayClass(p._days)}">${p._days} дн</div>
-        <div>
-          <div class="stale-name">${p['Название'] || '—'}</div>
-          <div class="stale-sku">${p['Артикул'] || ''}</div>
+<div class="container">
+    <div class="header">
+        <h1>📱 QR Сканер</h1>
+        <div style="margin-top: 8px;">
+            <a href="generator.html" target="_blank" style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; color: white; text-decoration: none; font-size: 12px; display: inline-block;">
+                🖨️ Создать наклейки
+            </a>
         </div>
-        <div class="stale-price">${fmt(p['Цена закупка'])}</div>
-      </div>`).join('')
-    : '<div style="color:#7080a0;font-size:0.85rem;text-align:center;padding:20px">Нет товаров на складе</div>';
-}
+    </div>
 
-// ── Chart ─────────────────────────────────────────────────────
-function renderChart(data) {
-  // Собираем прибыль по месяцам (последние 8 месяцев)
-  const months = {};
-  for (let i = 7; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(1);
-    d.setMonth(d.getMonth() - i);
-    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    months[key] = 0;
-  }
+    <div class="category-switch">
+        <button id="btn-drones" class="category-btn active" onclick="switchCategory('Дроны')">🚁 Дроны</button>
+        <button id="btn-scooters" class="category-btn" onclick="switchCategory('Самокаты')">🛴 Самокаты</button>
+        <a href="analytics.html" class="category-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">📊 Аналитика</a>
+    </div>
 
-  data.filter(p => p['Статус'] === 'Продан').forEach(p => {
-    const d = parseDate(p['Дата продажи']);
-    if (!d) return;
-    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    if (key in months) months[key] += parseFloat(p['Прибыль']) || 0;
-  });
 
-  const labels = Object.keys(months).map(k => {
-    const [y, m] = k.split('-');
-    return new Date(+y, +m - 1, 1).toLocaleString('ru-RU', { month: 'short', year: '2-digit' });
-  });
-  const values = Object.values(months).map(v => Math.round(v));
 
-  if (salesChart) salesChart.destroy();
+    <div id="install-banner" class="install-banner">
+        <div id="android-install" style="display: none;"><button id="install-btn">📲 Установить</button></div>
+        <div id="ios-install" style="display: none;">📱 Поделиться → На экран «Домой»</div>
+    </div>
 
-  const ctx = document.getElementById('sales-chart').getContext('2d');
-  salesChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Прибыль, ₽',
-        data: values,
-        backgroundColor: values.map(v => v >= 0 ? 'rgba(42,82,152,0.75)' : 'rgba(192,57,43,0.65)'),
-        borderRadius: 6,
-        borderSkipped: false
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ' ' + ctx.parsed.y.toLocaleString('ru-RU') + ' ₽'
-          }
+    <!-- Нижняя навигация заменяет верхние табы -->
+
+    <div id="scan-panel" class="panel active">
+        <h2>📷 Поиск по QR-коду</h2>
+        <div id="reader"></div>
+        <div id="scan-result"></div>
+        <button id="start-scan-btn">▶ Запустить камеру</button>
+    </div>
+
+    <div id="search-panel" class="panel">
+        <h2>🔍 Поиск</h2>
+        <div class="search-box">
+            <input type="text" id="serial-input" placeholder="Артикул, название или серийный номер..." oninput="searchLive(this.value)">
+            <button onclick="searchBySerial()">Найти</button>
+        </div>
+        <div id="search-result"></div>
+    </div>
+
+    <div id="catalog-panel" class="panel">
+        <h2>📦 Каталог</h2>
+        <div id="catalog-stats" style="background: #eef2ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 14px;">
+            <strong>📊 Статистика по комплектациям:</strong>
+            <div id="stats-content">Загрузка...</div>
+        </div>
+        <div class="filter-group">
+            <div class="filter-row">
+                <button id="refresh-catalog-btn" class="btn-reset" style="background: #3b82f6; flex:1;">🔄 Обновить данные</button>
+            </div>
+        </div>
+        <div id="catalog-content" class="loading">⏳ Загрузка...</div>
+    </div>
+
+    <div id="receive-panel" class="panel">
+        <h2>➕ Приёмка нового товара</h2>
+        <p style="color: #666; margin-bottom: 15px;">Сначала отсканируйте QR-код с наклейки, затем заполните информацию</p>
+
+        <div class="receive-scan-area">
+            <div id="receive-reader"></div>
+            <button id="start-receive-scan">📷 Сканировать QR-код</button>
+        </div>
+
+        <div id="scanned-sku-display" class="sku-display" style="display: none;">
+            🔢 Отсканированный артикул: <span id="scanned-sku"></span>
+        </div>
+
+        <div id="receive-form" style="display: none;">
+            <div class="form-group">
+                <label>🚁 Модель *</label>
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <button type="button" id="receive-mode-list" onclick="switchModelMode('receive', 'list')" style="flex:1; padding:8px; margin:0; font-size:13px; background:#1e3c72;">📋 Из списка</button>
+                    <button type="button" id="receive-mode-manual" onclick="switchModelMode('receive', 'manual')" style="flex:1; padding:8px; margin:0; font-size:13px; background:rgba(30,60,114,0.3);">✏️ Ввести вручную</button>
+                </div>
+                <div id="receive-list-block">
+                    <input type="text" class="model-search-input" id="receive-model-search" placeholder="Поиск модели..." oninput="filterModels(this.value, 'receive-model')">
+                    <select id="receive-model">
+                        <option value="">Выберите модель</option>
+                    </select>
+                </div>
+                <div id="receive-manual-block" style="display:none;">
+                    <input type="text" id="receive-model-manual" placeholder="Введите название модели..." style="width:100%; padding:12px; border:2px solid #e0e4e8; border-radius:30px; font-size:14px;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>🔢 Серийный номер (заводской)</label>
+                <input type="text" id="receive-serial" placeholder="Например: 3YTBJ4900301RC">
+            </div>
+
+            <div class="form-group">
+                <label>💰 Цена закупки</label>
+                <input type="number" id="receive-price" placeholder="0">
+            </div>
+
+            <div class="form-group">
+                <label>📝 Состояние / Описание</label>
+                <textarea id="receive-description" rows="3" placeholder="Состояние, комплектация, примечания..."></textarea>
+            </div>
+
+            <button id="submit-receive-btn" style="background: #16a34a;">✅ Добавить товар</button>
+            <button id="cancel-receive-btn" style="background: #64748b;">🗑️ Отмена</button>
+        </div>
+
+        <div id="receive-result"></div>
+        <div id="receive-debug" class="debug-info"></div>
+    </div>
+
+    <div id="receive-noqr-panel" class="panel">
+        <h2>📝 Приёмка нового товара (без QR)</h2>
+        <p style="color: #666; margin-bottom: 15px;">Заполните информацию о товаре. QR-код будет сгенерирован автоматически после добавления.</p>
+
+        <div class="form-group">
+            <label>🚁 Модель *</label>
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <button type="button" id="noqr-mode-list" onclick="switchModelMode('noqr', 'list')" style="flex:1; padding:8px; margin:0; font-size:13px; background:#1e3c72;">📋 Из списка</button>
+                <button type="button" id="noqr-mode-manual" onclick="switchModelMode('noqr', 'manual')" style="flex:1; padding:8px; margin:0; font-size:13px; background:rgba(30,60,114,0.3);">✏️ Ввести вручную</button>
+            </div>
+            <div id="noqr-list-block">
+                <input type="text" class="model-search-input" id="receive-noqr-model-search" placeholder="Поиск модели..." oninput="filterModels(this.value, 'receive-noqr-model')">
+                <select id="receive-noqr-model">
+                    <option value="">Выберите модель</option>
+                </select>
+            </div>
+            <div id="noqr-manual-block" style="display:none;">
+                <input type="text" id="receive-noqr-model-manual" placeholder="Введите название модели..." style="width:100%; padding:12px; border:2px solid #e0e4e8; border-radius:30px; font-size:14px;">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>🔢 Серийный номер (заводской)</label>
+            <input type="text" id="receive-noqr-serial" placeholder="Например: 3YTBJ4900301RC">
+        </div>
+
+        <div class="form-group">
+            <label>💰 Цена закупки</label>
+            <input type="number" id="receive-noqr-price" placeholder="0">
+        </div>
+
+        <div class="form-group">
+            <label>📝 Состояние / Описание</label>
+            <textarea id="receive-noqr-description" rows="3" placeholder="Состояние, комплектация, примечания..."></textarea>
+        </div>
+
+        <div id="receive-noqr-result"></div>
+        <button id="submit-noqr-btn" style="background: #16a34a;">✅ Добавить товар (QR создастся автоматически)</button>
+        <button id="clear-noqr-btn" style="background: #64748b;">🗑️ Очистить</button>
+    </div>
+</div>
+
+<!-- НИЖНЯЯ НАВИГАЦИЯ -->
+<nav class="bottom-nav">
+    <button class="nav-item active" id="nav-scan" onclick="switchTab('scan', null, this)">
+        <span class="nav-icon">📷</span>
+        <span class="nav-label">Сканер</span>
+    </button>
+    <button class="nav-item" id="nav-search" onclick="switchTab('search', null, this)">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Поиск</span>
+    </button>
+    <button class="nav-item" id="nav-catalog" onclick="switchTab('catalog', null, this)">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Каталог</span>
+    </button>
+    <button class="nav-item" id="nav-receive" onclick="switchTab('receive', null, this)">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Приёмка QR</span>
+    </button>
+    <button class="nav-item" id="nav-receive-noqr" onclick="switchTab('receive-noqr', null, this)">
+        <span class="nav-icon">✏️</span>
+        <span class="nav-label">Без QR</span>
+    </button>
+</nav>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMI8Q18FlMSUfDFhgmuH6st-3NFn6Dpx8aUDu6SICf6QraBxlLNRs3UU15c-sJ0D-zdg/exec';
+
+    let html5QrCode = null;
+    let receiveQrCode = null;
+    let isScanning = false;
+    let isReceiveScanning = false;
+    let allProducts = [];
+    let currentProduct = null;
+    let pendingSku = null;
+    let currentCategory = 'Дроны';
+
+    let cachedProducts = null;
+    let catalogLoaded = false;
+
+    // ========== МОДЕЛИ ДЛЯ КАТЕГОРИЙ ==========
+    const MODELS_BY_CATEGORY = {
+        'Дроны': [
+            'DJI Mavic 3', 'DJI Mavic 3 Only Drone', 'DJI Mavic 3 Fly More Combo',
+            'DJI Mavic 3 Cine', 'DJI Mavic 3 Cine Only Drone', 'DJI Mavic 3 Cine Premium Combo',
+            'DJI Mavic 3 Classic', 'DJI Mavic 3 Classic Only Drone', 'DJI Mavic 3 Classic Fly More Combo',
+            'DJI Mavic 3 Pro', 'DJI Mavic 3 Pro Only Drone', 'DJI Mavic 3 Pro Fly More Combo',
+            'DJI Mavic 3 Pro Cine', 'DJI Mavic 3 Pro Cine Only Drone', 'DJI Mavic 3 Pro Cine Premium Combo',
+            'DJI Mavic 3 Enterprise (M3E)', 'DJI Mavic 3 Enterprise Only Drone', 'DJI Mavic 3 Enterprise Fly More Combo',
+            'DJI Mavic 3E', 'DJI Mavic 3E Only Drone', 'DJI Mavic 3E Fly More Combo',
+            'DJI Mavic 3T', 'DJI Mavic 3T Only Drone', 'DJI Mavic 3T Fly More Combo',
+            'DJI Mavic 3M', 'DJI Mavic 3M Only Drone', 'DJI Mavic 3M Fly More Combo',
+            'DJI Mavic 2 Pro', 'DJI Mavic 2 Pro Only Drone', 'DJI Mavic 2 Pro Fly More Combo',
+            'DJI Mavic 2 Zoom', 'DJI Mavic 2 Zoom Only Drone', 'DJI Mavic 2 Zoom Fly More Combo',
+            'DJI Mavic Pro', 'DJI Mavic Pro Only Drone',
+            'DJI Air 3S', 'DJI Air 3S Only Drone', 'DJI Air 3S Fly More Combo',
+            'DJI Air 3', 'DJI Air 3 Only Drone', 'DJI Air 3 Fly More Combo',
+            'DJI Air 2S', 'DJI Air 2S Only Drone', 'DJI Air 2S Fly More Combo',
+            'DJI Air 2', 'DJI Air 2 Only Drone', 'DJI Air 2 Fly More Combo',
+            'DJI Mini 5 Pro', 'DJI Mini 5 Pro Only Drone', 'DJI Mini 5 Pro Fly More Combo',
+            'DJI Mini 4 Pro', 'DJI Mini 4 Pro Only Drone', 'DJI Mini 4 Pro Fly More Combo',
+            'DJI Mini 4K', 'DJI Mini 4K Only Drone', 'DJI Mini 4K Fly More Combo',
+            'DJI Mini 3 Pro', 'DJI Mini 3 Pro Only Drone', 'DJI Mini 3 Pro Fly More Combo',
+            'DJI Mini 3', 'DJI Mini 3 Only Drone', 'DJI Mini 3 Fly More Combo',
+            'DJI Mini 2 SE', 'DJI Mini 2 SE Only Drone', 'DJI Mini 2 SE Fly More Combo',
+            'DJI Mini 2', 'DJI Mini 2 Only Drone', 'DJI Mini 2 Fly More Combo',
+            'DJI Mini SE', 'DJI Mini SE Only Drone',
+            'DJI Neo 2', 'DJI Neo 2 Only Drone', 'DJI Neo 2 Fly More Combo',
+            'DJI Neo', 'DJI Neo Only Drone', 'DJI Neo Fly More Combo', 'DJI Neo Motion Fly More Combo',
+            'DJI Flip', 'DJI Flip Only Drone', 'DJI Flip Fly More Combo',
+            'DJI Avata 2', 'DJI Avata 2 Only Drone', 'DJI Avata 2 Fly More Combo',
+            'DJI Avata', 'DJI Avata Only Drone', 'DJI Avata Fly More Combo',
+            'DJI Inspire 3', 'DJI Inspire 3 Only Drone', 'DJI Inspire 3 Premium Combo',
+            'DJI Inspire 2', 'DJI Inspire 2 Only Drone', 'DJI Inspire 2 Fly More Combo',
+            'DJI Matrice 350 RTK', 'DJI Matrice 350 RTK Only Drone', 'DJI Matrice 350 RTK Combo',
+            'DJI Matrice 30', 'DJI Matrice 30 Only Drone', 'DJI Matrice 30 Combo',
+            'DJI Matrice 30T', 'DJI Matrice 30T Only Drone', 'DJI Matrice 30T Combo',
+            'DJI Matrice 300 RTK', 'DJI Matrice 300 RTK Only Drone', 'DJI Matrice 300 RTK Combo'
+        ],
+        'Самокаты': [
+            'Xiaomi M365', 'Xiaomi M365 Pro', 'Xiaomi Mi Electric Scooter 1S',
+            'Xiaomi Mi Electric Scooter Essential', 'Xiaomi Mi Electric Scooter Pro 2',
+            'Xiaomi Mi Electric Scooter 3', 'Xiaomi Mi Electric Scooter 3 Lite',
+            'Xiaomi Electric Scooter 4', 'Xiaomi Electric Scooter 4 Lite',
+            'Xiaomi Electric Scooter 4 Pro', 'Xiaomi Electric Scooter 4 Ultra',
+            'Xiaomi Electric Scooter 5', 'Xiaomi Electric Scooter 5 Pro',
+            'Xiaomi Electric Scooter 5 Max', 'Xiaomi Electric Scooter 6 Ultra',
+            'Ninebot ES1', 'Ninebot ES2', 'Ninebot ES4',
+            'Ninebot Max G30', 'Ninebot Max G30LP', 'Ninebot Max G2', 'Ninebot Max G3',
+            'Ninebot F20', 'Ninebot F25', 'Ninebot F30', 'Ninebot F40',
+            'Ninebot F2', 'Ninebot F2 Pro', 'Ninebot F3', 'Ninebot F4',
+            'Ninebot E22', 'Ninebot E25', 'Ninebot E45',
+            'Segway D18E', 'Segway D28E', 'Segway D38E',
+            'Segway P65E', 'Segway P100SE',
+            'Segway GT1', 'Segway GT2', 'Segway GT3', 'Segway ZT3 Pro', 'Segway Air T15E',
+            'NIU KQi1 Sport', 'NIU KQi2 Pro', 'NIU KQi3 Sport', 'NIU KQi3 Pro', 'NIU KQi3 Max',
+            'NIU KQi 100P', 'NIU KQi 300X',
+            'Navee N20', 'Navee N40', 'Navee N65', 'Navee S65', 'Navee V40', 'Navee UT5', 'Navee UT5 Ultra',
+            'Hiboy S2', 'Hiboy S2 Pro', 'Hiboy KS4', 'Hiboy MAX3', 'Hiboy Titan',
+            'Razor E90', 'Razor E100', 'Razor E200', 'Razor E300', 'Razor Power Core E90', 'Razor EcoSmart',
+            'Pure Air', 'Pure Air Pro', 'Pure Advance',
+            'TurboAnt X7', 'TurboAnt X7 Pro', 'TurboAnt X7 Max',
+            'Levy Electric Scooter', 'Levy Plus',
+            'Apollo Air', 'Apollo Air Pro', 'Apollo City', 'Apollo Explore', 'Apollo Ghost', 'Apollo Phantom', 'Apollo Go',
+            'Kaabo Skywalker 8', 'Kaabo Skywalker 10S', 'Kaabo Mantis 8', 'Kaabo Mantis 10',
+            'Kaabo Mantis Pro', 'Kaabo Mantis King GT',
+            'Kaabo Wolf Warrior', 'Kaabo Wolf King', 'Kaabo Wolf King GT', 'Kaabo Wolf King GTR',
+            'Dualtron Mini', 'Dualtron Compact', 'Dualtron Spider', 'Dualtron Eagle', 'Dualtron Raptor',
+            'Dualtron Victor', 'Dualtron Victor Limited', 'Dualtron Thunder', 'Dualtron Thunder 2', 'Dualtron Thunder 3',
+            'Dualtron Storm', 'Dualtron Storm Limited', 'Dualtron Ultra', 'Dualtron X', 'Dualtron X2',
+            'Dualtron Alien', 'Dualtron Dolphin', 'Dualtron Sonic',
+            'Dualtron TOGO', 'Dualtron TOGO Plus', 'Dualtron TOGO Pro', 'Dualtron TOGO Max', 'Dualtron TOGO Limited',
+            'VSETT 8', 'VSETT 8+', 'VSETT 9', 'VSETT 9+', 'VSETT 10+', 'VSETT 11+',
+            'INOKIM Light', 'INOKIM Quick', 'INOKIM OX', 'INOKIM OXO',
+            'EMOVE Touring', 'EMOVE Cruiser',
+            'Zero 8', 'Zero 9', 'Zero 10', 'Zero 10X', 'Zero 11X',
+            'Kugoo S1', 'Kugoo S3', 'Kugoo G2 Pro', 'KuKirin G3', 'KuKirin G3 Pro',
+            'GOTRAX GXL', 'GOTRAX G3', 'GOTRAX G4', 'GOTRAX GX1',
+            'NanRobot D4+', 'NanRobot LS7', 'InMotion S1', 'InMotion L9',
+            'E-TWOW Booster S', 'E-TWOW GT', 'Glion Dolly', 'Unagi Model One', 'Unagi Model One Voyager',
+            'Swagtron Swagger', 'Mercane WideWheel', 'Splach Twin', 'Yume X11',
+            'RION RE90', 'WEPED FS', 'NAMI Burn-E', 'NAMI Burn-E 2', 'NAMI Burn-E 2 Max'
+        ]
+    };
+
+    function updateModelsForCategory(category) {
+        const models = MODELS_BY_CATEGORY[category] || [];
+
+        const receiveModelSelect = document.getElementById('receive-model');
+        if (receiveModelSelect) {
+            receiveModelSelect.innerHTML = '<option value="">Выберите модель</option>';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                receiveModelSelect.appendChild(option);
+            });
         }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-        y: {
-          grid: { color: '#f0f4ff' },
-          ticks: {
-            font: { size: 11 },
-            callback: v => v.toLocaleString('ru-RU') + ' ₽'
-          }
+
+        const receiveNoqrModelSelect = document.getElementById('receive-noqr-model');
+        if (receiveNoqrModelSelect) {
+            receiveNoqrModelSelect.innerHTML = '<option value="">Выберите модель</option>';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                receiveNoqrModelSelect.appendChild(option);
+            });
         }
-      }
+
+        // Очищаем поля поиска моделей
+        const searchInputs = document.querySelectorAll('.model-search-input');
+        searchInputs.forEach(input => { input.value = ''; });
     }
-  });
-}
 
-init();
+    // Переключение режима выбора модели: список / ручной ввод
+    function switchModelMode(form, mode) {
+        const isReceive = (form === 'receive');
+        const listBlock   = document.getElementById(isReceive ? 'receive-list-block'   : 'noqr-list-block');
+        const manualBlock = document.getElementById(isReceive ? 'receive-manual-block' : 'noqr-manual-block');
+        const btnList     = document.getElementById(isReceive ? 'receive-mode-list'    : 'noqr-mode-list');
+        const btnManual   = document.getElementById(isReceive ? 'receive-mode-manual'  : 'noqr-mode-manual');
+
+        if (mode === 'manual') {
+            listBlock.style.display   = 'none';
+            manualBlock.style.display = 'block';
+            btnManual.style.background = '#1e3c72';
+            btnList.style.background   = 'rgba(30,60,114,0.3)';
+        } else {
+            listBlock.style.display   = 'block';
+            manualBlock.style.display = 'none';
+            btnList.style.background   = '#1e3c72';
+            btnManual.style.background = 'rgba(30,60,114,0.3)';
+        }
+    }
+
+    // Получить выбранную модель с учётом режима
+    function getModelValue(form) {
+        const isReceive   = (form === 'receive');
+        const manualBlock = document.getElementById(isReceive ? 'receive-manual-block' : 'noqr-manual-block');
+        if (manualBlock && manualBlock.style.display !== 'none') {
+            return (document.getElementById(isReceive ? 'receive-model-manual' : 'receive-noqr-model-manual')?.value || '').trim();
+        }
+        return document.getElementById(isReceive ? 'receive-model' : 'receive-noqr-model')?.value || '';
+    }
+
+    // FIX #6: Фильтрация моделей в select
+    function filterModels(query, selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        const models = MODELS_BY_CATEGORY[currentCategory] || [];
+        const filtered = query.trim()
+            ? models.filter(m => m.toLowerCase().includes(query.toLowerCase()))
+            : models;
+        select.innerHTML = '<option value="">Выберите модель</option>';
+        filtered.forEach(model => {
+            const opt = document.createElement('option');
+            opt.value = model;
+            opt.textContent = model;
+            select.appendChild(opt);
+        });
+    }
+
+    // PWA
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isAndroid) {
+        document.getElementById('android-install').style.display = 'block';
+        document.getElementById('install-banner').style.display = 'block';
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (!deferredPrompt) { showToast('Установка через Chrome', 'info'); return; }
+            deferredPrompt.prompt();
+            deferredPrompt = null;
+        });
+    } else if (isIOS) {
+        document.getElementById('ios-install').style.display = 'block';
+        document.getElementById('install-banner').style.display = 'block';
+    }
+
+    // ========== УТИЛИТЫ ==========
+
+    // FIX #4: escapeHtml экранирует &, <, >, ", ', `
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/`/g, '&#96;');
+    }
+
+    // FIX #5: Toast-уведомления вместо alert()
+    function showToast(msg, type = 'success') {
+        const t = document.createElement('div');
+        t.className = 'toast toast-' + type;
+        t.textContent = msg;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => {
+            t.classList.add('show');
+        });
+        setTimeout(() => {
+            t.classList.remove('show');
+            setTimeout(() => t.remove(), 300);
+        }, 3000);
+    }
+
+    // FIX #11: Кастомный диалог подтверждения (вместо confirm())
+    function showConfirmDialog(message) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = `
+                <div class="confirm-dialog">
+                    <p>${escapeHtml(message)}</p>
+                    <div class="confirm-buttons">
+                        <button id="confirm-yes" style="background: #dc2626;">Да</button>
+                        <button id="confirm-no" style="background: #64748b;">Нет</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#confirm-yes').onclick = () => { overlay.remove(); resolve(true); };
+            overlay.querySelector('#confirm-no').onclick = () => { overlay.remove(); resolve(false); };
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) { overlay.remove(); resolve(false); }
+            });
+        });
+    }
+
+    // ========== НАВИГАЦИЯ ==========
+    let navigationStack = [];
+
+    function goBack() {
+        if (navigationStack.length > 1) {
+            navigationStack.pop();
+            const previousTab = navigationStack.pop();
+            switchTab(previousTab);
+        } else {
+            switchTab('scan');
+        }
+    }
+
+    function goHome() {
+        navigationStack = ['scan'];
+        switchTab('scan');
+    }
+
+    // switchTab: обновляет панели и нижнюю навигацию
+    function switchTab(tab, el, navEl) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        const panel = document.getElementById(tab + '-panel');
+        if (panel) panel.classList.add('active');
+
+        // Обновляем нижнюю навигацию
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        const activeNavBtn = navEl || document.getElementById('nav-' + tab);
+        if (activeNavBtn) activeNavBtn.classList.add('active');
+
+        if (navigationStack[navigationStack.length - 1] !== tab) {
+            navigationStack.push(tab);
+        }
+
+        if (tab === 'catalog') loadCatalog();
+        if (tab === 'scan' && html5QrCode && isScanning) {
+            html5QrCode.stop().then(() => isScanning = false);
+        }
+        if (tab === 'receive') {
+            if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+            const receiveForm = document.getElementById('receive-form');
+            const scannedDisplay = document.getElementById('scanned-sku-display');
+            const receiveResult = document.getElementById('receive-result');
+            if (receiveForm) receiveForm.style.display = 'none';
+            if (scannedDisplay) scannedDisplay.style.display = 'none';
+            if (receiveResult) receiveResult.innerHTML = '';
+            pendingSku = null;
+        }
+        if (tab === 'receive-noqr') {
+            if (receiveQrCode && isReceiveScanning) receiveQrCode.stop().then(() => isReceiveScanning = false);
+            if (html5QrCode && isScanning) html5QrCode.stop().then(() => isScanning = false);
+        }
+    }
+
+    // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
+    async function startScanner() {
+        const resultDiv = document.getElementById('scan-result');
+        if (!resultDiv) return;
+        resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
+        if (html5QrCode && isScanning) await html5QrCode.stop();
+        html5QrCode = new Html5Qrcode("reader");
+        try {
+            await html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 300, height: 300 } },
+                (text) => handleScanResult(text),
+                (err) => console.log(err)
+            );
+            isScanning = true;
+            resultDiv.innerHTML = '<div class="success">✅ Камера работает. Наведите на QR-код.</div>';
+        } catch(e) {
+            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры.</div>';
+        }
+    }
+
+    async function handleScanResult(qrData) {
+        if (html5QrCode && isScanning) {
+            await html5QrCode.stop();
+            isScanning = false;
+        }
+        const resultDiv = document.getElementById('scan-result');
+        if (!resultDiv) return;
+        resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
+        try {
+            const product = await findProductBySKU(qrData);
+            currentProduct = product;
+            displayProduct(product, 'scan-result');
+        } catch(e) {
+            resultDiv.innerHTML = '<div class="error">❌ ' + escapeHtml(e.message) + '</div>';
+        }
+    }
+
+    async function startReceiveScanner() {
+        const resultDiv = document.getElementById('receive-result');
+        const debugDiv = document.getElementById('receive-debug');
+        if (!resultDiv) return;
+        resultDiv.innerHTML = '<div class="loading">📷 Запуск камеры...</div>';
+        if (debugDiv) {
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML = 'Запуск камеры...';
+        }
+
+        if (receiveQrCode && isReceiveScanning) await receiveQrCode.stop();
+
+        receiveQrCode = new Html5Qrcode("receive-reader");
+        try {
+            await receiveQrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 300, height: 300 } },
+                async (text) => {
+                    if (debugDiv) debugDiv.textContent = '📱 Отсканировано: ' + text;
+                    await receiveQrCode.stop();
+                    isReceiveScanning = false;
+                    if (debugDiv) debugDiv.textContent += ' | 🔍 Проверка артикула: ' + text + '...';
+
+                    try {
+                        const checkRes = await fetch(GOOGLE_SCRIPT_URL + '?action=checkSku&sku=' + encodeURIComponent(text) + '&category=' + encodeURIComponent(currentCategory));
+                        const checkData = await checkRes.json();
+                        if (debugDiv) debugDiv.textContent += ' | 📡 Ответ: ' + JSON.stringify(checkData);
+
+                        if (checkData.exists) {
+                            resultDiv.innerHTML = '<div class="error">❌ Товар с артикулом "' + escapeHtml(text) + '" уже существует в таблице!</div>';
+                            const receiveForm = document.getElementById('receive-form');
+                            const scannedDisplay = document.getElementById('scanned-sku-display');
+                            if (receiveForm) receiveForm.style.display = 'none';
+                            if (scannedDisplay) scannedDisplay.style.display = 'none';
+                            pendingSku = null;
+                            return;
+                        }
+
+                        pendingSku = text;
+                        const scannedSkuSpan = document.getElementById('scanned-sku');
+                        const scannedDisplay = document.getElementById('scanned-sku-display');
+                        const receiveForm = document.getElementById('receive-form');
+                        if (scannedSkuSpan) scannedSkuSpan.textContent = text;
+                        if (scannedDisplay) scannedDisplay.style.display = 'block';
+                        if (receiveForm) receiveForm.style.display = 'block';
+                        resultDiv.innerHTML = '<div class="success">✅ QR-код отсканирован! Заполните информацию о товаре.</div>';
+                        if (debugDiv) debugDiv.textContent += ' | ✅ Форма открыта для артикула: ' + text;
+
+                    } catch (fetchError) {
+                        if (debugDiv) debugDiv.textContent += ' | ❌ Ошибка проверки: ' + fetchError.message;
+                        resultDiv.innerHTML = '<div class="error">❌ Ошибка проверки: ' + escapeHtml(fetchError.message) + '</div>';
+                    }
+                },
+                (err) => { if (debugDiv) debugDiv.textContent = 'Сканирование... ' + err; }
+            );
+            isReceiveScanning = true;
+            resultDiv.innerHTML = '<div class="success">✅ Камера работает. Наведите на QR-код наклейки.</div>';
+            if (debugDiv) debugDiv.textContent = 'Камера запущена, ждём сканирования...';
+        } catch(e) {
+            resultDiv.innerHTML = '<div class="error">❌ Ошибка камеры. Проверьте разрешения.</div>';
+            if (debugDiv) debugDiv.textContent = '❌ Ошибка: ' + e.message;
+        }
+    }
+
+    // FIX #2 + #3 + #10: POST, блокировка кнопки, спиннер
+    async function submitNewProduct() {
+        if (!pendingSku) {
+            showToast('Сначала отсканируйте QR-код', 'error');
+            return;
+        }
+
+        const model = getModelValue('receive');
+        const serialNumber = document.getElementById('receive-serial')?.value.trim() || '';
+        const purchasePrice = document.getElementById('receive-price')?.value || '';
+        const description = document.getElementById('receive-description')?.value || '';
+
+        if (!model) {
+            showToast('Выберите модель', 'error');
+            return;
+        }
+
+        // Проверка дубликата серийного номера
+        if (serialNumber && allProducts && allProducts.length) {
+            const duplicate = allProducts.find(p => p['Серийный номер'] && p['Серийный номер'].trim() === serialNumber);
+            if (duplicate) {
+                const confirmed = await showConfirmDialog(
+                    '⚠️ Товар с таким серийным номером уже существует:\n' +
+                    duplicate['Название'] + ' (арт. ' + duplicate['Артикул'] + ')\nДобавить всё равно?'
+                );
+                if (!confirmed) return;
+            }
+        }
+
+        const submitBtn = document.getElementById('submit-receive-btn');
+        if (submitBtn && submitBtn.disabled) return;
+
+        const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Добавление...';
+        }
+
+        const resultDiv = document.getElementById('receive-result');
+        const debugDiv = document.getElementById('receive-debug');
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара...</div>';
+
+        if (debugDiv) debugDiv.textContent = '📤 GET запрос...';
+
+        try {
+            const url = GOOGLE_SCRIPT_URL + '?action=autoAdd'
+                + '&sku='           + encodeURIComponent(pendingSku)
+                + '&model='         + encodeURIComponent(model)
+                + '&serialNumber='  + encodeURIComponent(serialNumber)
+                + '&purchasePrice=' + encodeURIComponent(purchasePrice)
+                + '&description='   + encodeURIComponent(description)
+                + '&category='      + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
+            const data = await response.json();
+            if (debugDiv) debugDiv.textContent += ' | 📡 Ответ: ' + JSON.stringify(data);
+
+            if (data.duplicateSerial) {
+                // Дубликат серийного номера на сервере
+                const confirmed = await showConfirmDialog('⚠️ ' + data.message + '\nДобавить всё равно?');
+                if (!confirmed) return;
+                // Повторно запрашиваем с флагом force=true
+                const forceUrl = (url.includes('?') ? url : url) + '&forceSerial=true';
+                const forceResponse = await fetch(forceUrl);
+                const forceData = await forceResponse.json();
+                if (!forceData.success) {
+                    if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ ' + escapeHtml(forceData.message) + '</div>';
+                    return;
+                }
+                Object.assign(data, forceData);
+            }
+            if (data.success) {
+                if (resultDiv) resultDiv.innerHTML = '<div class="success">' + escapeHtml(data.message) + '<br>🔢 Артикул: ' + escapeHtml(data.sku) + '</div>';
+                const receiveForm = document.getElementById('receive-form');
+                const scannedDisplay = document.getElementById('scanned-sku-display');
+                if (receiveForm) receiveForm.style.display = 'none';
+                if (scannedDisplay) scannedDisplay.style.display = 'none';
+                const receiveModel = document.getElementById('receive-model');
+                const receiveSerial = document.getElementById('receive-serial');
+                const receivePrice = document.getElementById('receive-price');
+                const receiveDescription = document.getElementById('receive-description');
+                if (receiveModel) receiveModel.value = '';
+                if (receiveSerial) receiveSerial.value = '';
+                if (receivePrice) receivePrice.value = '';
+                if (receiveDescription) receiveDescription.value = '';
+                const receiveModelManualEl = document.getElementById('receive-model-manual');
+                if (receiveModelManualEl) receiveModelManualEl.value = '';
+                switchModelMode('receive', 'list');
+                pendingSku = null;
+                catalogLoaded = false;
+                loadCatalog();
+                showToast('Товар успешно добавлен!');
+            } else {
+                if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ ' + escapeHtml(data.message) + '</div>';
+            }
+        } catch (error) {
+            if (debugDiv) debugDiv.textContent += ' | ❌ Ошибка: ' + error.message;
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Ошибка: ' + escapeHtml(error.message) + '</div>';
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        }
+    }
+
+    // FIX #11: Подтверждение перед отменой если форма заполнена
+    async function cancelReceive() {
+        const receiveModel = document.getElementById('receive-model');
+        const receiveSerial = document.getElementById('receive-serial');
+        const receivePrice = document.getElementById('receive-price');
+        const receiveDescription = document.getElementById('receive-description');
+
+        const hasData = (receiveModel && receiveModel.value) ||
+                        (receiveSerial && receiveSerial.value.trim()) ||
+                        (receivePrice && receivePrice.value) ||
+                        (receiveDescription && receiveDescription.value.trim());
+
+        if (hasData) {
+            const confirmed = await showConfirmDialog('Форма заполнена. Вы уверены, что хотите отменить?');
+            if (!confirmed) return;
+        }
+
+        const receiveForm = document.getElementById('receive-form');
+        const scannedDisplay = document.getElementById('scanned-sku-display');
+        const receiveResult = document.getElementById('receive-result');
+        const receiveDebug = document.getElementById('receive-debug');
+
+        if (receiveForm) receiveForm.style.display = 'none';
+        if (scannedDisplay) scannedDisplay.style.display = 'none';
+        if (receiveResult) receiveResult.innerHTML = '';
+        if (receiveDebug) {
+            receiveDebug.innerHTML = '';
+            receiveDebug.style.display = 'none';
+        }
+        if (receiveModel) receiveModel.value = '';
+        if (receiveSerial) receiveSerial.value = '';
+        if (receivePrice) receivePrice.value = '';
+        if (receiveDescription) receiveDescription.value = '';
+        const receiveModelManual = document.getElementById('receive-model-manual');
+        if (receiveModelManual) receiveModelManual.value = '';
+        switchModelMode('receive', 'list');
+        pendingSku = null;
+        if (receiveQrCode && isReceiveScanning) {
+            receiveQrCode.stop().then(() => isReceiveScanning = false);
+        }
+    }
+
+    // FIX #2 + #3 + #10: POST, блокировка кнопки, спиннер
+    async function submitNoQRProduct() {
+        const model = getModelValue('noqr');
+        const serialNumber = document.getElementById('receive-noqr-serial')?.value.trim() || '';
+        const purchasePrice = document.getElementById('receive-noqr-price')?.value || '';
+        const description = document.getElementById('receive-noqr-description')?.value || '';
+
+        if (!model) {
+            showToast('Выберите модель товара', 'error');
+            return;
+        }
+
+        // Проверка дубликата серийного номера
+        if (serialNumber && allProducts && allProducts.length) {
+            const duplicate = allProducts.find(p => p['Серийный номер'] && p['Серийный номер'].trim() === serialNumber);
+            if (duplicate) {
+                const confirmed = await showConfirmDialog(
+                    '⚠️ Товар с таким серийным номером уже существует:\n' +
+                    duplicate['Название'] + ' (арт. ' + duplicate['Артикул'] + ')\nДобавить всё равно?'
+                );
+                if (!confirmed) return;
+            }
+        }
+
+        const submitBtn = document.getElementById('submit-noqr-btn');
+        if (submitBtn && submitBtn.disabled) return;
+
+        const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Добавление...';
+        }
+
+        const resultDiv = document.getElementById('receive-noqr-result');
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">💾 Добавление товара и генерация QR-кода...</div>';
+
+        try {
+            const url = GOOGLE_SCRIPT_URL + '?action=addWithoutSku'
+                + '&model='         + encodeURIComponent(model)
+                + '&serialNumber='  + encodeURIComponent(serialNumber)
+                + '&purchasePrice=' + encodeURIComponent(purchasePrice)
+                + '&description='   + encodeURIComponent(description)
+                + '&category='      + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.success) {
+                if (resultDiv) resultDiv.innerHTML = '<div class="success">' + escapeHtml(data.message) + '<br>🔢 Артикул: ' + escapeHtml(data.sku) + '<br>📱 QR-код сгенерирован: <a href="' + escapeHtml(data.qrCode) + '" target="_blank">Посмотреть QR</a></div>';
+                const receiveNoqrModel = document.getElementById('receive-noqr-model');
+                const receiveNoqrSerial = document.getElementById('receive-noqr-serial');
+                const receiveNoqrPrice = document.getElementById('receive-noqr-price');
+                const receiveNoqrDescription = document.getElementById('receive-noqr-description');
+                if (receiveNoqrModel) receiveNoqrModel.value = '';
+                if (receiveNoqrSerial) receiveNoqrSerial.value = '';
+                if (receiveNoqrPrice) receiveNoqrPrice.value = '';
+                if (receiveNoqrDescription) receiveNoqrDescription.value = '';
+                const receiveNoqrModelManualEl = document.getElementById('receive-noqr-model-manual');
+                if (receiveNoqrModelManualEl) receiveNoqrModelManualEl.value = '';
+                switchModelMode('noqr', 'list');
+                catalogLoaded = false;
+                loadCatalog();
+                showToast('Товар успешно добавлен!');
+            } else {
+                if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ ' + escapeHtml(data.message) + '</div>';
+            }
+        } catch (error) {
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Ошибка: ' + escapeHtml(error.message) + '</div>';
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        }
+    }
+
+    function clearNoQRForm() {
+        const receiveNoqrModel = document.getElementById('receive-noqr-model');
+        const receiveNoqrSerial = document.getElementById('receive-noqr-serial');
+        const receiveNoqrPrice = document.getElementById('receive-noqr-price');
+        const receiveNoqrDescription = document.getElementById('receive-noqr-description');
+        const receiveNoqrResult = document.getElementById('receive-noqr-result');
+        if (receiveNoqrModel) receiveNoqrModel.value = '';
+        if (receiveNoqrSerial) receiveNoqrSerial.value = '';
+        if (receiveNoqrPrice) receiveNoqrPrice.value = '';
+        if (receiveNoqrDescription) receiveNoqrDescription.value = '';
+        if (receiveNoqrResult) receiveNoqrResult.innerHTML = '';
+        const receiveNoqrModelManual = document.getElementById('receive-noqr-model-manual');
+        if (receiveNoqrModelManual) receiveNoqrModelManual.value = '';
+        switchModelMode('noqr', 'list');
+    }
+
+    // ========== ПОИСК ==========
+
+    // Живой поиск по мере набора — только по локальному кэшу
+    function searchLive(query) {
+        const q = query.trim().toLowerCase();
+        const resultDiv = document.getElementById('search-result');
+        if (!resultDiv) return;
+        if (!q || q.length < 2) { resultDiv.innerHTML = ''; return; }
+        if (!allProducts || !allProducts.length) return;
+
+        const matches = allProducts.filter(p =>
+            (p['Артикул'] || '').toLowerCase().includes(q) ||
+            (p['Название'] || '').toLowerCase().includes(q) ||
+            (p['Серийный номер'] || '').toLowerCase().includes(q)
+        );
+
+        if (!matches.length) {
+            resultDiv.innerHTML = '<div class="error">💭 Ничего не найдено</div>';
+            return;
+        }
+        if (matches.length === 1) {
+            currentProduct = matches[0];
+            displayProduct(matches[0], 'search-result');
+            return;
+        }
+        // Несколько результатов — показываем список для выбора
+        let html = '<div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">';
+        matches.slice(0, 10).forEach(p => {
+            const statusClass = getStatusClass(p['Статус']);
+            const statusText  = getStatusText(p['Статус']);
+            html += '<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; cursor:pointer;" '
+                + 'onclick="selectSearchResult(\'' + escapeHtml(p['Артикул']) + '\')">'
+                + '<strong>' + escapeHtml(p['Название'] || 'Без названия') + '</strong><br>'
+                + '<small>🔢 ' + escapeHtml(p['Артикул'] || '—') + '</small> &nbsp; '
+                + '<small class="' + statusClass + '">' + statusText + '</small>'
+                + '</div>';
+        });
+        if (matches.length > 10) html += '<div style="color:#64748b; font-size:13px; text-align:center;">... и ещё ' + (matches.length - 10) + '</div>';
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    }
+
+    function selectSearchResult(sku) {
+        const product = allProducts.find(p => p['Артикул'] === sku);
+        if (product) {
+            currentProduct = product;
+            displayProduct(product, 'search-result');
+        }
+    }
+
+    async function searchBySerial() {
+        const sku = document.getElementById('serial-input')?.value.trim();
+        const resultDiv = document.getElementById('search-result');
+
+        if (!sku) {
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Введите артикул или название</div>';
+            return;
+        }
+
+        if (resultDiv) resultDiv.innerHTML = '<div class="loading">🔍 Поиск...</div>';
+
+        // Сначала ищем локально
+        if (allProducts && allProducts.length) {
+            const q = sku.toLowerCase();
+            const matches = allProducts.filter(p =>
+                (p['Артикул'] || '').toLowerCase().includes(q) ||
+                (p['Название'] || '').toLowerCase().includes(q) ||
+                (p['Серийный номер'] || '').toLowerCase().includes(q)
+            );
+            if (matches.length === 1) {
+                currentProduct = matches[0];
+                displayProduct(matches[0], 'search-result');
+                return;
+            }
+            if (matches.length > 1) {
+                searchLive(sku);
+                return;
+            }
+        }
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const url = GOOGLE_SCRIPT_URL + '?serial=' + encodeURIComponent(sku) + '&category=' + encodeURIComponent(currentCategory);
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            currentProduct = data;
+            displayProduct(data, 'search-result');
+        } catch (error) {
+            const offlineData = loadProductsFromLocalStorageForCategory(currentCategory);
+            if (offlineData && offlineData.products) {
+                const offlineProduct = offlineData.products.find(p => p['Артикул'] === sku);
+                if (offlineProduct) {
+                    currentProduct = offlineProduct;
+                    displayProduct(offlineProduct, 'search-result');
+                    if (resultDiv) {
+                        const warning = document.createElement('div');
+                        warning.className = 'loading';
+                        warning.style.marginTop = '10px';
+                        warning.style.fontSize = '12px';
+                        warning.textContent = '⚠️ Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')';
+                        resultDiv.appendChild(warning);
+                        setTimeout(() => warning.remove(), 3000);
+                    }
+                    return;
+                }
+            }
+            if (resultDiv) resultDiv.innerHTML = '<div class="error">❌ Товар с артикулом "' + escapeHtml(sku) + '" не найден</div>';
+        }
+    }
+
+    // FIX #7: Полный return data (был обрезан)
+    async function findProductBySKU(sku) {
+        if (allProducts && allProducts.length) {
+            const found = allProducts.find(p => p['Артикул'] === sku);
+            if (found) return found;
+        }
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const res = await fetch(GOOGLE_SCRIPT_URL + '?serial=' + encodeURIComponent(sku) + '&category=' + encodeURIComponent(currentCategory), { signal: controller.signal });
+            clearTimeout(timeoutId);
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            return data;
+        } catch (error) {
+            const offlineData = loadProductsFromLocalStorageForCategory(currentCategory);
+            if (offlineData && offlineData.products) {
+                const found = offlineData.products.find(p => p['Артикул'] === sku);
+                if (found) return found;
+            }
+            throw new Error('Товар с артикулом "' + sku + '" не найден');
+        }
+    }
+
+    // ========== ОТОБРАЖЕНИЕ ==========
+    function getStatusClass(status) {
+        switch(status) {
+            case 'Продан': return 'status-sold';
+            case 'Зарезервирован': return 'status-reserved';
+            case 'В доставке': return 'status-delivery';
+            default: return 'status-unsold';
+        }
+    }
+
+    function getStatusText(status) {
+        switch(status) {
+            case 'Продан': return '✅ Продан';
+            case 'Зарезервирован': return '🔒 Зарезервирован';
+            case 'В доставке': return '🚚 В доставке';
+            default: return '📦 Не продан';
+        }
+    }
+
+    function displayProduct(p, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        let priceZakupka = p['Цена закупка'];
+        if (priceZakupka && !isNaN(parseFloat(priceZakupka))) priceZakupka = parseFloat(priceZakupka).toLocaleString('ru-RU') + ' ₽';
+        let priceProdazha = p['Цена продажа'];
+        if (priceProdazha && !isNaN(parseFloat(priceProdazha))) priceProdazha = parseFloat(priceProdazha).toLocaleString('ru-RU') + ' ₽';
+        let profit = p['Прибыль'];
+        if (profit && !isNaN(parseFloat(profit))) profit = parseFloat(profit).toLocaleString('ru-RU') + ' ₽';
+        let repairCost = p['Затраты ремонт'];
+        if (repairCost && !isNaN(parseFloat(repairCost))) repairCost = parseFloat(repairCost).toLocaleString('ru-RU') + ' ₽';
+        let deliveryCost = p['Затраты доставка'];
+        if (deliveryCost && !isNaN(parseFloat(deliveryCost))) deliveryCost = parseFloat(deliveryCost).toLocaleString('ru-RU') + ' ₽';
+
+        const statusClass = getStatusClass(p['Статус']);
+        const statusText = getStatusText(p['Статус']);
+
+        const escapedSku = escapeHtml(p['Артикул']);
+
+        let html = '<div class="product-card" id="product-card-' + escapedSku + '">'
+            + '<h3>🚁 ' + escapeHtml(p['Название'] || 'Без названия') + '</h3>'
+            + '<div class="product-detail"><strong>🔢 Артикул:</strong> ' + escapeHtml(p['Артикул'] || '—') + '</div>'
+            + '<div class="product-detail"><strong>📇 Серийный номер:</strong> ' + escapeHtml(p['Серийный номер'] || '—') + '</div>'
+            + '<div class="product-detail"><strong>📝 Состояние:</strong><div class="state-list">' + formatStateText(p['Состояние'] || '—') + '</div></div>'
+            + '<div class="product-detail"><strong>💰 Цена закупки:</strong> ' + (priceZakupka || '—') + '</div>'
+            + '<div class="product-detail"><strong>💰 Цена продажи:</strong> ' + (priceProdazha || '—') + '</div>';
+
+        if (repairCost) html += '<div class="product-detail"><strong>🔧 Затраты (ремонт):</strong> ' + repairCost + '</div>';
+        if (deliveryCost) html += '<div class="product-detail"><strong>📦 Затраты (доставка):</strong> ' + deliveryCost + '</div>';
+        if (profit) html += '<div class="product-detail"><strong>💰 Прибыль:</strong> ' + profit + '</div>';
+
+        html += '<div class="product-detail"><strong>📌 Статус:</strong> <span class="' + statusClass + '">' + statusText + '</span></div>';
+
+        if (p['Дата закупки']) html += '<div class="product-detail"><strong>📅 Дата закупки:</strong> ' + escapeHtml(p['Дата закупки']) + '</div>';
+        if (p['Дата продажи']) html += '<div class="product-detail"><strong>📆 Дата продажи:</strong> ' + escapeHtml(p['Дата продажи']) + '</div>';
+        if (p['Ссылка на Авито']) html += '<div class="product-detail"><strong>🔗 Авито:</strong> <a href="' + escapeHtml(p['Ссылка на Авито']) + '" target="_blank">Открыть →</a></div>';
+        if (p['Фото'] && p['Фото'] !== 'IMAGE') html += '<div class="product-detail"><strong>📷 Фото:</strong> <a href="' + escapeHtml(p['Фото']) + '" target="_blank">Посмотреть</a></div>';
+        if (p['QR_Code']) html += '<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="' + escapeHtml(p['QR_Code']) + '" style="max-width:120px"></div>';
+
+        html += '<div class="action-buttons">'
+            + '<button class="action-btn" onclick="goBack()" style="background: #475569;">⬅️ Назад</button>'
+            + '<button class="action-btn" onclick="shareProduct(\'' + escapedSku + '\')">📤 Поделиться</button>'
+            + '<button class="action-btn" onclick="editProduct(\'' + escapedSku + '\')" style="background: #eab308;">✏️ Редактировать</button>'
+            + '<button class="action-btn" onclick="deleteProduct(\'' + escapedSku + '\')" style="background: #dc2626;">🗑️ Удалить</button>'
+            + '</div>';
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    async function shareProduct(sku) {
+        try {
+            const product = await findProductBySKU(sku);
+            const shareText = '🚁 Товар: ' + product['Название'] + '\n🔢 Артикул: ' + product['Артикул'] + '\n📇 Серийный номер: ' + (product['Серийный номер'] || '—') + '\n📝 Состояние: ' + (product['Состояние'] || '—') + '\n💰 Цена закупки: ' + (product['Цена закупка'] || '—') + ' ₽\n📌 Статус: ' + (product['Статус'] || 'не продан');
+            const productUrl = window.location.origin + window.location.pathname + '?sku=' + encodeURIComponent(sku) + '&category=' + encodeURIComponent(currentCategory);
+            if (navigator.share) {
+                await navigator.share({ title: 'Товар: ' + product['Название'], text: shareText, url: productUrl });
+            } else {
+                await navigator.clipboard.writeText(shareText + '\n\n🔗 ' + productUrl);
+                showToast('📋 Информация скопирована', 'info');
+            }
+        } catch (error) {
+            showToast('❌ Не удалось поделиться', 'error');
+        }
+    }
+
+    function formatStateText(text) {
+        if (!text || text === '—') return '—';
+        if (text.includes('*')) {
+            const items = text.split('*').filter(item => item.trim().length > 0);
+            if (items.length > 0) {
+                let html = '<ul style="margin: 5px 0 0 20px; padding-left: 0;">';
+                items.forEach(item => { html += '<li style="margin: 3px 0;">' + escapeHtml(item.trim()) + '</li>'; });
+                html += '</ul>';
+                return html;
+            }
+        }
+        return escapeHtml(text).replace(/\n/g, '<br>');
+    }
+
+    // Активный фильтр статуса (null = все)
+    let activeStatusFilter = null;
+
+    function updateStats(products) {
+        // products здесь — всегда allProducts (все товары), чтобы счётчики не менялись при фильтрации
+        const source = allProducts || products;
+        if (!source || !Array.isArray(source) || source.length === 0) {
+            const statsContainer = document.getElementById('stats-content');
+            if (statsContainer) statsContainer.innerHTML = 'Нет данных для отображения';
+            return;
+        }
+        const stats = {};
+        let total = 0, sold = 0, reserved = 0, delivery = 0, unsold = 0;
+        source.forEach(product => {
+            total++;
+            const model = (product['Название'] || 'Без названия').trim().replace(/\s+/g, ' ');
+            stats[model] = (stats[model] || 0) + 1;
+            switch(product['Статус']) {
+                case 'Продан': sold++; break;
+                case 'Зарезервирован': reserved++; break;
+                case 'В доставке': delivery++; break;
+                default: unsold++;
+            }
+        });
+
+        // Кнопки фильтрации по статусу
+        const mkBtn = (label, value, color, count) => {
+            const isActive = activeStatusFilter === value;
+            return '<button class="status-filter-btn' + (isActive ? ' active' : '') + '" '
+                + 'style="background:' + (isActive ? color + '22' : 'white') + '; color:' + color + '; border-color:' + (isActive ? color : 'transparent') + ';" '
+                + 'onclick="filterByStatus(\'' + value + '\')">'
+                + label + ' <strong>' + count + '</strong></button>';
+        };
+
+        let statsHtml = '<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">'
+            + mkBtn('📦 Все', '', '#475569', total)
+            + mkBtn('🟢 В наличии', 'Не продан', '#16a34a', unsold)
+            + mkBtn('🚚 В доставке', 'В доставке', '#3b82f6', delivery)
+            + mkBtn('🔒 Зарезервирован', 'Зарезервирован', '#eab308', reserved)
+            + mkBtn('✅ Продан', 'Продан', '#94a3b8', sold)
+            + '</div>';
+
+        // Кнопки моделей
+        statsHtml += '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+        for (const [model, count] of Object.entries(stats).sort()) {
+            statsHtml += '<span style="background: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer;" onclick="filterCatalogDirectly(\'' + escapeHtml(model) + '\')">'
+                + escapeHtml(model) + ': <strong>' + count + '</strong>'
+                + '</span>';
+        }
+        statsHtml += '</div>';
+        const statsContainer = document.getElementById('stats-content');
+        if (statsContainer) statsContainer.innerHTML = statsHtml;
+    }
+
+    function filterByStatus(status) {
+        activeStatusFilter = status || null;
+        applyFilters();
+        updateStats(allProducts);
+    }
+
+    function filterCatalogDirectly(model) {
+        activeStatusFilter = null;
+        let filtered = allProducts.filter(product => (product['Название'] || '').trim().replace(/\s+/g, ' ') === model);
+        filtered = sortByStatus(filtered);
+        renderCatalog(filtered);
+        updateStats(allProducts);
+        const statsHeader = document.querySelector('#catalog-stats strong');
+        if (statsHeader) statsHeader.innerHTML = '📊 Фильтр: ' + escapeHtml(model)
+            + ' &nbsp;<button onclick="resetCatalogFilter()" style="background:#475569;border:none;color:white;padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;">✕ Сбросить</button>';
+    }
+
+    function resetCatalogFilter() {
+        activeStatusFilter = null;
+        renderCatalog(sortByStatus(allProducts));
+        updateStats(allProducts);
+        const statsHeader = document.querySelector('#catalog-stats strong');
+        if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям:';
+    }
+
+    // Сортировка: Не продан → В доставке → Зарезервирован → Продан
+    function sortByStatus(products) {
+        const order = { 'Не продан': 0, 'В доставке': 1, 'Зарезервирован': 2, 'Продан': 3 };
+        return products.slice().sort((a, b) => {
+            const oa = order[a['Статус']] !== undefined ? order[a['Статус']] : 1;
+            const ob = order[b['Статус']] !== undefined ? order[b['Статус']] : 1;
+            return oa - ob;
+        });
+    }
+
+    function applyFilters() {
+        if (!allProducts || !allProducts.length) return;
+        const statusFilter = activeStatusFilter || '';
+        let filtered = allProducts.filter(product => {
+            if (statusFilter && product['Статус'] !== statusFilter) return false;
+            return true;
+        });
+        filtered = sortByStatus(filtered);
+        renderCatalog(filtered);
+    }
+
+    function renderCatalog(products) {
+        const container = document.getElementById('catalog-content');
+        if (!container) return;
+        if (!products || products.length === 0) {
+            container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            return;
+        }
+        let html = '<div class="products-grid">';
+        products.forEach(product => {
+            const statusClass = getStatusClass(product['Статус']);
+            const statusText = getStatusText(product['Статус']);
+            const status = product['Статус'] || '';
+            let itemClass = 'product-item';
+            if (status === 'Продан') itemClass += ' is-sold';
+            else if (status === 'В доставке') itemClass += ' is-delivery';
+            else if (status === 'Зарезервирован') itemClass += ' is-reserved';
+            html += '<div class="' + itemClass + '" onclick="viewProductDetail(\'' + escapeHtml(product['Артикул']) + '\')">'
+                + '<strong>' + escapeHtml(product['Название'] || 'Без названия') + '</strong><br>'
+                + '<small>🔢 ' + escapeHtml(product['Артикул'] || '—') + '</small><br>'
+                + '<small class="' + statusClass + '">' + statusText + '</small>'
+                + '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function resetFilters() {
+        activeStatusFilter = null;
+        applyFilters();
+        updateStats(allProducts);
+        const statsHeader = document.querySelector('#catalog-stats strong');
+        if (statsHeader) statsHeader.innerHTML = '📊 Статистика по комплектациям:';
+    }
+
+    async function viewProductDetail(sku) {
+        switchTab('search');
+        const serialInput = document.getElementById('serial-input');
+        if (serialInput) serialInput.value = sku;
+        await searchBySerial();
+    }
+
+    // ========== КАТАЛОГ С КЭШИРОВАНИЕМ ==========
+    function saveProductsToLocalStorage(products) {
+        try {
+            localStorage.setItem('cachedProducts_' + currentCategory, JSON.stringify({
+                products: products,
+                timestamp: Date.now(),
+                category: currentCategory
+            }));
+            const cacheKey = 'cachedProducts_' + currentCategory;
+            window[cacheKey] = products;
+        } catch (e) { console.error('Ошибка сохранения:', e); }
+    }
+
+    function loadProductsFromLocalStorageForCategory(category) {
+        try {
+            const cached = localStorage.getItem('cachedProducts_' + category);
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) return data;
+            }
+        } catch (e) { console.error('Ошибка загрузки:', e); }
+        return null;
+    }
+
+    function loadProductsFromLocalStorage() {
+        return loadProductsFromLocalStorageForCategory(currentCategory);
+    }
+
+    async function updateCategoryInBackground(category) {
+        try {
+            const url = GOOGLE_SCRIPT_URL + '?action=getAll&category=' + encodeURIComponent(category);
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            const products = data.products || data;
+            if (products && products.length) {
+                const cacheKey = 'cachedProducts_' + category;
+                window[cacheKey] = products;
+                localStorage.setItem('cachedProducts_' + category, JSON.stringify({
+                    products: products,
+                    timestamp: Date.now(),
+                    category: category
+                }));
+                if (currentCategory === category) {
+                    allProducts = products;
+                    cachedProducts = products;
+                    catalogLoaded = true;
+                    renderCatalog(products);
+                    updateStats(products);
+                    const headerTitle = document.querySelector('#catalog-panel h2');
+                    if (headerTitle) headerTitle.textContent = '📦 Каталог ' + category;
+                }
+            }
+        } catch (error) { console.log('Фоновое обновление не удалось:', error); }
+    }
+
+    async function switchCategory(category) {
+        if (currentCategory === category) return;
+        currentCategory = category;
+
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        if (category === 'Дроны') {
+            document.getElementById('btn-drones').classList.add('active');
+        } else {
+            document.getElementById('btn-scooters').classList.add('active');
+        }
+
+        updateModelsForCategory(category);
+
+        const headerTitle = document.querySelector('#catalog-panel h2');
+        if (headerTitle) headerTitle.textContent = '📦 Каталог ' + category;
+
+        const cacheKey = 'cachedProducts_' + category;
+        if (window[cacheKey] && window[cacheKey].length > 0) {
+            allProducts = window[cacheKey];
+            cachedProducts = allProducts;
+            catalogLoaded = true;
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+            return;
+        }
+
+        const offlineData = loadProductsFromLocalStorageForCategory(category);
+        if (offlineData && offlineData.products && offlineData.products.length) {
+            allProducts = offlineData.products;
+            cachedProducts = allProducts;
+            catalogLoaded = true;
+            window[cacheKey] = allProducts;
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+            updateCategoryInBackground(category);
+            return;
+        }
+
+        const container = document.getElementById('catalog-content');
+        if (container) container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+        await loadCatalog(true);
+    }
+
+    async function loadCatalog(forceReload = false) {
+        const container = document.getElementById('catalog-content');
+        if (!container) return;
+
+        if (cachedProducts && !forceReload && catalogLoaded) {
+            allProducts = cachedProducts;
+            if (allProducts && allProducts.length) {
+                renderCatalog(allProducts);
+                updateStats(allProducts);
+            } else {
+                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            }
+            return;
+        }
+
+        const offlineData = loadProductsFromLocalStorage();
+        if (offlineData && !forceReload) {
+            cachedProducts = offlineData.products;
+            allProducts = offlineData.products;
+            catalogLoaded = true;
+            if (allProducts && allProducts.length) {
+                renderCatalog(allProducts);
+                updateStats(allProducts);
+                container.innerHTML = '<div class="loading">📦 Офлайн-режим (данные от ' + new Date(offlineData.timestamp).toLocaleString() + ')</div>';
+                setTimeout(() => {
+                    if (container.innerHTML.includes('Офлайн-режим')) {
+                        container.innerHTML = '';
+                        renderCatalog(allProducts);
+                    }
+                }, 2000);
+            } else {
+                container.innerHTML = '<div class="error">📭 Товары не найдены.</div>';
+            }
+            return;
+        }
+
+        container.innerHTML = '<div class="loading">📦 Загрузка...</div>';
+        try {
+            const url = GOOGLE_SCRIPT_URL + '?action=getAll&category=' + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            const products = data.products || data;
+            if (!products || !Array.isArray(products)) throw new Error('Неверный формат данных');
+
+            cachedProducts = products;
+            allProducts = products;
+            catalogLoaded = true;
+
+            const cacheKey = 'cachedProducts_' + currentCategory;
+            window[cacheKey] = products;
+            saveProductsToLocalStorage(products);
+
+            if (!allProducts || allProducts.length === 0) {
+                container.innerHTML = '<div class="error">📭 Товары в категории "' + escapeHtml(currentCategory) + '" не найдены.</div>';
+                const statsContent = document.getElementById('stats-content');
+                if (statsContent) statsContent.innerHTML = 'Нет данных';
+                return;
+            }
+            renderCatalog(allProducts);
+            updateStats(allProducts);
+        } catch (error) {
+            const fallbackData = loadProductsFromLocalStorage();
+            if (fallbackData) {
+                cachedProducts = fallbackData.products;
+                allProducts = fallbackData.products;
+                catalogLoaded = true;
+                renderCatalog(allProducts);
+                updateStats(allProducts);
+                container.innerHTML = '<div class="loading">⚠️ Офлайн-режим (данные от ' + new Date(fallbackData.timestamp).toLocaleString() + ')</div>';
+                setTimeout(() => {
+                    if (container.innerHTML.includes('Офлайн-режим')) container.innerHTML = '';
+                }, 3000);
+            } else {
+                container.innerHTML = '<div class="error">❌ Нет интернета и нет сохранённых данных</div>';
+            }
+        }
+    }
+
+    function getAllOfflineProducts() {
+        const all = [];
+        for (let cat of ['Дроны', 'Самокаты']) {
+            const cached = localStorage.getItem('cachedProducts_' + cat);
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (data.products && data.products.length) all.push(...data.products);
+            }
+        }
+        return all;
+    }
+
+    // ========== РЕДАКТИРОВАНИЕ ==========
+    function editProduct(sku) {
+        currentProduct = allProducts.find(p => p['Артикул'] === sku);
+        if (!currentProduct) return;
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;';
+        modal.innerHTML = '<div style="background:white; border-radius:20px; padding:20px; max-width:500px; width:90%; max-height:80%; overflow-y:auto;">'
+            + '<h3 style="color:#1e3c72;">✏️ Редактирование: ' + escapeHtml(currentProduct['Артикул']) + '</h3>'
+            + '<div class="form-group"><label>🚁 Название</label><input type="text" id="edit-name" value="' + escapeHtml(currentProduct['Название']) + '"></div>'
+            + '<div class="form-group"><label>📇 Серийный номер</label><input type="text" id="edit-serial" value="' + escapeHtml(currentProduct['Серийный номер']) + '"></div>'
+            + '<div class="form-group"><label>📝 Состояние</label><textarea id="edit-description" rows="3">' + escapeHtml(currentProduct['Состояние']) + '</textarea></div>'
+            + '<div class="form-group"><label>💰 Цена закупки</label><input type="number" id="edit-purchase-price" value="' + (currentProduct['Цена закупка'] || '') + '"></div>'
+            + '<div class="form-group"><label>💰 Цена продажи</label><input type="number" id="edit-sale-price" value="' + (currentProduct['Цена продажа'] || '') + '"></div>'
+            + '<div class="form-group"><label>📌 Статус</label>'
+            +     '<select id="edit-status">'
+            +         '<option value="Не продан"' + (currentProduct['Статус'] === 'Не продан' ? ' selected' : '') + '>Не продан</option>'
+            +         '<option value="Продан"' + (currentProduct['Статус'] === 'Продан' ? ' selected' : '') + '>Продан</option>'
+            +         '<option value="Зарезервирован"' + (currentProduct['Статус'] === 'Зарезервирован' ? ' selected' : '') + '>Зарезервирован</option>'
+            +         '<option value="В доставке"' + (currentProduct['Статус'] === 'В доставке' ? ' selected' : '') + '>В доставке</option>'
+            +     '</select>'
+            + '</div>'
+            + '<div class="form-group"><label>🔗 Авито</label><input type="url" id="edit-avito" value="' + escapeHtml(currentProduct['Ссылка на Авито'] || '') + '"></div>'
+            + '<div class="form-group"><label>🔧 Затраты (ремонт)</label><input type="number" id="edit-repair-cost" value="' + (currentProduct['Затраты ремонт'] || '') + '"></div>'
+            + '<div class="form-group"><label>📦 Затраты (доставка)</label><input type="number" id="edit-delivery-cost" value="' + (currentProduct['Затраты доставка'] || '') + '"></div>'
+            + '<div class="action-buttons"><button id="save-edit-btn" style="background:#16a34a;">💾 Сохранить</button><button id="cancel-edit-btn" style="background:#64748b;">❌ Отмена</button></div>'
+            + '</div>';
+        document.body.appendChild(modal);
+
+        // Закрытие по клику на overlay
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+
+        document.getElementById('save-edit-btn').onclick = async () => {
+            const updatedData = {
+                sku: currentProduct['Артикул'],
+                name: document.getElementById('edit-name').value,
+                serialNumber: document.getElementById('edit-serial').value,
+                description: document.getElementById('edit-description').value,
+                purchasePrice: document.getElementById('edit-purchase-price').value,
+                salePrice: document.getElementById('edit-sale-price').value,
+                status: document.getElementById('edit-status').value,
+                avitoLink: document.getElementById('edit-avito').value,
+                repairCost: document.getElementById('edit-repair-cost').value,
+                deliveryCost: document.getElementById('edit-delivery-cost').value
+            };
+            await saveProductChanges(updatedData);
+            modal.remove();
+        };
+        document.getElementById('cancel-edit-btn').onclick = () => modal.remove();
+    }
+
+    // FIX #3: POST для saveProductChanges + FIX #3 BUG-03: правильное определение активной панели
+    async function saveProductChanges(data) {
+        const activePanel = document.querySelector('.panel.active');
+        let resultContainer;
+        if (activePanel && activePanel.id === 'search-panel') {
+            resultContainer = document.getElementById('search-result');
+        } else {
+            resultContainer = document.getElementById('scan-result');
+        }
+        if (resultContainer) resultContainer.innerHTML = '<div class="loading">💾 Сохранение...</div>';
+
+        try {
+            const url = GOOGLE_SCRIPT_URL + '?action=updateProduct'
+                + '&sku='           + encodeURIComponent(data.sku)
+                + '&name='          + encodeURIComponent(data.name)
+                + '&serialNumber='  + encodeURIComponent(data.serialNumber)
+                + '&description='   + encodeURIComponent(data.description)
+                + '&purchasePrice=' + encodeURIComponent(data.purchasePrice)
+                + '&salePrice='     + encodeURIComponent(data.salePrice)
+                + '&status='        + encodeURIComponent(data.status)
+                + '&avitoLink='     + encodeURIComponent(data.avitoLink || '')
+                + '&repairCost='    + encodeURIComponent(data.repairCost || '')
+                + '&deliveryCost='  + encodeURIComponent(data.deliveryCost || '')
+                + '&category='      + encodeURIComponent(currentCategory);
+            const response = await fetch(url);
+            const result = await response.json();
+            if (result.success) {
+                showToast('✅ Товар обновлён');
+                const updatedProduct = await findProductBySKU(data.sku);
+                currentProduct = updatedProduct;
+                if (resultContainer) displayProduct(updatedProduct, resultContainer.id);
+                catalogLoaded = false;
+                loadCatalog();
+            } else {
+                showToast('❌ Ошибка: ' + result.message, 'error');
+            }
+        } catch (error) {
+            showToast('❌ Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    async function deleteProduct(sku) {
+        const confirmed = await showConfirmDialog('⚠️ Удалить товар ' + sku + '?');
+        if (!confirmed) return;
+
+        const activePanel = document.querySelector('.panel.active');
+        let resultContainer;
+        if (activePanel && activePanel.id === 'search-panel') {
+            resultContainer = document.getElementById('search-result');
+        } else {
+            resultContainer = document.getElementById('scan-result');
+        }
+        if (resultContainer) resultContainer.innerHTML = '<div class="loading">🗑️ Удаление...</div>';
+
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL + '?action=deleteProduct&sku=' + encodeURIComponent(sku) + '&category=' + encodeURIComponent(currentCategory));
+            const result = await response.json();
+            if (result.success) {
+                showToast('✅ Товар ' + sku + ' удалён');
+                if (resultContainer) {
+                    if (activePanel && activePanel.id === 'search-panel') {
+                        resultContainer.innerHTML = '';
+                    } else {
+                        resultContainer.innerHTML = '<div class="success">✅ Товар удалён</div>';
+                    }
+                }
+                catalogLoaded = false;
+                loadCatalog();
+            } else {
+                showToast('❌ Ошибка: ' + result.message, 'error');
+            }
+        } catch (error) {
+            showToast('❌ Ошибка: ' + error.message, 'error');
+        }
+    }
+
+    function handleUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        if (category && (category === 'Дроны' || category === 'Самокаты')) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            if (category === 'Дроны') {
+                document.getElementById('btn-drones').classList.add('active');
+            } else {
+                document.getElementById('btn-scooters').classList.add('active');
+            }
+            const headerTitle = document.querySelector('#catalog-panel h2');
+            if (headerTitle) headerTitle.textContent = '📦 Каталог ' + category;
+            catalogLoaded = false;
+            cachedProducts = null;
+            loadCatalog(true);
+        }
+        const sku = urlParams.get('sku');
+        if (sku) {
+            switchTab('search');
+            const serialInput = document.getElementById('serial-input');
+            if (serialInput) serialInput.value = sku;
+            searchBySerial();
+        }
+    }
+
+    // ========== ОБРАБОТЧИКИ ==========
+    // FIX #8: Кнопки навигации подключены
+    document.getElementById('start-scan-btn').onclick = startScanner;
+    document.getElementById('start-receive-scan').onclick = startReceiveScanner;
+    document.getElementById('submit-receive-btn').onclick = submitNewProduct;
+    document.getElementById('cancel-receive-btn').onclick = cancelReceive;
+    document.getElementById('submit-noqr-btn').onclick = submitNoQRProduct;
+    document.getElementById('clear-noqr-btn').onclick = clearNoQRForm;
+
+    const refreshBtn = document.getElementById('refresh-catalog-btn');
+    if (refreshBtn) refreshBtn.onclick = () => { catalogLoaded = false; loadCatalog(true); };
+
+
+
+    // Кнопки Назад/Главная удалены — навигация через нижнюю панель
+
+    window.onload = function() {
+        handleUrlParams();
+        updateModelsForCategory(currentCategory);
+        loadCatalog();
+    };
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('✅ Service Worker зарегистрирован:', reg.scope))
+            .catch(err => console.log('❌ SW ошибка:', err));
+    }
 </script>
 </body>
 </html>
