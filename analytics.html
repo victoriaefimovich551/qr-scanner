@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Аналитика — Инвентарь</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    min-height: 100vh;
+    padding: 16px 16px 32px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .back-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .back-btn:hover { background: rgba(255,255,255,0.3); }
+
+  .header-title { color: #fff; }
+  .header-title h1 { font-size: 1.3rem; font-weight: 700; }
+  .header-title p  { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+  /* ── Period filter ── */
+  .period-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .period-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .period-btn.active {
+    background: #fff;
+    color: #2a5298;
+    border-color: #fff;
+  }
+
+  /* ── Category toggle ── */
+  .cat-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .cat-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.75);
+    border-radius: 20px;
+    padding: 7px 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+  }
+
+  .cat-btn.active {
+    background: #fff;
+    color: #2a5298;
+    border-color: #fff;
+  }
+
+  /* ── Cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .kpi-card .kpi-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .kpi-card .kpi-label { font-size: 0.7rem; color: #7080a0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .kpi-card .kpi-value { font-size: 1.35rem; font-weight: 800; color: #1e3c72; margin-top: 2px; line-height: 1.2; }
+  .kpi-card .kpi-sub   { font-size: 0.72rem; color: #90a0b0; margin-top: 3px; }
+
+  .kpi-card.accent { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+  .kpi-card.accent .kpi-label { color: rgba(255,255,255,0.65); }
+  .kpi-card.accent .kpi-value { color: #fff; }
+  .kpi-card.accent .kpi-sub   { color: rgba(255,255,255,0.55); }
+
+  /* ── Section ── */
+  .section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e3c72;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Status badges ── */
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8faff;
+  }
+
+  .status-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-item .status-name  { font-size: 0.78rem; color: #4a5568; font-weight: 500; }
+  .status-item .status-count { font-size: 1.1rem; font-weight: 800; color: #1e3c72; margin-top: 1px; }
+
+  /* ── Top models table ── */
+  .model-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f4ff;
+    gap: 10px;
+  }
+
+  .model-row:last-child { border-bottom: none; }
+
+  .model-rank {
+    width: 22px; height: 22px;
+    background: #f0f4ff;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #2a5298;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .model-rank.gold   { background: #fff3cd; color: #b07d00; }
+  .model-rank.silver { background: #f0f0f0; color: #666; }
+  .model-rank.bronze { background: #fde8d8; color: #a0522d; }
+
+  .model-name { flex: 1; font-size: 0.83rem; font-weight: 600; color: #1e3c72; }
+  .model-sold { font-size: 0.75rem; color: #7080a0; }
+
+  .model-profit {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #1a8c4a;
+    text-align: right;
+  }
+
+  .model-margin {
+    font-size: 0.7rem;
+    color: #90a0b0;
+    text-align: right;
+  }
+
+  /* ── Long-laying items ── */
+  .stale-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f4ff;
+    gap: 10px;
+  }
+
+  .stale-row:last-child { border-bottom: none; }
+
+  .stale-days {
+    background: #fdecea;
+    color: #c0392b;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .stale-days.ok     { background: #e6f7ee; color: #1a8c4a; }
+  .stale-days.warn   { background: #fff8e1; color: #b07d00; }
+
+  .stale-name  { flex: 1; font-size: 0.83rem; font-weight: 600; color: #1e3c72; }
+  .stale-sku   { font-size: 0.72rem; color: #7080a0; }
+  .stale-price { font-size: 0.83rem; font-weight: 700; color: #2a5298; white-space: nowrap; }
+
+  /* ── Chart container ── */
+  .chart-wrap { position: relative; height: 200px; }
+
+  /* ── Loading / error ── */
+  .loading-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.95rem;
+  }
+
+  .loading-state .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner {
+    background: #fdecea;
+    color: #c0392b;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a class="back-btn" href="index.html">⬅ Назад</a>
+  <div class="header-title">
+    <h1>📊 Аналитика</h1>
+    <p id="last-update">Загрузка данных...</p>
+  </div>
+</div>
+
+<!-- Category toggle -->
+<div class="cat-bar">
+  <button class="cat-btn active" onclick="switchCat('all', this)">🌐 Все</button>
+  <button class="cat-btn" onclick="switchCat('Дроны', this)">🚁 Дроны</button>
+  <button class="cat-btn" onclick="switchCat('Самокаты', this)">🛴 Самокаты</button>
+</div>
+
+<!-- Period filter -->
+<div class="period-bar">
+  <button class="period-btn active" onclick="setPeriod('month', this)">Этот месяц</button>
+  <button class="period-btn" onclick="setPeriod('quarter', this)">Квартал</button>
+  <button class="period-btn" onclick="setPeriod('year', this)">Год</button>
+  <button class="period-btn" onclick="setPeriod('all', this)">Всё время</button>
+</div>
+
+<!-- Loading -->
+<div id="loading" class="loading-state">
+  <div class="spinner"></div>
+  Загружаем данные...
+</div>
+
+<!-- Error -->
+<div id="error" class="error-banner" style="display:none;"></div>
+
+<!-- Dashboard -->
+<div id="dashboard" style="display:none;">
+
+  <!-- KPI cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card accent">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Прибыль за период</div>
+      <div class="kpi-value" id="kpi-profit">—</div>
+      <div class="kpi-sub" id="kpi-profit-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Стоимость склада</div>
+      <div class="kpi-value" id="kpi-stock">—</div>
+      <div class="kpi-sub" id="kpi-stock-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-label">Продано за период</div>
+      <div class="kpi-value" id="kpi-sold">—</div>
+      <div class="kpi-sub" id="kpi-sold-sub"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⏱</div>
+      <div class="kpi-label">Среднее время продажи</div>
+      <div class="kpi-value" id="kpi-avgdays">—</div>
+      <div class="kpi-sub">дней на складе</div>
+    </div>
+  </div>
+
+  <!-- Статусы -->
+  <div class="section">
+    <div class="section-title">📌 Статусы товаров</div>
+    <div class="status-grid" id="status-grid"></div>
+  </div>
+
+  <!-- Динамика продаж -->
+  <div class="section">
+    <div class="section-title">📈 Динамика продаж (прибыль по месяцам)</div>
+    <div class="chart-wrap">
+      <canvas id="sales-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Топ моделей -->
+  <div class="section">
+    <div class="section-title">🏆 Топ моделей по прибыли</div>
+    <div id="top-models"></div>
+  </div>
+
+  <!-- Долго лежащие -->
+  <div class="section">
+    <div class="section-title">⏳ Долго лежат на складе</div>
+    <div id="stale-items"></div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMI8Q18FlMSUfDFhgmuH6st-3NFn6Dpx8aUDu6SICf6QraBxlLNRs3UU15c-sJ0D-zdg/exec';
+
+let allData    = [];   // все товары (дроны + самокаты)
+let currentCat = 'all';
+let currentPeriod = 'month';
+let salesChart = null;
+
+// ── Init ──────────────────────────────────────────────────────
+async function init() {
+  try {
+    // Загружаем оба листа параллельно
+    const [drones, scooters] = await Promise.all([
+      fetchProducts('Дроны'),
+      fetchProducts('Самокаты')
+    ]);
+    allData = [
+      ...drones.map(p => ({ ...p, _cat: 'Дроны' })),
+      ...scooters.map(p => ({ ...p, _cat: 'Самокаты' }))
+    ];
+
+    document.getElementById('loading').style.display   = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+
+    const now = new Date();
+    document.getElementById('last-update').textContent =
+      'Обновлено: ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+    render();
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    const err = document.getElementById('error');
+    err.style.display = 'block';
+    err.textContent = '❌ Ошибка загрузки: ' + e.message;
+  }
+}
+
+async function fetchProducts(category) {
+  const url = SCRIPT_URL + '?action=getProducts&category=' + encodeURIComponent(category);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const data = await r.json();
+  if (!data.success) throw new Error(data.message || 'Ошибка сервера');
+  return data.products || [];
+}
+
+// ── Filters ───────────────────────────────────────────────────
+function switchCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getFilteredData() {
+  let data = currentCat === 'all' ? allData : allData.filter(p => p._cat === currentCat);
+  return data;
+}
+
+function getPeriodStart() {
+  const now = new Date();
+  if (currentPeriod === 'month')   return new Date(now.getFullYear(), now.getMonth(), 1);
+  if (currentPeriod === 'quarter') return new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+  if (currentPeriod === 'year')    return new Date(now.getFullYear(), 0, 1);
+  return new Date(0); // all time
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  // dd.MM.yyyy
+  const m = String(str).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function fmt(num) {
+  if (!num && num !== 0) return '—';
+  return Number(num).toLocaleString('ru-RU') + ' ₽';
+}
+
+// ── Main render ───────────────────────────────────────────────
+function render() {
+  const data      = getFilteredData();
+  const periodStart = getPeriodStart();
+
+  // Товары проданные за период
+  const soldInPeriod = data.filter(p => {
+    if (p['Статус'] !== 'Продан') return false;
+    const d = parseDate(p['Дата продажи']);
+    return d && d >= periodStart;
+  });
+
+  // Товары в наличии (склад)
+  const inStock = data.filter(p => p['Статус'] !== 'Продан');
+
+  // Прибыль за период
+  const totalProfit = soldInPeriod.reduce((s, p) => s + (parseFloat(p['Прибыль']) || 0), 0);
+
+  // Стоимость склада (сумма закупочных цен товаров не-продан)
+  const stockValue = inStock.reduce((s, p) => s + (parseFloat(p['Цена закупка']) || 0), 0);
+
+  // Среднее время продажи (дни)
+  const times = data
+    .filter(p => p['Статус'] === 'Продан' && parseDate(p['Дата закупки']) && parseDate(p['Дата продажи']))
+    .map(p => {
+      const buy  = parseDate(p['Дата закупки']);
+      const sell = parseDate(p['Дата продажи']);
+      return Math.round((sell - buy) / 86400000);
+    })
+    .filter(d => d >= 0);
+  const avgDays = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null;
+
+  // ── KPI ──
+  document.getElementById('kpi-profit').textContent     = fmt(totalProfit);
+  document.getElementById('kpi-profit-sub').textContent = soldInPeriod.length + ' продаж за период';
+  document.getElementById('kpi-stock').textContent      = fmt(stockValue);
+  document.getElementById('kpi-stock-sub').textContent  = inStock.length + ' товаров на складе';
+  document.getElementById('kpi-sold').textContent       = soldInPeriod.length + ' шт';
+  document.getElementById('kpi-sold-sub').textContent   = 'выручка: ' + fmt(soldInPeriod.reduce((s,p) => s + (parseFloat(p['Цена продажа']) || 0), 0));
+  document.getElementById('kpi-avgdays').textContent    = avgDays !== null ? avgDays + ' дн' : '—';
+
+  // ── Статусы ──
+  const statusMap = {
+    'В наличии':      { color: '#1a8c4a', bg: '#e6f7ee' },
+    'В доставке':     { color: '#2a5298', bg: '#e8f0ff' },
+    'Зарезервирован': { color: '#b07d00', bg: '#fff8e1' },
+    'Продан':         { color: '#c0392b', bg: '#fdecea' },
+    'Не продан':      { color: '#1a8c4a', bg: '#e6f7ee' }
+  };
+
+  const counts = {};
+  data.forEach(p => {
+    const s = p['Статус'] || 'Не продан';
+    counts[s] = (counts[s] || 0) + 1;
+  });
+
+  const sg = document.getElementById('status-grid');
+  sg.innerHTML = Object.entries(counts).map(([status, count]) => {
+    const style = statusMap[status] || { color: '#555', bg: '#f0f0f0' };
+    return `<div class="status-item" style="background:${style.bg}">
+      <div class="status-dot" style="background:${style.color}"></div>
+      <div>
+        <div class="status-name">${status}</div>
+        <div class="status-count" style="color:${style.color}">${count}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── Динамика продаж ──
+  renderChart(data);
+
+  // ── Топ моделей ──
+  const modelStats = {};
+  data.filter(p => p['Статус'] === 'Продан').forEach(p => {
+    const name = (p['Название'] || 'Без названия').trim().replace(/\s+/g, ' ');
+    if (!modelStats[name]) modelStats[name] = { profit: 0, sold: 0, revenue: 0, cost: 0 };
+    modelStats[name].profit  += parseFloat(p['Прибыль'])     || 0;
+    modelStats[name].revenue += parseFloat(p['Цена продажа']) || 0;
+    modelStats[name].cost    += parseFloat(p['Цена закупка']) || 0;
+    modelStats[name].sold++;
+  });
+
+  const topModels = Object.entries(modelStats)
+    .sort((a, b) => b[1].profit - a[1].profit)
+    .slice(0, 7);
+
+  const rankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+
+  document.getElementById('top-models').innerHTML = topModels.length
+    ? topModels.map(([name, s], i) => {
+        const margin = s.revenue > 0 ? Math.round((s.profit / s.revenue) * 100) : 0;
+        return `<div class="model-row">
+          <div class="model-rank ${rankClass(i)}">${i + 1}</div>
+          <div>
+            <div class="model-name">${name}</div>
+            <div class="model-sold">${s.sold} продаж</div>
+          </div>
+          <div>
+            <div class="model-profit">${fmt(Math.round(s.profit))}</div>
+            <div class="model-margin">маржа ${margin}%</div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="color:#7080a0;font-size:0.85rem;text-align:center;padding:20px">Нет данных о продажах</div>';
+
+  // ── Долго лежащие ──
+  const today = new Date();
+  const stale = data
+    .filter(p => p['Статус'] !== 'Продан' && parseDate(p['Дата закупки']))
+    .map(p => {
+      const buy  = parseDate(p['Дата закупки']);
+      const days = Math.round((today - buy) / 86400000);
+      return { ...p, _days: days };
+    })
+    .sort((a, b) => b._days - a._days)
+    .slice(0, 5);
+
+  const dayClass = (d) => d > 60 ? '' : d > 30 ? 'warn' : 'ok';
+
+  document.getElementById('stale-items').innerHTML = stale.length
+    ? stale.map(p => `<div class="stale-row">
+        <div class="stale-days ${dayClass(p._days)}">${p._days} дн</div>
+        <div>
+          <div class="stale-name">${p['Название'] || '—'}</div>
+          <div class="stale-sku">${p['Артикул'] || ''}</div>
+        </div>
+        <div class="stale-price">${fmt(p['Цена закупка'])}</div>
+      </div>`).join('')
+    : '<div style="color:#7080a0;font-size:0.85rem;text-align:center;padding:20px">Нет товаров на складе</div>';
+}
+
+// ── Chart ─────────────────────────────────────────────────────
+function renderChart(data) {
+  // Собираем прибыль по месяцам (последние 8 месяцев)
+  const months = {};
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    months[key] = 0;
+  }
+
+  data.filter(p => p['Статус'] === 'Продан').forEach(p => {
+    const d = parseDate(p['Дата продажи']);
+    if (!d) return;
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    if (key in months) months[key] += parseFloat(p['Прибыль']) || 0;
+  });
+
+  const labels = Object.keys(months).map(k => {
+    const [y, m] = k.split('-');
+    return new Date(+y, +m - 1, 1).toLocaleString('ru-RU', { month: 'short', year: '2-digit' });
+  });
+  const values = Object.values(months).map(v => Math.round(v));
+
+  if (salesChart) salesChart.destroy();
+
+  const ctx = document.getElementById('sales-chart').getContext('2d');
+  salesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Прибыль, ₽',
+        data: values,
+        backgroundColor: values.map(v => v >= 0 ? 'rgba(42,82,152,0.75)' : 'rgba(192,57,43,0.65)'),
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.parsed.y.toLocaleString('ru-RU') + ' ₽'
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: {
+          grid: { color: '#f0f4ff' },
+          ticks: {
+            font: { size: 11 },
+            callback: v => v.toLocaleString('ru-RU') + ' ₽'
+          }
+        }
+      }
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
