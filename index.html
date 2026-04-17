@@ -1192,6 +1192,8 @@
 
         html += '<div class="product-detail"><strong>📌 Статус:</strong> <span class="' + statusClass + '">' + statusText + '</span></div>';
 
+        if (p['Дата закупки']) html += '<div class="product-detail"><strong>📅 Дата закупки:</strong> ' + escapeHtml(p['Дата закупки']) + '</div>';
+        if (p['Дата продажи']) html += '<div class="product-detail"><strong>📆 Дата продажи:</strong> ' + escapeHtml(p['Дата продажи']) + '</div>';
         if (p['Ссылка на Авито']) html += '<div class="product-detail"><strong>🔗 Авито:</strong> <a href="' + escapeHtml(p['Ссылка на Авито']) + '" target="_blank">Открыть →</a></div>';
         if (p['Фото'] && p['Фото'] !== 'IMAGE') html += '<div class="product-detail"><strong>📷 Фото:</strong> <a href="' + escapeHtml(p['Фото']) + '" target="_blank">Посмотреть</a></div>';
         if (p['QR_Code']) html += '<div class="qr-code"><strong>📱 QR-код:</strong><br><img src="' + escapeHtml(p['QR_Code']) + '" style="max-width:120px"></div>';
